@@ -20,6 +20,7 @@ import {
 import { MiddlewareRoute } from "@medusajs/framework/http"
 import { PolicyOperation } from "@medusajs/framework/utils"
 import { createLinkBody } from "../../utils/validators"
+import { applyEmailSubscribedFilter } from "./email-subscribed-filter"
 
 export const adminCustomerRoutesMiddlewares: MiddlewareRoute[] = [
   {
@@ -39,6 +40,8 @@ export const adminCustomerRoutesMiddlewares: MiddlewareRoute[] = [
         AdminCustomersParams,
         QueryConfig.listTransformQueryConfig
       ),
+      // Pagly: email_subscribed becomes a metadata.email_marketing condition.
+      applyEmailSubscribedFilter,
     ],
     policies: [
       {
@@ -209,6 +212,8 @@ export const adminCustomerRoutesMiddlewares: MiddlewareRoute[] = [
         AdminCustomersParams,
         QueryConfig.exportTransformQueryConfig
       ),
+      // Pagly: the export follows the list's email subscription filter.
+      applyEmailSubscribedFilter,
     ],
     policies: [
       {

@@ -49,6 +49,8 @@ export const AdminCustomersParams = createFindParams({
 })
   .merge(AdminCustomersParamsFields)
   .merge(applyAndAndOrOperators(AdminCustomersParamsFields))
+  // Pagly: email marketing consent from metadata, see email-subscribed-filter.ts. Not in $and/$or, which reach the module as they are.
+  .merge(z.object({ email_subscribed: booleanString().optional() }))
 
 export const CreateCustomer = z.object({
   email: z.string().email().nullish(),

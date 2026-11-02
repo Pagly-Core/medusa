@@ -15,6 +15,8 @@ export const useCustomerTableQuery = ({
       "offset",
       "q",
       "has_account",
+      // Pagly: email marketing consent, see use-customer-table-filters.
+      "email_subscribed",
       "groups",
       "order",
       "created_at",
@@ -31,6 +33,9 @@ export const useCustomerTableQuery = ({
     offset: offset ? Number(offset) : 0,
     groups: groups?.split(","),
     has_account: has_account ? has_account === "true" : undefined,
+    email_subscribed: queryObject.email_subscribed
+      ? queryObject.email_subscribed === "true"
+      : undefined,
     order,
     created_at: created_at ? JSON.parse(created_at) : undefined,
     updated_at: updated_at ? JSON.parse(updated_at) : undefined,
