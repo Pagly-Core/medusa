@@ -70,6 +70,29 @@ medusaIntegrationTestRunner({
 
     const eventBus = () => getContainer().resolve(Modules.EVENT_BUS)
 
+    const byId = (a: { id: string }, b: { id: string }) =>
+      a.id.localeCompare(b.id)
+
+    /** Collects the events published under a name, as the event bus emits them. */
+    const collect = (name: string) => {
+      const emitter = (eventBus() as any).eventEmitter_
+      const received: { data: { id: string } }[] = []
+      const listener = (event) => {
+        received.push(event)
+      }
+      emitter.on(name, listener)
+
+      return {
+        until: async (count: number) => {
+          for (let tries = 0; tries < 60 && received.length < count; tries++) {
+            await new Promise((resolve) => setTimeout(resolve, 250))
+          }
+          return received
+        },
+        stop: () => emitter.removeListener(name, listener),
+      }
+    }
+
     const buyGiftCards = async (quantity) => {
       const cart = (
         await api.post(
@@ -153,26 +176,21 @@ medusaIntegrationTestRunner({
       })
 
       it("announces each card bought with gift_card.created", async () => {
-        const created = TestEventUtils.waitSubscribersExecution(
-          "gift_card.created",
-          eventBus(),
-          { triggerCount: 2 }
-        )
+        const events = collect("gift_card.created")
 
         const order = await buyGiftCards(2)
-        const events = await created
 
         const ids = (await giftCardsOf(order.id)).map((gc) => gc.id).sort()
-        expect(events.map(([event]) => event.data.id).sort()).toEqual(ids)
+        expect(
+          (await events.until(2)).map((event) => event.data).sort(byId)
+        ).toEqual(ids.map((id) => ({ id })))
+        events.stop()
       })
     })
 
     describe("POST /admin/gift-cards", () => {
       it("announces the new card with gift_card.created", async () => {
-        const created = TestEventUtils.waitSubscribersExecution(
-          "gift_card.created",
-          eventBus()
-        )
+        const events = collect("gift_card.created")
 
         const { gift_card } = (
           await api.post(
@@ -182,8 +200,10 @@ medusaIntegrationTestRunner({
           )
         ).data
 
-        const event = await created
-        expect(event.data).toEqual({ id: gift_card.id })
+        expect((await events.until(1)).map((event) => event.data)).toEqual([
+          { id: gift_card.id },
+        ])
+        events.stop()
       })
     })
   },

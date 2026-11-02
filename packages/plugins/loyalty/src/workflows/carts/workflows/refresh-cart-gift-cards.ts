@@ -14,8 +14,9 @@ import {
 } from "@medusajs/framework/workflows-sdk";
 import { PluginModule } from "../../../types";
 import { isGiftCardExpired } from "../../../utils/gift-card";
+import { giftCardCreditLineMetadata } from "../../../utils/gift-card-credit-line";
 import { retrieveGiftCardsBalanceStep } from "../../gift-cards/steps/retrieve-gift-card-balance";
-import { validateGiftCardBalancesStep } from "../steps/validate-gift-card-balances";
+import { retrieveStoreCreditAccountsStatsStep } from "../../store-credit/steps/retrieve-store-credit-accounts-stats";
 
 /**
  * Data to refresh the gift card credit lines on a cart.
@@ -57,10 +58,13 @@ export const refreshCartGiftCardsWorkflow = createWorkflow(
         "id",
         "currency_code",
         "total",
+        "gift_cards.id",
         "gift_cards.code",
         "credit_lines.id",
+        "credit_lines.amount",
         "credit_lines.reference",
         "credit_lines.reference_id",
+        "credit_lines.metadata",
       ],
       options: { throwIfKeyNotFound: true },
     }).config({ name: "get-existing-cart-query" });
@@ -72,14 +76,26 @@ export const refreshCartGiftCardsWorkflow = createWorkflow(
       }
     );
 
+    // Pagly: store credit lines are rebuilt too (capped to the balance left and
+    // to what the cart owes), and every card on the cart is unlinked so that
+    // only the usable ones are linked again below.
     const toDismiss = transform({ existingCart }, ({ existingCart }) => {
-      const giftCardCreditLines = existingCart.credit_lines.filter(
-        (creditLine) => creditLine.reference === "gift-card"
+      const loyaltyCreditLines = existingCart.credit_lines.filter(
+        (creditLine) =>
+          creditLine.reference === "gift-card" ||
+          creditLine.reference === "store-credit"
       );
 
       return {
-        creditLineIds: giftCardCreditLines.map((cl) => cl.id),
-        giftCardIds: giftCardCreditLines.map((cl) => cl.reference_id),
+        creditLineIds: loyaltyCreditLines.map((cl) => cl.id),
+        giftCardIds: existingCart.gift_cards.map((gc) => gc.id),
+        storeCreditLines: loyaltyCreditLines
+          .filter((cl) => cl.reference === "store-credit")
+          .map((cl) => ({
+            account_id: cl.reference_id,
+            amount: cl.amount,
+            metadata: cl.metadata ?? {},
+          })),
       };
     });
 
@@ -155,9 +171,23 @@ export const refreshCartGiftCardsWorkflow = createWorkflow(
       giftCardStoreCreditAccountMap,
     });
 
-    validateGiftCardBalancesStep({
-      giftCards,
-      giftCardsBalanceMap,
+    // Pagly: a card with nothing left is dropped like an expired one, instead
+    // of refusing every later change to the cart.
+    const usableGiftCards = transform(
+      { giftCards, giftCardsBalanceMap },
+      ({ giftCards, giftCardsBalanceMap }) => {
+        return giftCards.filter((giftCard) =>
+          MathBN.convert(giftCardsBalanceMap[giftCard.code].balance).gt(0)
+        );
+      }
+    );
+
+    const storeCreditAccountIds = transform({ toDismiss }, ({ toDismiss }) => {
+      return toDismiss.storeCreditLines.map((line) => line.account_id);
+    });
+
+    const storeCreditBalanceMap = retrieveStoreCreditAccountsStatsStep({
+      account_ids: storeCreditAccountIds,
     });
 
     const updatedCardQuery = useQueryGraphStep({
@@ -178,12 +208,43 @@ export const refreshCartGiftCardsWorkflow = createWorkflow(
     });
 
     const creditLinesToCreate = transform(
-      { giftCardsBalanceMap, giftCards, cart },
-      ({ giftCardsBalanceMap, giftCards, cart }) => {
+      {
+        giftCardsBalanceMap,
+        usableGiftCards,
+        cart,
+        toDismiss,
+        storeCreditBalanceMap,
+      },
+      ({
+        giftCardsBalanceMap,
+        usableGiftCards,
+        cart,
+        toDismiss,
+        storeCreditBalanceMap,
+      }) => {
         let tempCartTotal = MathBN.convert(cart.total);
         const creditLinesData: CreateCartCreditLineDTO[] = [];
 
-        for (const giftCard of giftCards) {
+        // Pagly: store credit first, keeping as much of what the shopper chose
+        // as the account's balance and the cart still allow.
+        for (const line of toDismiss.storeCreditLines) {
+          const balance = storeCreditBalanceMap[line.account_id]?.balance ?? 0;
+          const amount = MathBN.min(line.amount, balance, tempCartTotal);
+
+          if (amount.gt(0)) {
+            creditLinesData.push({
+              cart_id: cart.id,
+              amount: amount.toNumber(),
+              reference: "store-credit",
+              reference_id: line.account_id,
+              metadata: line.metadata,
+            });
+
+            tempCartTotal = tempCartTotal.minus(amount);
+          }
+        }
+
+        for (const giftCard of usableGiftCards) {
           const stats = giftCardsBalanceMap[giftCard.code];
           const amount = MathBN.min(stats.balance, tempCartTotal);
 
@@ -193,7 +254,8 @@ export const refreshCartGiftCardsWorkflow = createWorkflow(
               amount: amount.toNumber(),
               reference: "gift-card",
               reference_id: giftCard.id,
-              metadata: {},
+              // Pagly: names the card on carts and orders without its code.
+              metadata: giftCardCreditLineMetadata(giftCard.code),
             });
 
             tempCartTotal = tempCartTotal.minus(amount);
@@ -209,9 +271,9 @@ export const refreshCartGiftCardsWorkflow = createWorkflow(
     });
 
     const linksToCreate = transform(
-      { giftCards, cart },
-      ({ giftCards, cart }) => {
-        const links = giftCards.map((giftCard) => ({
+      { usableGiftCards, cart },
+      ({ usableGiftCards, cart }) => {
+        const links = usableGiftCards.map((giftCard) => ({
           [Modules.CART]: { cart_id: cart.id },
           [PluginModule.LOYALTY]: { gift_card_id: giftCard.id },
         }));

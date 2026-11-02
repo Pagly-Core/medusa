@@ -52,12 +52,20 @@ export const retrieveGiftCardsBalanceStep = createStep(
       PluginModule.STORE_CREDIT
     );
 
-    for (const giftCard of giftCards) {
-      const giftCardBalance = await module.retrieveAccountStats({
-        account_id: giftCardStoreCreditAccountMap[giftCard.id],
-      });
+    // Pagly: one grouped balance read for all the cards, not one per card.
+    const statsByAccount = await module.retrieveAccountsStats(
+      giftCards.map((giftCard) => giftCardStoreCreditAccountMap[giftCard.id])
+    );
 
-      accountBalanceMap[giftCard.code] = giftCardBalance;
+    for (const giftCard of giftCards) {
+      const accountId = giftCardStoreCreditAccountMap[giftCard.id];
+
+      accountBalanceMap[giftCard.code] = statsByAccount[accountId] ?? {
+        id: accountId,
+        balance: 0,
+        credits: 0,
+        debits: 0,
+      };
     }
 
     return new StepResponse(accountBalanceMap);

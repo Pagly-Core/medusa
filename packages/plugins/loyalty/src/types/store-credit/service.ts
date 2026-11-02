@@ -346,6 +346,25 @@ export interface IStoreCreditModuleService extends IModuleService {
   ): Promise<ModuleAccountStats>;
 
   /**
+   * Pagly: this method retrieves the balance statistics of many store credit
+   * accounts with one grouped query, keyed by account ID. Unknown IDs are left out.
+   *
+   * @param {string[]} accountIds - The IDs of the accounts to retrieve stats for.
+   * @param {Context} sharedContext - A context used to share resources, such as transaction manager, between the application and the module.
+   * @returns {Promise<Record<string, ModuleAccountStats>>} The statistics of each account, keyed by its ID.
+   *
+   * @example
+   * const statsByAccount = await storeCreditModuleService.retrieveAccountsStats([
+   *   "sca_123",
+   *   "sca_321",
+   * ])
+   */
+  retrieveAccountsStats(
+    accountIds: string[],
+    sharedContext?: Context
+  ): Promise<Record<string, ModuleAccountStats>>;
+
+  /**
    * This method credits one or more store credit accounts by creating credit transactions.
    *
    * @param {ModuleCreditAccount[]} data - The credit transactions to create.

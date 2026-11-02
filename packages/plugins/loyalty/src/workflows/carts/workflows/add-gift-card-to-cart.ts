@@ -23,6 +23,7 @@ import {
   ModuleStoreCreditAccount,
 } from "../../../types/store-credit";
 import { isGiftCardExpired } from "../../../utils/gift-card";
+import { giftCardCreditLineMetadata } from "../../../utils/gift-card-credit-line";
 import { validateGiftCardBalancesStep } from "../steps/validate-gift-card-balances";
 
 /**
@@ -322,7 +323,8 @@ export const addGiftCardToCartWorkflow = createWorkflow(
               amount: amount.toNumber(),
               reference: "gift-card",
               reference_id: giftCard.id,
-              metadata: {},
+              // Pagly: names the card on carts and orders without its code.
+              metadata: giftCardCreditLineMetadata(giftCard.code),
             });
           }
         }

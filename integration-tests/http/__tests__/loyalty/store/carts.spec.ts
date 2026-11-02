@@ -299,10 +299,11 @@ medusaIntegrationTestRunner({
             "Gift cards are not accepted on this cart"
           )
 
+          // Pagly: store reads list gift card fields one by one.
           const {
             data: { cart: cartAfterRejection },
           } = await api.get(
-            `/store/carts/${cart.id}?fields=+credit_line_total,*gift_cards`,
+            `/store/carts/${cart.id}?fields=+credit_line_total,+gift_cards.id`,
             storeHeaders
           )
 

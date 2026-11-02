@@ -3,12 +3,16 @@ import {
   transform,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
-import { createLinksWorkflow } from "@medusajs/medusa/core-flows";
+import {
+  createLinksWorkflow,
+  emitEventStep,
+} from "@medusajs/medusa/core-flows";
 
 import { createGiftCardsStep } from "../steps/create-gift-cards";
 import { createStoreCreditAccountsStep } from "../../store-credit/steps/create-store-credit-accounts";
 import {
   GiftCardStatus,
+  LoyaltyEvents,
   ModuleCreateGiftCard,
   PluginModule,
 } from "../../../types";
@@ -119,6 +123,16 @@ export const createGiftCardsWorkflow = createWorkflow(
 
     const redeemedGiftCards = updateGiftCardsWorkflow.runAsStep({
       input: updateGiftCardsInput,
+    });
+
+    // Pagly: announces each new card, for the gift card email.
+    const createdEvents = transform({ giftCards }, ({ giftCards }) => {
+      return giftCards.map((giftCard) => ({ id: giftCard.id }));
+    });
+
+    emitEventStep({
+      eventName: LoyaltyEvents.GIFT_CARD_CREATED,
+      data: createdEvents,
     });
 
     return new WorkflowResponse(redeemedGiftCards);

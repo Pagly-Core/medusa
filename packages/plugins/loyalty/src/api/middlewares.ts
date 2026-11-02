@@ -9,7 +9,9 @@ import { storeGiftCardsMiddlewares } from "./store/gift-cards/middlewares"
 import { storeStoreCreditAccountMiddlewares } from "./store/store-credit-accounts/middlewares"
 
 const allowGiftCardRelation: MiddlewareRoute = {
-  matcher: /^\/store\/(carts|orders)(?=\/|$)/,
+  // Pagly: carts only. `GET /store/orders/:id` needs no sign-in, so it would
+  // hand anyone with an order ID the codes of the cards used on it.
+  matcher: /^\/store\/carts(?=\/|$)/,
   middlewares: [allowFields(giftCardRelationAllowedFields)],
 }
 
