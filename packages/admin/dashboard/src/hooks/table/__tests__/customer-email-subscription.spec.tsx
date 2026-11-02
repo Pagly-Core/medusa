@@ -19,6 +19,8 @@ import { useCustomerTableQuery } from "../query/use-customer-table-query"
  * Pagly: the customers list shows and filters on each customer's email
  * marketing consent, which @pagly/storefront keeps in
  * `metadata.email_marketing`, like Shopify's "Email subscription" column.
+ * The plugin answers the list's `email_marketing` param (subscribed,
+ * unsubscribed, not_subscribed for never asked).
  */
 
 vi.mock("react-i18next", () => ({
@@ -203,21 +205,32 @@ describe("customers list email subscription query", () => {
       ),
     }).result.current
 
-  it("asks for subscribed customers", () => {
+  it("asks the plugin for subscribed customers", () => {
     const { searchParams, raw } = queryAt("/customers?email_subscribed=true")
 
-    expect(searchParams.email_subscribed).toBe(true)
+    expect(searchParams).toMatchObject({ email_marketing: ["subscribed"] })
     expect(raw.email_subscribed).toBe("true")
   })
 
-  it("asks for customers who are not subscribed", () => {
+  it("asks for unsubscribed and never asked customers as not subscribed", () => {
     expect(
-      queryAt("/customers?email_subscribed=false").searchParams.email_subscribed
-    ).toBe(false)
+      queryAt("/customers?email_subscribed=false").searchParams
+    ).toMatchObject({ email_marketing: ["unsubscribed", "not_subscribed"] })
+  })
+
+  it("sends core no param of its own", () => {
+    for (const url of [
+      "/customers?email_subscribed=true",
+      "/customers?email_subscribed=false",
+    ]) {
+      expect(queryAt(url).searchParams).not.toHaveProperty("email_subscribed")
+    }
   })
 
   it("asks for everyone without the filter", () => {
-    expect(queryAt("/customers").searchParams.email_subscribed).toBeUndefined()
+    expect(queryAt("/customers").searchParams).not.toHaveProperty(
+      "email_marketing"
+    )
   })
 })
 
