@@ -14,8 +14,32 @@ export type CreditKind = {
   detail?: (creditLine: CreditLine) => string | undefined
 }
 
-export const CREDIT_KINDS: CreditKind[] = []
+/**
+ * Pagly: the credit lines written today, by the loyalty plugin's cart refresh
+ * (gift cards and store credit spent on the order) and by the admin's "refund
+ * as store credit". A reference no kind knows keeps upstream's row.
+ */
+export const CREDIT_KINDS: CreditKind[] = [
+  {
+    reference: "gift-card",
+    labelKey: "orders.creditLines.kinds.giftCard",
+    detail: (creditLine) => {
+      const last4 = creditLine.metadata?.code_last4
+
+      return typeof last4 === "string" && last4 ? `•••• ${last4}` : undefined
+    },
+  },
+  {
+    reference: "store-credit",
+    labelKey: "orders.creditLines.kinds.storeCredit",
+  },
+  {
+    reference: "refund",
+    labelKey: "orders.creditLines.kinds.refund",
+  },
+]
 
 export const getCreditKind = (
-  _reference?: string | null
-): CreditKind | undefined => undefined
+  reference?: string | null
+): CreditKind | undefined =>
+  CREDIT_KINDS.find((kind) => kind.reference === reference)

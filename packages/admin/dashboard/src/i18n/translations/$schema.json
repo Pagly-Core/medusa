@@ -4732,6 +4732,22 @@
             },
             "debitDescription": {
               "type": "string"
+            },
+            "kinds": {
+              "type": "object",
+              "properties": {
+                "giftCard": {
+                  "type": "string"
+                },
+                "storeCredit": {
+                  "type": "string"
+                },
+                "refund": {
+                  "type": "string"
+                }
+              },
+              "required": ["giftCard", "storeCredit", "refund"],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -4746,7 +4762,8 @@
             "credit",
             "creditDescription",
             "debit",
-            "debitDescription"
+            "debitDescription",
+            "kinds"
           ],
           "additionalProperties": false
         },
