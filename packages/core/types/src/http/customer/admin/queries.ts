@@ -14,11 +14,6 @@ export interface AdminCustomerFilters extends BaseCustomerFilters {
    * Filter by whether the customer is registered.
    */
   has_account?: boolean
-  // Pagly: email marketing consent, which @pagly/storefront keeps in metadata.email_marketing.
-  /**
-   * Filter by whether the customer is subscribed to email marketing.
-   */
-  email_subscribed?: boolean
 }
 export interface AdminCustomerAddressFilters
   extends BaseCustomerAddressFilters,
