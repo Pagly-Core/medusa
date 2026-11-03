@@ -14,6 +14,10 @@ import {
   AccountHeader,
 } from "../../../components/table/table-cells/customer/account-cell/account-cell"
 import {
+  EmailSubscriptionCell,
+  EmailSubscriptionHeader,
+} from "../../../components/table/table-cells/customer/email-subscription-cell/email-subscription-cell"
+import {
   FirstSeenCell,
   FirstSeenHeader,
 } from "../../../components/table/table-cells/customer/first-seen-cell"
@@ -40,6 +44,16 @@ export const useCustomerTableColumns = () => {
       columnHelper.accessor("has_account", {
         header: () => <AccountHeader />,
         cell: ({ getValue }) => <AccountCell hasAccount={getValue()} />,
+      }),
+      // Pagly: Shopify's "Email subscription" column, from @pagly/storefront's consent in metadata.
+      columnHelper.display({
+        id: "email_subscription",
+        header: () => <EmailSubscriptionHeader />,
+        cell: ({
+          row: {
+            original: { metadata },
+          },
+        }) => <EmailSubscriptionCell metadata={metadata} />,
       }),
       columnHelper.accessor("created_at", {
         header: () => <FirstSeenHeader />,

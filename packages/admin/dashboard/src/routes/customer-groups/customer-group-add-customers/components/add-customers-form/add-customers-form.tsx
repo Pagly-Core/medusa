@@ -66,7 +66,8 @@ export const AddCustomersForm = ({
   const filters = useCustomerTableFilters()
 
   const { customers, count, isLoading, isError, error } = useCustomers({
-    fields: "id,email,first_name,last_name,has_account,*groups",
+    // Pagly: metadata holds the consent the Email subscription column reads.
+    fields: "id,email,first_name,last_name,has_account,metadata,*groups",
     ...searchParams,
   })
 
