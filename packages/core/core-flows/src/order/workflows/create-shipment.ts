@@ -149,7 +149,8 @@ function prepareRegisterShipmentData({
           (i) => i.inventory.id === fitem.inventory_item_id
         )
 
-        quantity = MathBN.div(quantity, iitem!.required_quantity)
+        // Pagly: an item fulfilled without managed inventory has no inventory item, so its quantity stays
+        if (iitem) quantity = MathBN.div(quantity, iitem.required_quantity)
       }
 
       return {
