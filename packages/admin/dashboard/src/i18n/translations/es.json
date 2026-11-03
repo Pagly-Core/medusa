@@ -1176,6 +1176,11 @@
     "registered": "Registrado",
     "guest": "Invitado",
     "hasAccount": "Tiene cuenta",
+    "emailSubscription": {
+      "label": "Suscripción por email",
+      "subscribed": "Con suscripción",
+      "notSubscribed": "Sin suscripción"
+    },
     "addresses": {
       "title": "Direcciones",
       "fields": {

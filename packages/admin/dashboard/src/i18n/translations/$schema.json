@@ -4396,6 +4396,22 @@
         "hasAccount": {
           "type": "string"
         },
+        "emailSubscription": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "subscribed": {
+              "type": "string"
+            },
+            "notSubscribed": {
+              "type": "string"
+            }
+          },
+          "required": ["label", "subscribed", "notSubscribed"],
+          "additionalProperties": false
+        },
         "addresses": {
           "type": "object",
           "properties": {
@@ -4487,6 +4503,7 @@
         "registered",
         "guest",
         "hasAccount",
+        "emailSubscription",
         "addresses"
       ],
       "additionalProperties": false
