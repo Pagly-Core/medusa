@@ -1,5 +1,6 @@
 import { Button, DropdownMenu } from "@medusajs/ui"
 import { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
 
@@ -10,6 +11,8 @@ type FilterGroupProps = {
 }
 
 export const FilterGroup = ({ filters }: FilterGroupProps) => {
+  // Pagly: "Clear all" was hard-coded English
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const filterKeys = Object.keys(filters)
 
@@ -26,7 +29,7 @@ export const FilterGroup = ({ filters }: FilterGroupProps) => {
       {hasMore && <AddFilterMenu availableKeys={availableKeys} />}
       {isClearable && (
         <Button variant="transparent" size="small">
-          Clear all
+          {t("actions.clearAll")}
         </Button>
       )}
     </div>

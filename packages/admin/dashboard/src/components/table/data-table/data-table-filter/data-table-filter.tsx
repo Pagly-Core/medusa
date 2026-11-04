@@ -231,6 +231,8 @@ type ClearAllFiltersProps = {
 }
 
 const ClearAllFilters = ({ filters, prefix }: ClearAllFiltersProps) => {
+  // Pagly: "Clear all" was hard-coded English
+  const { t } = useTranslation()
   const { removeAllFilters } = useDataTableFilterContext()
   const [_, setSearchParams] = useSearchParams()
 
@@ -258,7 +260,7 @@ const ClearAllFilters = ({ filters, prefix }: ClearAllFiltersProps) => {
         "focus-visible:shadow-borders-focus"
       )}
     >
-      Clear all
+      {t("actions.clearAll")}
     </button>
   )
 }
