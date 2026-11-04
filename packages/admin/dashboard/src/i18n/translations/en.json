@@ -1129,6 +1129,11 @@
     "registered": "Registered",
     "guest": "Guest",
     "hasAccount": "Has account",
+    "emailSubscription": {
+      "label": "Email subscription",
+      "subscribed": "Subscribed",
+      "notSubscribed": "Not subscribed"
+    },
     "addresses": {
       "title": "Addresses",
       "fields": {

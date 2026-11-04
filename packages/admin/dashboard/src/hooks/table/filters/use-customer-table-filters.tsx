@@ -53,6 +53,23 @@ export const useCustomerTableFilters = (
     ],
   }
 
+  // Pagly: email marketing consent from metadata, see use-customer-table-columns.
+  const emailSubscribedFilter: Filter = {
+    key: "email_subscribed",
+    label: t("customers.emailSubscription.label"),
+    type: "select",
+    options: [
+      {
+        label: t("customers.emailSubscription.subscribed"),
+        value: "true",
+      },
+      {
+        label: t("customers.emailSubscription.notSubscribed"),
+        value: "false",
+      },
+    ],
+  }
+
   const dateFilters: Filter[] = [
     { label: t("fields.createdAt"), key: "created_at" },
     { label: t("fields.updatedAt"), key: "updated_at" },
@@ -62,7 +79,12 @@ export const useCustomerTableFilters = (
     type: "date",
   }))
 
-  filters = [...filters, hasAccountFilter, ...dateFilters]
+  filters = [
+    ...filters,
+    hasAccountFilter,
+    emailSubscribedFilter,
+    ...dateFilters,
+  ]
 
   return filters
 }
