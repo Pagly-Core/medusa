@@ -30,11 +30,6 @@
       "import": "./.medusa/server/src/types/index.js",
       "types": "./.medusa/server/src/types/index.d.ts",
       "require": "./.medusa/server/src/types/index.js"
-    },
-    "./admin": {
-      "import": "./.medusa/server/src/admin/index.mjs",
-      "require": "./.medusa/server/src/admin/index.js",
-      "default": "./.medusa/server/src/admin/index.js"
     }
   },
   "keywords": [

@@ -299,10 +299,11 @@ medusaIntegrationTestRunner({
             "Gift cards are not accepted on this cart"
           )
 
+          // Pagly: store reads list gift card fields one by one.
           const {
             data: { cart: cartAfterRejection },
           } = await api.get(
-            `/store/carts/${cart.id}?fields=+credit_line_total,*gift_cards`,
+            `/store/carts/${cart.id}?fields=+credit_line_total,+gift_cards.id`,
             storeHeaders
           )
 
@@ -713,10 +714,12 @@ medusaIntegrationTestRunner({
           storeHeaders
         )
 
+        // Pagly: store reads list gift card fields one by one; `*gift_cards`
+        // would also select the card's note and origin.
         const {
           data: { order },
         } = await api.post(
-          `/store/carts/${cart.id}/complete?fields=+credit_line_total,*gift_cards,*gift_cards.store_credit_account`,
+          `/store/carts/${cart.id}/complete?fields=+credit_line_total,+gift_cards.id,+gift_cards.status,*gift_cards.store_credit_account`,
           {},
           storeHeaders
         )

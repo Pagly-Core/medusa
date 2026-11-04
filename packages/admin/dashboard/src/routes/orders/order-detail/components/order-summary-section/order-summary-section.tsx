@@ -64,6 +64,7 @@ import { getTotalCaptured } from "../../../../../lib/payment"
 import { getLoyaltyPlugin } from "../../../../../lib/plugins"
 import { getReturnableQuantity } from "../../../../../lib/rma"
 import { CopyPaymentLink } from "../copy-payment-link/copy-payment-link"
+import { getCreditKind } from "./credit-kinds"
 import ReturnInfoPopover from "./return-info-popover"
 import ShippingInfoPopover from "./shipping-info-popover"
 import {
@@ -946,32 +947,57 @@ const DiscountAndTotalBreakdown = ({
                   .join(" ")
                   .split("-")
                   .join(" ")
+                // Pagly: a known kind names the line ("Gift card •••• 7KQ2", "Store credit") instead of its ID and reference.
+                const kind = getCreditKind(creditLine.reference)
+                const detail = kind?.detail?.(creditLine)
 
                 return (
                   <div
                     key={creditLine.id}
+                    data-testid="order-credit-line-row"
                     className="flex items-center justify-between gap-x-2"
                   >
-                    <div className="flex items-center">
-                      <Text
-                        size="small"
-                        leading="compact"
-                        weight="plus"
-                        className="txt-small text-ui-fg-subtle font-medium"
-                      >
-                        <DisplayId id={creditLine.id} />
-                      </Text>
-                      <span className="txt-small text-ui-fg-subtle mx-1">
-                        -
-                      </span>
-                      <Text
-                        size="small"
-                        leading="compact"
-                        className="txt-small text-ui-fg-subtle capitalize"
-                      >
-                        ({prettyReference})
-                      </Text>
-                    </div>
+                    {kind ? (
+                      <div className="flex items-center gap-x-1">
+                        <Text
+                          size="small"
+                          leading="compact"
+                          className="txt-small text-ui-fg-subtle"
+                        >
+                          {t(kind.labelKey as any)}
+                        </Text>
+                        {detail && (
+                          <Text
+                            size="small"
+                            leading="compact"
+                            className="txt-small text-ui-fg-muted font-mono"
+                          >
+                            {detail}
+                          </Text>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <Text
+                          size="small"
+                          leading="compact"
+                          weight="plus"
+                          className="txt-small text-ui-fg-subtle font-medium"
+                        >
+                          <DisplayId id={creditLine.id} />
+                        </Text>
+                        <span className="txt-small text-ui-fg-subtle mx-1">
+                          -
+                        </span>
+                        <Text
+                          size="small"
+                          leading="compact"
+                          className="txt-small text-ui-fg-subtle capitalize"
+                        >
+                          ({prettyReference})
+                        </Text>
+                      </div>
+                    )}
                     <div className="relative flex-1">
                       <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
                     </div>

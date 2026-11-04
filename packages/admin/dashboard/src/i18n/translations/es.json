@@ -1256,29 +1256,34 @@
       "refundableAmount": "Monto reembolsable",
       "returnableQuantity": "Cantidad retornable"
     },
-    "giftCardsStoreCreditLines": "Tarjetas de regalo y líneas de crédito",
+    "giftCardsStoreCreditLines": "Tarjetas de regalo y saldo",
     "creditLines": {
-      "title": "Líneas de crédito",
-      "total": "Suma de todas las líneas de crédito",
-      "creditOrDebit": "Crédito / débito",
-      "createCreditLine": "Crear línea de crédito",
-      "createCreditLineSuccess": "Línea de crédito creada correctamente",
-      "createCreditLineError": "Error al crear línea de crédito",
-      "createCreditLineDescription": "Crear una línea de crédito por el monto {{amount}}",
+      "title": "Tarjetas de regalo y saldo",
+      "total": "Total en tarjetas de regalo y saldo",
+      "creditOrDebit": "Suma / resta",
+      "createCreditLine": "Devolver como saldo",
+      "createCreditLineSuccess": "Saldo devuelto",
+      "createCreditLineError": "No se pudo devolver como saldo",
+      "createCreditLineDescription": "Devolver {{amount}} como saldo",
       "operation": "Operación",
-      "credit": "Crédito",
+      "credit": "Suma",
       "creditDescription": "Suma un monto positivo al pedido",
-      "debit": "Débito",
-      "debitDescription": "Resta una suma negativa del pedido"
+      "debit": "Resta",
+      "debitDescription": "Resta una suma negativa del pedido",
+      "kinds": {
+        "giftCard": "Tarjeta de regalo",
+        "storeCredit": "Saldo",
+        "refund": "Devuelto como saldo"
+      }
     },
     "balanceSettlement": {
-      "title": "Liquidación de saldo",
+      "title": "Devolver la diferencia",
       "settlementType": "Tipo de liquidación",
       "settlementTypes": {
         "paymentMethod": "Método de pago",
         "paymentMethodDescription": "Reembolsar monto al método de pago",
-        "creditLine": "Crédito de tienda",
-        "creditLineDescription": "Reembolsar monto como crédito de tienda",
+        "creditLine": "Saldo",
+        "creditLineDescription": "Devolver el monto como saldo",
         "creditLineNoOutstandingAmountDescription": "Solo disponible cuando el pedido tiene un monto pendiente. Creá una devolución o una edición de pedido primero.",
         "creditLineGuestDescription": "Solo disponible para clientes con una cuenta. Este pedido fue realizado por un invitado."
       }
@@ -1365,7 +1370,7 @@
       "isReadyToBeCaptured": "El pago <0/> está listo para ser capturado.",
       "totalPaidByCustomer": "Total pagado por el cliente",
       "totalPending": "Total pendiente",
-      "storeCreditRefund": "Reembolso de crédito en tienda",
+      "storeCreditRefund": "Devuelto como saldo",
       "capture": "Capturar pago",
       "capture_short": "Capturar",
       "refund": "Reembolso",
@@ -1399,7 +1404,7 @@
       "refundAmount": "Reembolso {{ amount }}",
       "paymentLink": "Copiar enlace de pago para {{ amount }}",
       "selectPaymentToRefund": "Seleccioná el pago a reembolsar",
-      "totalStoreCreditRefunds": "Total de reembolsos de crédito de tienda"
+      "totalStoreCreditRefunds": "Total devuelto como saldo"
     },
     "edits": {
       "title": "Editar pedido",
@@ -3668,7 +3673,7 @@
     "actions": "Acciones",
     "amount": "Monto",
     "by": "Por",
-    "creditTotal": "Total de líneas de crédito",
+    "creditTotal": "Total en tarjetas de regalo y saldo",
     "enabledInStore": "Habilitado en tienda",
     "isReturn": "Es devolución",
     "reference": "Referencia",

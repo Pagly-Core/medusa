@@ -1217,7 +1217,12 @@
       "credit": "Credit",
       "creditDescription": "Adds a positive sum to the order",
       "debit": "Debit",
-      "debitDescription": "Subtracts a negative sum from the order"
+      "debitDescription": "Subtracts a negative sum from the order",
+      "kinds": {
+        "giftCard": "Gift card",
+        "storeCredit": "Store credit",
+        "refund": "Refunded as store credit"
+      }
     },
     "balanceSettlement": {
       "title": "Balance settlement",

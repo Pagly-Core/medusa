@@ -43,13 +43,16 @@ export const POST = async (
     { throwIfKeyNotFound: true }
   );
 
+  // Pagly: runs in the request's container (the store being served) with the
+  // validated body; without a container it ran in the global one.
   await updateGiftCardsWorkflow.run({
     input: [
       {
         id,
-        ...req.body,
+        ...req.validatedBody,
       },
     ],
+    container: req.scope,
   });
 
   const {

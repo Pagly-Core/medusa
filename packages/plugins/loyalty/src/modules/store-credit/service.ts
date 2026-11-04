@@ -73,13 +73,14 @@ class StoreCreditService
       sharedContext
     );
 
+    // Pagly: one grouped ledger read for every listed account, not one per account.
+    const statsByAccount = await this.retrieveAccountsStats_(
+      accounts.map((account) => account.id),
+      sharedContext
+    );
+
     for (const account of accounts) {
-      const stats = await this.retrieveAccountStats(
-        {
-          account_id: account.id,
-        },
-        sharedContext
-      );
+      const stats = statsByAccount[account.id];
 
       account.balance = stats.balance;
       account.credits = stats.credits;
@@ -106,8 +107,12 @@ class StoreCreditService
 
     normalizedData.forEach((account) => {
       Object.keys(account).forEach((key) => {
-        if (whitelistedFields.includes(key)) {
-          throw new Error(`Field ${key} is not allowed to be updated`);
+        // Pagly: refuse what is outside the whitelist (the check was inverted, so every update failed on `id`).
+        if (!whitelistedFields.includes(key)) {
+          throw new MedusaError(
+            MedusaError.Types.NOT_ALLOWED,
+            `Field ${key} is not allowed to be updated`
+          );
         }
       });
     });
@@ -185,10 +190,6 @@ class StoreCreditService
     data: ModuleRetrieveAccountStats,
     @MedusaContext() sharedContext: Context = {}
   ): Promise<ModuleAccountStats> {
-    const manager =
-      (sharedContext.transactionManager as SqlEntityManager) ??
-      (sharedContext.manager as SqlEntityManager);
-    const knex = manager.getTransactionContext() ?? manager.getKnex();
     const { account_id } = data;
 
     const account = await super.retrieveStoreCreditAccount(
@@ -197,10 +198,57 @@ class StoreCreditService
       sharedContext
     );
 
+    // Pagly: the single read goes through the grouped one.
+    const statsByAccount = await this.retrieveAccountsStats_(
+      [account.id],
+      sharedContext
+    );
+
+    return await this.baseRepository_.serialize(statsByAccount[account.id]);
+  }
+
+  /**
+   * Pagly: balances of many accounts from one grouped ledger query, keyed by
+   * account ID. An account with no transactions has a zero balance. Unknown
+   * IDs are left out.
+   */
+  @InjectManager()
+  async retrieveAccountsStats(
+    accountIds: string[],
+    @MedusaContext() sharedContext: Context = {}
+  ): Promise<Record<string, ModuleAccountStats>> {
+    const statsByAccount = await this.retrieveAccountsStats_(
+      accountIds,
+      sharedContext
+    );
+
+    return await this.baseRepository_.serialize(statsByAccount);
+  }
+
+  protected async retrieveAccountsStats_(
+    accountIds: string[],
+    sharedContext: Context = {}
+  ): Promise<Record<string, ModuleAccountStats>> {
+    const uniqueAccountIds = Array.from(new Set(accountIds));
+
+    if (!uniqueAccountIds.length) {
+      return {};
+    }
+
+    const manager =
+      (sharedContext.transactionManager as SqlEntityManager) ??
+      (sharedContext.manager as SqlEntityManager);
+    const knex = manager.getTransactionContext() ?? manager.getKnex();
+
     // TODO: For higher accuracy and precision, we should run the transaction amounts through big number
     // in memory and then use that value for the balance.
     // We need to figure out clever ways to do this without running too many calculations in memory
-    const accountBalanceQuery = knex("store_credit_account as account")
+    const accountBalances: {
+      id: string;
+      balance: string | null;
+      debits: string | null;
+      credits: string | null;
+    }[] = await knex("store_credit_account as account")
       .select({
         id: "account.id",
         credits: knex.raw(
@@ -216,25 +264,21 @@ class StoreCreditService
       .leftJoin("store_credit_account_transaction as at", function () {
         this.on("at.account_id", "=", "account.id").andOnNull("at.deleted_at");
       })
-      .where("account.id", account.id)
+      .whereIn("account.id", uniqueAccountIds)
       .groupBy("account.id");
 
-    const accountBalances: {
-      id: string;
-      balance: string;
-      debits: string;
-      credits: string;
-    }[] = await accountBalanceQuery;
+    const statsByAccount: Record<string, ModuleAccountStats> = {};
 
-    const accountBalance = accountBalances[0];
-    const response = {
-      id: account.id,
-      balance: MathBN.convert(accountBalance.balance).toNumber(),
-      debits: MathBN.convert(accountBalance.debits).toNumber(),
-      credits: MathBN.convert(accountBalance.credits).toNumber(),
-    };
+    for (const accountBalance of accountBalances) {
+      statsByAccount[accountBalance.id] = {
+        id: accountBalance.id,
+        balance: MathBN.convert(accountBalance.balance ?? 0).toNumber(),
+        debits: MathBN.convert(accountBalance.debits ?? 0).toNumber(),
+        credits: MathBN.convert(accountBalance.credits ?? 0).toNumber(),
+      };
+    }
 
-    return await this.baseRepository_.serialize(response);
+    return statsByAccount;
   }
 
   @InjectTransactionManager()
