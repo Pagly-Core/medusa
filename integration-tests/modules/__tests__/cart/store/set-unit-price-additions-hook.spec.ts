@@ -182,6 +182,15 @@ medusaIntegrationTestRunner({
 
       const engraved = { engraving: "Ana" }
 
+      // The store cart response leaves out is_custom_price, so it is read from
+      // the cart module.
+      const customPriceFlags = async (cartId: string) =>
+        (
+          await appContainer
+            .resolve(Modules.CART)
+            .listLineItems({ cart_id: cartId }, { select: ["is_custom_price"] })
+        ).map((line) => line.is_custom_price)
+
       describe("without a handler", () => {
         it("prices a line at the upstream price", async () => {
           const cart = await createCart()
@@ -192,10 +201,10 @@ medusaIntegrationTestRunner({
           expect(response.data.cart.items).toEqual([
             expect.objectContaining({
               unit_price: 1500,
-              is_custom_price: false,
               metadata: engraved,
             }),
           ])
+          expect(await customPriceFlags(cart.id)).toEqual([false])
 
           response = await api.post(
             `/store/carts/${cart.id}/line-items/${response.data.cart.items[0].id}`,
@@ -245,12 +254,12 @@ medusaIntegrationTestRunner({
           expect(response.data.cart.items).toEqual([
             expect.objectContaining({
               unit_price: 1850,
-              is_custom_price: false,
               compare_at_unit_price: null,
               metadata: engraved,
             }),
           ])
-          expect(response.data.cart.total).toEqual(1850)
+          expect(response.data.cart.subtotal).toEqual(1850)
+          expect(await customPriceFlags(cart.id)).toEqual([false])
 
           const priceCall = calls.find((c) => c.workflow === "prices")
           expect(priceCall?.input).toEqual(
@@ -276,7 +285,7 @@ medusaIntegrationTestRunner({
 
           expect(response.status).toEqual(200)
           expect(response.data.cart.items).toEqual([
-            expect.objectContaining({ unit_price: 1500, is_custom_price: false }),
+            expect.objectContaining({ unit_price: 1500 }),
           ])
         })
 
@@ -307,7 +316,6 @@ medusaIntegrationTestRunner({
                 metadata: engraved,
                 unit_price: 1350,
                 compare_at_unit_price: 1850,
-                is_custom_price: false,
               }),
               expect.objectContaining({
                 unit_price: 1000,
@@ -352,7 +360,6 @@ medusaIntegrationTestRunner({
               quantity: 2,
               unit_price: 1550,
               compare_at_unit_price: 1850,
-              is_custom_price: false,
             }),
           ])
           expect(
@@ -377,10 +384,9 @@ medusaIntegrationTestRunner({
             expect.objectContaining({
               quantity: 3,
               unit_price: 1850,
-              is_custom_price: false,
             }),
           ])
-          expect(response.data.cart.total).toEqual(5550)
+          expect(response.data.cart.subtotal).toEqual(5550)
           expect(
             calls.find((c) => c.workflow === "update-line-item")?.input
           ).toEqual(
@@ -442,10 +448,10 @@ medusaIntegrationTestRunner({
           expect(response.data.cart.items).toEqual([
             expect.objectContaining({
               unit_price: 1600,
-              is_custom_price: false,
               metadata: engraved,
             }),
           ])
+          expect(await customPriceFlags(cart.id)).toEqual([false])
           expect(
             calls.filter((c) => c.workflow === "prices").map((c) => c.input)
           ).toContainEqual(expect.objectContaining({ currency_code: "eur" }))
@@ -494,7 +500,6 @@ medusaIntegrationTestRunner({
           expect(response.data.cart.items).toEqual([
             expect.objectContaining({
               unit_price: 1450,
-              is_custom_price: false,
             }),
           ])
         })
@@ -515,14 +520,13 @@ medusaIntegrationTestRunner({
               expect.objectContaining({
                 metadata: engraved,
                 unit_price: 1850,
-                is_custom_price: false,
               }),
               expect.objectContaining({
                 unit_price: 1500,
-                is_custom_price: false,
               }),
             ])
           )
+          expect(await customPriceFlags(cart.id)).toEqual([false, false])
         })
 
         it("leaves a custom-priced line at its custom price", async () => {
@@ -552,9 +556,9 @@ medusaIntegrationTestRunner({
           expect(refreshed.items).toEqual([
             expect.objectContaining({
               unit_price: 999,
-              is_custom_price: true,
             }),
           ])
+          expect(await customPriceFlags(cart.id)).toEqual([true])
         })
 
         it("fails the add when the handler throws", async () => {
@@ -614,7 +618,7 @@ medusaIntegrationTestRunner({
 
           expect(response.status).toEqual(200)
           expect(response.data.cart.items).toEqual([
-            expect.objectContaining({ unit_price: 1500, is_custom_price: false }),
+            expect.objectContaining({ unit_price: 1500 }),
           ])
         })
       })
