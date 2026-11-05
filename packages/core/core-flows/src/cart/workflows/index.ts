@@ -6,6 +6,8 @@ export * from "./create-cart-credit-lines"
 export * from "./create-carts"
 export * from "./create-payment-collection-for-cart"
 export * from "./delete-cart-credit-lines"
+// Pagly: exported so a plugin can register its setUnitPriceAdditions hook.
+export * from "./get-variants-and-items-with-prices"
 export * from "./list-shipping-options-for-cart"
 export * from "./list-shipping-options-for-cart-with-pricing"
 export * from "./refresh-cart-items"
