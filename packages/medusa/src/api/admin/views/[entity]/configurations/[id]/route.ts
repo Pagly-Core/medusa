@@ -21,15 +21,16 @@ export const GET = async (
 ) => {
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
+  // Pagly: fetch the owner for the permission check, since the requested fields may leave it out
   const {
-    data: [viewConfiguration],
+    data: [existing],
   } = await query.graph({
     entity: "view_configuration",
-    fields: req.queryConfig.fields,
+    fields: ["id", "user_id"],
     filters: { id: req.params.id },
   })
 
-  if (!viewConfiguration) {
+  if (!existing) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
       `View configuration with id: ${req.params.id} not found`
@@ -37,8 +38,8 @@ export const GET = async (
   }
 
   if (
-    viewConfiguration.user_id &&
-    viewConfiguration.user_id !== req.auth_context.actor_id &&
+    existing.user_id &&
+    existing.user_id !== req.auth_context.actor_id &&
     !req.auth_context.app_metadata?.admin
   ) {
     throw new MedusaError(
@@ -46,6 +47,14 @@ export const GET = async (
       "You don't have access to this view configuration"
     )
   }
+
+  const {
+    data: [viewConfiguration],
+  } = await query.graph({
+    entity: "view_configuration",
+    fields: req.queryConfig.fields,
+    filters: { id: req.params.id },
+  })
 
   res.json({ view_configuration: viewConfiguration })
 }
