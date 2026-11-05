@@ -135,6 +135,7 @@ export const findOrCreateCustomerStep = createStep(
         : await fetchCustomersByEmail(
             validatedEmail,
             container,
+            // Pagly: upstream 4a75f02fba
             data.hasAccount
           )
 

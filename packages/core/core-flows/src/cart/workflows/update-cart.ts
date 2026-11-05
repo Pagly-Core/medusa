@@ -218,6 +218,7 @@ export const updateCartWorkflow = createWorkflow(
       findOrCreateCustomerStep({
         customerId: cartDataInput.customer_id,
         email: cartDataInput.email,
+        // Pagly: upstream 4a75f02fba, a cart email resolves only to a guest customer
         hasAccount: false,
       })
     )
