@@ -12,6 +12,7 @@ export const PromotionsList = () => {
     <LayoutComposer
       widgetsZonePrefix="promotion.list"
       preferredLayoutId={CORE_LAYOUT_IDS.SINGLE_COLUMN}
+      hasOutlet={false}
       sections={{
         main: (
           <LayoutComposer.Entry id="PromotionListTable">

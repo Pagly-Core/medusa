@@ -12,6 +12,7 @@ export const ProductList = () => {
     <LayoutComposer
       widgetsZonePrefix="product.list"
       preferredLayoutId={CORE_LAYOUT_IDS.SINGLE_COLUMN}
+      hasOutlet={false}
       sections={{
         main: (
           <LayoutComposer.Entry id="ProductListTable">

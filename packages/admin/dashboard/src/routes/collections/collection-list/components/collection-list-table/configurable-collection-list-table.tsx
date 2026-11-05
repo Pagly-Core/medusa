@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next"
-import { Outlet } from "react-router-dom"
 
 import { ConfigurableDataTable } from "../../../../../components/table/configurable-data-table"
 import { useCollectionTableAdapter } from "./collection-table-adapter"
@@ -16,7 +15,6 @@ export const ConfigurableCollectionListTable = () => {
         subHeading={t("collections.subtitle")}
         actions={[{ label: t("actions.create"), to: "create" }]}
       />
-      <Outlet />
     </>
   )
 }
