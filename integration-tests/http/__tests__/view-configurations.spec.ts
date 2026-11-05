@@ -233,6 +233,44 @@ medusaIntegrationTestRunner({
 
           expect(response.status).toBe(400)
         })
+
+        it("should prevent access to other user's view when the fields leave out user_id", async () => {
+          const container = getContainer()
+          const settingsService = container.resolve("settings")
+
+          const otherView = await settingsService.createViewConfigurations({
+            entity: "orders",
+            name: "Other View",
+            is_system_default: false,
+            user_id: "other-user-id",
+            configuration: {
+              visible_columns: ["id"],
+              column_order: ["id"],
+            },
+          })
+
+          const response = await api
+            .get(
+              `/admin/views/orders/configurations/${otherView.id}?fields=id,name,configuration`,
+              { headers: secondAdminHeader }
+            )
+            .catch((e) => e.response)
+
+          expect(response.status).toBe(400)
+        })
+
+        it("should retrieve own view configuration with only the fields asked for", async () => {
+          const response = await api.get(
+            `/admin/views/orders/configurations/${viewConfig.id}?fields=id,name`,
+            { headers: secondAdminHeader }
+          )
+
+          expect(response.status).toBe(200)
+          expect(response.data.view_configuration).toEqual({
+            id: viewConfig.id,
+            name: "Test View",
+          })
+        })
       })
 
       describe("POST /admin/views/{entity}/configurations/:id", () => {
