@@ -12,6 +12,7 @@ export const ProductList = () => {
     <LayoutComposer
       widgetsZonePrefix="product.list"
       preferredLayoutId={CORE_LAYOUT_IDS.SINGLE_COLUMN}
+      // Pagly: both tables render the Outlet, so the composer's would mount route modals twice
       hasOutlet={false}
       sections={{
         main: (
