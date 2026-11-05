@@ -247,6 +247,8 @@ medusaIntegrationTestRunner({
 
         it("adds the amount to a line added from the store and keeps it a non-custom price", async () => {
           const cart = await createCart()
+          // Creating the cart runs the hook too, with no items.
+          calls = []
 
           const response = await addLine(cart.id, { metadata: engraved })
 
@@ -562,13 +564,17 @@ medusaIntegrationTestRunner({
         })
 
         it("fails the add when the handler throws", async () => {
-          additionsFor = (input) => {
-            throw new MedusaError(
-              MedusaError.Types.NOT_ALLOWED,
-              `Engraving has no price in ${input.currency_code}`
-            )
-          }
           const cart = await createCart()
+          // Fails closed for an engraved line, as a handler missing a price would.
+          additionsFor = (input) => {
+            if (input.items.some((item) => item?.metadata?.engraving)) {
+              throw new MedusaError(
+                MedusaError.Types.NOT_ALLOWED,
+                `Engraving has no price in ${input.currency_code}`
+              )
+            }
+            return input.items.map(() => 0)
+          }
 
           const { response } = await addLine(cart.id, {
             metadata: engraved,
