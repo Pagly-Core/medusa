@@ -8,13 +8,11 @@ export const ConfigurableCollectionListTable = () => {
   const adapter = useCollectionTableAdapter()
 
   return (
-    <>
-      <ConfigurableDataTable
-        adapter={adapter}
-        heading={t("collections.domain")}
-        subHeading={t("collections.subtitle")}
-        actions={[{ label: t("actions.create"), to: "create" }]}
-      />
-    </>
+    <ConfigurableDataTable
+      adapter={adapter}
+      heading={t("collections.domain")}
+      subHeading={t("collections.subtitle")}
+      actions={[{ label: t("actions.create"), to: "create" }]}
+    />
   )
 }

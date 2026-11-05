@@ -8,13 +8,11 @@ export const ConfigurableProductOptionListTable = () => {
   const adapter = useProductOptionTableAdapter()
 
   return (
-    <>
-      <ConfigurableDataTable
-        adapter={adapter}
-        heading={t("productOptions.domain")}
-        subHeading={t("productOptions.subtitle")}
-        actions={[{ label: t("actions.create"), to: "create" }]}
-      />
-    </>
+    <ConfigurableDataTable
+      adapter={adapter}
+      heading={t("productOptions.domain")}
+      subHeading={t("productOptions.subtitle")}
+      actions={[{ label: t("actions.create"), to: "create" }]}
+    />
   )
 }

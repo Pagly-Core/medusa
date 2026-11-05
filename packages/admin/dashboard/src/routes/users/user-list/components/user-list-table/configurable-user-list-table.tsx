@@ -8,12 +8,10 @@ export const ConfigurableUserListTable = () => {
   const adapter = useUserTableAdapter()
 
   return (
-    <>
-      <ConfigurableDataTable
-        adapter={adapter}
-        heading={t("users.domain")}
-        actions={[{ label: t("users.invite"), to: "invite" }]}
-      />
-    </>
+    <ConfigurableDataTable
+      adapter={adapter}
+      heading={t("users.domain")}
+      actions={[{ label: t("users.invite"), to: "invite" }]}
+    />
   )
 }

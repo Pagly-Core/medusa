@@ -8,13 +8,11 @@ export const ConfigurableRegionListTable = () => {
   const adapter = useRegionTableAdapter()
 
   return (
-    <>
-      <ConfigurableDataTable
-        adapter={adapter}
-        heading={t("regions.domain")}
-        subHeading={t("regions.subtitle")}
-        actions={[{ label: t("actions.create"), to: "create" }]}
-      />
-    </>
+    <ConfigurableDataTable
+      adapter={adapter}
+      heading={t("regions.domain")}
+      subHeading={t("regions.subtitle")}
+      actions={[{ label: t("actions.create"), to: "create" }]}
+    />
   )
 }

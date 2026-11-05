@@ -12,21 +12,19 @@ export const ConfigurableApiKeyManagementListTable = ({
   const adapter = useApiKeyTableAdapter(keyType)
 
   return (
-    <>
-      <ConfigurableDataTable
-        adapter={adapter}
-        heading={
-          keyType === "publishable"
-            ? t("apiKeyManagement.domain.publishable")
-            : t("apiKeyManagement.domain.secret")
-        }
-        subHeading={
-          keyType === "publishable"
-            ? t("apiKeyManagement.subtitle.publishable")
-            : t("apiKeyManagement.subtitle.secret")
-        }
-        actions={[{ label: t("actions.create"), to: "create" }]}
-      />
-    </>
+    <ConfigurableDataTable
+      adapter={adapter}
+      heading={
+        keyType === "publishable"
+          ? t("apiKeyManagement.domain.publishable")
+          : t("apiKeyManagement.domain.secret")
+      }
+      subHeading={
+        keyType === "publishable"
+          ? t("apiKeyManagement.subtitle.publishable")
+          : t("apiKeyManagement.subtitle.secret")
+      }
+      actions={[{ label: t("actions.create"), to: "create" }]}
+    />
   )
 }

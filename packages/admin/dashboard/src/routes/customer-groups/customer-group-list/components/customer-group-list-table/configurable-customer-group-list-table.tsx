@@ -8,12 +8,10 @@ export const ConfigurableCustomerGroupListTable = () => {
   const adapter = useCustomerGroupTableAdapter()
 
   return (
-    <>
-      <ConfigurableDataTable
-        adapter={adapter}
-        heading={t("customerGroups.domain")}
-        actions={[{ label: t("actions.create"), to: "create" }]}
-      />
-    </>
+    <ConfigurableDataTable
+      adapter={adapter}
+      heading={t("customerGroups.domain")}
+      actions={[{ label: t("actions.create"), to: "create" }]}
+    />
   )
 }
