@@ -21,7 +21,7 @@ export const GET = async (
 ) => {
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY)
 
-  // Fetch the owner for the permission check: the requested fields may leave it out
+  // Pagly: fetch the owner for the permission check, since the requested fields may leave it out
   const {
     data: [existing],
   } = await query.graph({
