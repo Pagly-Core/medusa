@@ -24,6 +24,12 @@ export interface FindOrCreateCustomerStepInput {
    * find a customer with this email or create a new customer having this email.
    */
   email?: string | null
+  /**
+   * Filter the customer found by the `email` by whether they have an account. Set it to
+   * `false` so the `email` is never resolved to a registered customer. A registered customer
+   * is then only returned when found by the `customerId`.
+   */
+  hasAccount?: boolean
 }
 
 /**
@@ -126,7 +132,12 @@ export const findOrCreateCustomerStep = createStep(
 
       let [customer] = originalCustomer
         ? [originalCustomer]
-        : await fetchCustomersByEmail(validatedEmail, container)
+        : await fetchCustomersByEmail(
+            validatedEmail,
+            container,
+            // Pagly: upstream 4a75f02fba
+            data.hasAccount
+          )
 
       // if NOT a guest customer, return it
       if (customer?.has_account) {
