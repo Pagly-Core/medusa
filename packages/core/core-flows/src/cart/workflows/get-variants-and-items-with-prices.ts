@@ -18,6 +18,7 @@ import {
   simpleHash,
 } from "@medusajs/framework/utils"
 import {
+  createHook,
   createStep,
   createWorkflow,
   StepResponse,
@@ -36,6 +37,14 @@ import {
   prepareLineItemData,
   PrepareLineItemDataInput,
 } from "../utils/prepare-line-item-data"
+import { unitPriceAdditionsResult } from "../utils/schemas"
+import {
+  UnitPriceAdditionsHookItem,
+  withUnitPriceAddition,
+} from "../utils/unit-price-addition"
+
+// Pagly: the item type a setUnitPriceAdditions handler receives.
+export type { UnitPriceAdditionsHookItem } from "../utils/unit-price-addition"
 
 interface GetVariantsAndItemsWithPricesWorkflowInput {
   cart: Partial<CartDTO> & {
@@ -76,6 +85,10 @@ interface PrepareVariantsAndItemsWithPricesStepInput {
   items: GetVariantsAndItemsWithPricesWorkflowInput["items"]
   variantsData: any[]
   calculatedPriceSets: Record<string, any>
+  /**
+   * Pagly: the `setUnitPriceAdditions` hook's result, one amount per item.
+   */
+  unitPriceAdditions?: number[]
 }
 
 /**
@@ -91,6 +104,7 @@ export const prepareVariantsAndItemsWithPricesStep = createStep(
     items: inputItems,
     variantsData,
     calculatedPriceSets,
+    unitPriceAdditions,
   }: PrepareVariantsAndItemsWithPricesStepInput) => {
     const priceNotFound: string[] = []
     const variantNotFoundOrPublished: string[] = []
@@ -106,7 +120,7 @@ export const prepareVariantsAndItemsWithPricesStep = createStep(
       }
     }
 
-    const items = (inputItems ?? cart.items ?? []).map((item) => {
+    const items = (inputItems ?? cart.items ?? []).map((item, index) => {
       const item_ = item as any
       const idLike =
         (item as CartLineItemDTO).id ?? simpleHash(JSON.stringify(item))
@@ -147,7 +161,18 @@ export const prepareVariantsAndItemsWithPricesStep = createStep(
       }
 
       if (variant && !isCustomPrice && calculatedPriceSet) {
-        input.unitPrice = calculatedPriceSet.calculated_amount
+        // Pagly: adds the hook's per-unit amount (Personalización add-ons) to
+        // the line's price. The price set may be shared with other lines, so
+        // it is copied, and the line gets its own variant for compare_at.
+        const pricedSet = withUnitPriceAddition(
+          calculatedPriceSet,
+          unitPriceAdditions?.[index]
+        )
+        if (pricedSet !== calculatedPriceSet) {
+          input.variant = { ...variant, calculated_price: pricedSet }
+        }
+
+        input.unitPrice = pricedSet.calculated_amount
         input.isTaxInclusive =
           calculatedPriceSet.is_calculated_price_tax_inclusive
       }
@@ -203,12 +228,17 @@ export const getVariantsAndItemsWithPricesId =
  * @summary
  *
  * Retrieve variants and line items with their calculated prices.
+ *
+ * @property hooks.setUnitPriceAdditions - Pagly: executed after the variants are retrieved. It receives
+ * `{ currency_code, cart, items, variants }` and can return one non-negative amount per item, in the
+ * cart's currency. Each amount is added to that item's unit price and, for a sale price, to its
+ * compare-at price. Custom-priced items ignore their amount, a missing entry counts as 0, and a
+ * handler that throws fails the workflow.
  */
 export const getVariantsAndItemsWithPrices = createWorkflow(
   getVariantsAndItemsWithPricesId,
-  (
-    input: WorkflowData<GetVariantsAndItemsWithPricesWorkflowInput>
-  ): WorkflowResponse<GetVariantsAndItemsWithPricesWorkflowOutput> => {
+  // Pagly: no explicit return type, so the setUnitPriceAdditions hook stays typed.
+  (input: WorkflowData<GetVariantsAndItemsWithPricesWorkflowInput>) => {
     const variantIds = transform({ input }, (data): string[] => {
       if (data.input.variants?.id) {
         return data.input.variants.id
@@ -286,6 +316,41 @@ export const getVariantsAndItemsWithPrices = createWorkflow(
       },
     }).config({ name: "fetch-variants" })
 
+    // Pagly: lets a plugin add a per-unit amount to each line that is not
+    // custom-priced (Personalización add-ons), wherever core prices cart lines.
+    const unitPriceAdditionsInput = transform(
+      { input },
+      ({
+        input,
+      }): {
+        currency_code: string | undefined
+        items: UnitPriceAdditionsHookItem[]
+      } => {
+        return {
+          currency_code:
+            input.cart.currency_code ?? input.cart.region?.currency_code,
+          items: (input.items ??
+            input.cart.items ??
+            []) as UnitPriceAdditionsHookItem[],
+        }
+      }
+    )
+
+    const setUnitPriceAdditions = createHook(
+      "setUnitPriceAdditions",
+      {
+        currency_code: unitPriceAdditionsInput.currency_code,
+        cart: input.cart,
+        items: unitPriceAdditionsInput.items,
+        variants: variantsData,
+      },
+      {
+        resultValidator: unitPriceAdditionsResult,
+      }
+    )
+
+    const unitPriceAdditions = setUnitPriceAdditions.getResult()
+
     const calculatedPriceSets = getVariantPriceSetsStep({
       data: cartPricingContext,
     })
@@ -295,8 +360,11 @@ export const getVariantsAndItemsWithPrices = createWorkflow(
       items: input.items,
       variantsData,
       calculatedPriceSets,
+      unitPriceAdditions,
     })
 
-    return new WorkflowResponse(variantsItemsWithPrices)
+    return new WorkflowResponse(variantsItemsWithPrices, {
+      hooks: [setUnitPriceAdditions] as const,
+    })
   }
 )

@@ -10,8 +10,10 @@ import {
   deduplicate,
   filterObjectByKeys,
   isDefined,
+  isPresent,
   MathBN,
   MedusaError,
+  mergeMetadata,
   PriceListType,
   QueryContext,
 } from "@medusajs/framework/utils"
@@ -38,7 +40,14 @@ import {
   productVariantsFields,
 } from "../utils/fields"
 import { requiredVariantFieldsForInventoryConfirmation } from "../utils/prepare-confirm-inventory-input"
-import { pricingContextResult } from "../utils/schemas"
+import {
+  pricingContextResult,
+  unitPriceAdditionsResult,
+} from "../utils/schemas"
+import {
+  UnitPriceAdditionsHookItem,
+  withUnitPriceAddition,
+} from "../utils/unit-price-addition"
 import { confirmVariantInventoryWorkflow } from "./confirm-variant-inventory"
 import { refreshCartItemsWorkflow } from "./refresh-cart-items"
 
@@ -85,6 +94,10 @@ interface PrepareLineItemUpdateStepInput {
   input: UpdateLineItemInCartWorkflowInputDTO & AdditionalData
   variants: any
   item: CartQueryDTO["items"][number]
+  /**
+   * Pagly: the `setUnitPriceAdditions` hook's result for the line.
+   */
+  unitPriceAdditions?: number[]
 }
 
 /**
@@ -95,7 +108,12 @@ interface PrepareLineItemUpdateStepInput {
  */
 export const prepareLineItemUpdateStep = createStep(
   "prepare-line-item-update",
-  async ({ input, variants, item }: PrepareLineItemUpdateStepInput) => {
+  async ({
+    input,
+    variants,
+    item,
+    unitPriceAdditions,
+  }: PrepareLineItemUpdateStepInput) => {
     const variant = variants?.[0] ?? undefined
 
     const updateData: Record<string, any> = {
@@ -112,23 +130,30 @@ export const prepareLineItemUpdateStep = createStep(
     }
 
     if (variant && !updateData.is_custom_price) {
-      updateData.unit_price = variant.calculated_price.calculated_amount
+      // Pagly: the hook's per-unit amount (Personalización add-ons) is added
+      // to the price and to the sale compare-at price.
+      const calculatedPrice = withUnitPriceAddition(
+        variant.calculated_price,
+        unitPriceAdditions?.[0]
+      )
+
+      updateData.unit_price = calculatedPrice.calculated_amount
 
       // The compare-at price is hydrated the same way the create path does it,
       // so that the applied sale price is visible regardless of which path
       // produced the line item.
       if (!isDefined(input.update.compare_at_unit_price)) {
         const isSalePrice =
-          variant.calculated_price?.calculated_price?.price_list_type ===
+          calculatedPrice?.calculated_price?.price_list_type ===
           PriceListType.SALE
 
         updateData.compare_at_unit_price =
           isSalePrice &&
           !MathBN.eq(
-            variant.calculated_price?.original_amount,
-            variant.calculated_price?.calculated_amount
+            calculatedPrice?.original_amount,
+            calculatedPrice?.calculated_amount
           )
-            ? variant.calculated_price.original_amount
+            ? calculatedPrice.original_amount
             : null
       }
     }
@@ -208,6 +233,8 @@ export const updateLineItemInCartWorkflowId = "update-line-item-in-cart"
  * Learn more about prices calculation context in the [Prices Calculation](https://docs.medusajs.com/resources/commerce-modules/pricing/price-calculation) documentation.
  *
  * :::
+ *
+ * @property hooks.setUnitPriceAdditions - Pagly: executed after the line item's variant is retrieved. It receives `{ currency_code, cart, items, variants }`, where `items` holds the line item with its updated quantity and metadata (empty when the update removes the line), and can return one non-negative amount per item, in the cart's currency, added to the line item's unit price and sale compare-at price. A custom-priced line item ignores it.
  */
 export const updateLineItemInCartWorkflow = createWorkflow(
   {
@@ -323,6 +350,57 @@ export const updateLineItemInCartWorkflow = createWorkflow(
       return variants
     })
 
+    // Pagly: lets a plugin add a per-unit amount to the line (Personalización
+    // add-ons), as getVariantsAndItemsWithPrices does on the other cart paths.
+    const unitPriceAdditionsInput = transform(
+      { item, input, variants, shouldRemoveItem },
+      ({
+        item,
+        input,
+        variants,
+        shouldRemoveItem,
+      }): { items: UnitPriceAdditionsHookItem[]; variants: any[] } => {
+        // A line being removed isn't priced, so a handler can't block removal.
+        if (shouldRemoveItem) {
+          return { items: [], variants: [] }
+        }
+
+        // The metadata the line will have once the update is stored: the
+        // module merges a present metadata update into the line's metadata.
+        const metadata = !isDefined(input.update.metadata)
+          ? item.metadata
+          : isPresent(input.update.metadata)
+          ? mergeMetadata(item.metadata ?? {}, input.update.metadata!)
+          : input.update.metadata
+
+        return {
+          items: [
+            {
+              ...item,
+              quantity: input.update.quantity ?? item.quantity,
+              metadata,
+            },
+          ],
+          variants: variants ?? [],
+        }
+      }
+    )
+
+    const setUnitPriceAdditions = createHook(
+      "setUnitPriceAdditions",
+      {
+        currency_code: cart.currency_code,
+        cart,
+        items: unitPriceAdditionsInput.items,
+        variants: unitPriceAdditionsInput.variants,
+      },
+      {
+        resultValidator: unitPriceAdditionsResult,
+      }
+    )
+
+    const unitPriceAdditions = setUnitPriceAdditions.getResult()
+
     when(
       "should-update-item",
       { shouldRemoveItem },
@@ -346,6 +424,7 @@ export const updateLineItemInCartWorkflow = createWorkflow(
         input,
         variants,
         item,
+        unitPriceAdditions,
       })
 
       updateLineItemsStepWithSelector(lineItemUpdate)
@@ -369,7 +448,7 @@ export const updateLineItemInCartWorkflow = createWorkflow(
     )
 
     return new WorkflowResponse(void 0, {
-      hooks: [validate, setPricingContext] as const,
+      hooks: [validate, setPricingContext, setUnitPriceAdditions] as const,
     })
   }
 )
