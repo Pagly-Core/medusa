@@ -1,5 +1,5 @@
 import { BigNumberInput } from "@medusajs/framework/types"
-import { isDefined, MathBN } from "@medusajs/framework/utils"
+import { MathBN } from "@medusajs/framework/utils"
 
 /**
  * An item the `setUnitPriceAdditions` hook prices: a cart line item, or an item
@@ -42,14 +42,12 @@ export function withUnitPriceAddition<T extends UnitPriceAdditionPriceSet>(
     return set
   }
 
-  const hasOriginalAmount =
-    isDefined(set.original_amount) && set.original_amount !== null
-
   return {
     ...set,
     calculated_amount: MathBN.add(set.calculated_amount, addition),
-    original_amount: hasOriginalAmount
-      ? MathBN.add(set.original_amount!, addition)
-      : set.original_amount,
+    original_amount:
+      set.original_amount != null
+        ? MathBN.add(set.original_amount, addition)
+        : set.original_amount,
   }
 }
