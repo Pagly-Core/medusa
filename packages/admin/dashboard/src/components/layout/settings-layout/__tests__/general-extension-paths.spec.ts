@@ -7,11 +7,10 @@ import { GENERAL_EXTENSION_PATHS } from "../general-extension-paths"
  * under General, after Store, in this order.
  */
 describe("the settings pages under General", () => {
-  test("list Payments, Checkout, Shipping, Customer accounts, Notifications, Domains, then the assistant", () => {
+  test("list Payments, Checkout, Customer accounts, Notifications, Domains, then the assistant", () => {
     expect(GENERAL_EXTENSION_PATHS).toEqual([
       "/settings/pagos",
       "/settings/checkout",
-      "/settings/envios",
       "/settings/customer-accounts",
       "/settings/notifications",
       "/settings/domains",
