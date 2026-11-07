@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 import {
+  areaConflicts,
   areaLabels,
   fromGeoZones,
   provinceName,
   registeredProvinces,
+  takenIn,
   toGeoZones,
 } from "../geo-zone-areas"
 
@@ -93,5 +95,48 @@ describe("a zone's provinces", () => {
         name
       )
     ).toEqual(["Argentina", "Uruguay · Rocha, Maldonado"])
+  })
+})
+
+// Pagly: within a location's set an area sits in one zone, so the form shows
+// what the set's other zones hold and stops a save that would overlap.
+describe("the areas other zones of the set hold", () => {
+  const ESTE = {
+    id: "serzo_este",
+    name: "Este",
+    geo_zones: [
+      { type: "province", country_code: "uy", province_code: "uy-ma" },
+      { type: "province", country_code: "uy", province_code: "uy-ro" },
+    ],
+  }
+  const URUGUAY = { id: "serzo_uy", name: "Nike UY Zone", geo_zones: [{ type: "country", country_code: "uy" }] }
+
+  it("names the zone holding each province, or the whole country", () => {
+    expect(takenIn([ESTE], "uy")).toEqual({ whole: null, provinces: { "uy-ma": "Este", "uy-ro": "Este" } })
+    expect(takenIn([URUGUAY], "UY")).toEqual({ whole: "Nike UY Zone", provinces: {} })
+    expect(takenIn([ESTE], "ar")).toEqual({ whole: null, provinces: {} })
+  })
+
+  it("finds a province another zone holds", () => {
+    expect(areaConflicts([{ iso_2: "uy", display_name: "Uruguay", provinces: ["uy-mo", "uy-ma"] }], [ESTE])).toEqual([
+      { iso_2: "uy", zone: "Este", areas: ["uy-ma"] },
+    ])
+  })
+
+  it("finds the whole country when another zone holds part of it", () => {
+    expect(areaConflicts([{ iso_2: "uy", display_name: "Uruguay", provinces: [] }], [ESTE])).toEqual([
+      { iso_2: "uy", zone: "Este", areas: ["uy-ma", "uy-ro"] },
+    ])
+  })
+
+  it("finds any area of a country another zone holds whole", () => {
+    expect(areaConflicts([{ iso_2: "uy", display_name: "Uruguay", provinces: ["uy-mo"] }], [URUGUAY])).toEqual([
+      { iso_2: "uy", zone: "Nike UY Zone", areas: ["uy"] },
+    ])
+  })
+
+  it("finds nothing for areas no other zone holds", () => {
+    expect(areaConflicts([{ iso_2: "uy", display_name: "Uruguay", provinces: ["uy-mo"] }], [ESTE])).toEqual([])
+    expect(areaConflicts([{ iso_2: "ar", display_name: "Argentina" }], [ESTE, URUGUAY])).toEqual([])
   })
 })

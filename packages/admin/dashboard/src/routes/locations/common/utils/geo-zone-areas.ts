@@ -61,6 +61,19 @@ export const fromGeoZones = (
   return [...countries.values()]
 }
 
+/** Another zone of the same fulfillment set. */
+export type OtherZone = { id?: string; name: string; geo_zones?: GeoZoneLike[] | null }
+
+/** Of a country, what the set's other zones hold: all of it, or provinces by code. */
+export type TakenAreas = { whole: string | null; provinces: Record<string, string> }
+
+/** An overlap with another zone: its name and the areas (province codes, or the country) both would cover. */
+export type AreaConflict = { iso_2: string; zone: string; areas: string[] }
+
+export const takenIn = (_otherZones: OtherZone[], _iso2: string): TakenAreas => ({ whole: null, provinces: {} })
+
+export const areaConflicts = (_countries: AreaCountry[], _otherZones: OtherZone[]): AreaConflict[] => []
+
 /** What a zone covers, one line per country: "Uruguay" or "Uruguay · Maldonado, Rocha". */
 export const areaLabels = (
   geoZones: GeoZoneLike[],
