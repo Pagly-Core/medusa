@@ -23,6 +23,16 @@ vi.mock("../../../../../../hooks/api/fulfillment-sets", () => ({
 vi.mock("../../../../../../hooks/api/shipping-options", () => ({
   useDeleteShippingOption: mutation,
 }))
+vi.mock("../../../../../../hooks/api/store", () => ({
+  useStore: () => ({
+    store: {
+      supported_currencies: [
+        { currency_code: "usd", is_default: false },
+        { currency_code: "uyu", is_default: true },
+      ],
+    },
+  }),
+}))
 vi.mock("../../../../../../hooks/api/stock-locations", () => ({
   useCreateStockLocationFulfillmentSet: mutation,
   useDeleteStockLocation: mutation,
@@ -78,6 +88,18 @@ const LOCATION = {
               ],
             }),
             option("so_ues", "UES · Envío a domicilio", { price_type: "calculated", provider_id: "ues_ues" }),
+            option("so_ruled", "Express", {
+              prices: [
+                { amount: 0, currency_code: "uyu", price_rules: [{ attribute: "item_total", value: 2000 }] },
+                { amount: 400, currency_code: "uyu", price_rules: [{ attribute: "region_id", value: "reg_1" }] },
+              ],
+            }),
+            option("so_two", "Courier", {
+              prices: [
+                { amount: 10, currency_code: "usd", price_rules: [] },
+                { amount: 450, currency_code: "uyu", price_rules: [] },
+              ],
+            }),
             option("so_hidden", "Moto", { rules: [], prices: [{ amount: 12.5, currency_code: "uyu" }] }),
             option("so_back", "Devolución", { rules: returns, prices: [{ amount: 150, currency_code: "uyu" }] }),
           ],
@@ -156,6 +178,20 @@ describe("a location's shipping", () => {
     expect(moto.textContent).toMatch(/12[.,]50/)
     expect(moto.textContent).toMatch(/stockLocations\.shippingOptions\.fields\.hiddenInStore/)
     expect(standard.textContent).not.toMatch(/hiddenInStore/)
+  })
+
+  it("never reads a rule's price, like free over an amount, as the rate's own", () => {
+    renderSection()
+    const express = screen.getByText("Express").closest("[data-rate]") as HTMLElement
+    expect(express.textContent).not.toMatch(/fields\.free/)
+    expect(express.textContent).not.toMatch(/\d/)
+  })
+
+  it("prices a rate in the store's default currency when it has several", () => {
+    renderSection()
+    const courier = screen.getByText("Courier").closest("[data-rate]") as HTMLElement
+    expect(courier.textContent).toMatch(/450/)
+    expect(courier.textContent).not.toMatch(/10/)
   })
 
   it("shows no empty option sections, and returns only where a zone has some", () => {

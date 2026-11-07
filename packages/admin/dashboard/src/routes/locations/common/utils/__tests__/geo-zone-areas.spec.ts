@@ -227,6 +227,20 @@ describe("picking a zone's areas", () => {
     ])
   })
 
+  it("ticks and unticks a country no plugin lists provinces for, as a whole", () => {
+    const AR = { iso_2: "ar", display_name: "Argentina" }
+    expect(countryCheck([], "ar", FREE)).toBe(false)
+    expect(toggleCountry([], AR, FREE)).toEqual([{ ...AR, provinces: [] }])
+    expect(countryCheck([{ ...AR, provinces: [] }], "ar", FREE)).toBe(true)
+    expect(toggleCountry([{ ...AR, provinces: [] }], AR, FREE)).toEqual([])
+    expect(toggleCountry([], AR, { whole: "Argentina", provinces: {} })).toEqual([])
+  })
+
+  it("covers the country whole again from part of it, keeping its place among the others", () => {
+    const ar = { iso_2: "ar", display_name: "Argentina", provinces: [] }
+    expect(toggleCountry([{ ...UY, provinces: ["uy-mo"] }, ar], UY, FREE)).toEqual([{ ...UY, provinces: [] }, ar])
+  })
+
   it("never picks a province another zone holds", () => {
     expect(toggleProvince([], UY, "uy-ma", ESTE_HOLDS_MALDONADO)).toEqual([])
   })
