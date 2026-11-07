@@ -19,8 +19,6 @@ import {
 } from "react-router-dom"
 
 import { DocumentTitle } from "../../../hooks/use-document-title"
-import { KeybindProvider } from "../../../providers/keybind-provider"
-import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks"
 import { useSidebar } from "../../../providers/sidebar-provider"
 import { ProgressBar } from "../../common/progress-bar"
 import {
@@ -54,13 +52,12 @@ const PluginRoot = ({ children }: PropsWithChildren) => {
 }
 
 export const Shell = ({ children }: PropsWithChildren) => {
-  const globalShortcuts = useGlobalShortcuts()
   const navigation = useNavigation()
 
   const loading = navigation.state === "loading"
 
   return (
-    <KeybindProvider shortcuts={globalShortcuts}>
+    <>
       <DocumentTitle />
       <LayoutCustomizerHostProvider>
         {/* Pagly: isolate, so nothing in the shell with a z-index paints over a portaled drawer or modal overlay. */}
@@ -90,7 +87,7 @@ export const Shell = ({ children }: PropsWithChildren) => {
           </div>
         </div>
       </LayoutCustomizerHostProvider>
-    </KeybindProvider>
+    </>
   )
 }
 
