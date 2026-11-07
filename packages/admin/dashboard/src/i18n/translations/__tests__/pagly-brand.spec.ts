@@ -164,7 +164,7 @@ describe("Pagly brand in admin copy", () => {
     expect(schema).not.toMatch(/"documentation"|"changelog"/)
   })
 
-  test("the user menu keeps profile, shortcuts, theme and logout", () => {
+  test("the user menu keeps profile, theme and logout", () => {
     const menu = readFileSync(
       join(src, "components/layout/user-menu/user-menu.tsx"),
       "utf8"
@@ -173,7 +173,7 @@ describe("Pagly brand in admin copy", () => {
     expect(menu).not.toContain("app.menus.user.documentation")
     expect(menu).not.toContain("app.menus.user.changelog")
     expect(menu).toContain("app.menus.user.profileSettings")
-    expect(menu).toContain("app.menus.user.shortcuts")
+    expect(menu).not.toContain("app.menus.user.shortcuts")
     expect(menu).toContain("<ThemeToggle />")
     expect(menu).toContain("<Logout />")
   })

@@ -1,5 +1,3 @@
-export type KeybindContextState = {}
-
 export type Platform = "Mac" | "Windows" | "Linux"
 
 export type Keys = {

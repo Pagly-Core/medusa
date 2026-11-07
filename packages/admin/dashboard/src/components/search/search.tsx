@@ -241,23 +241,6 @@ export const Search = () => {
                     className="flex items-center justify-between"
                   >
                     <span>{item.label}</span>
-                    <div className="flex items-center gap-x-1.5">
-                      {item.keys.Mac?.map((key, index) => {
-                        return (
-                          <div
-                            className="flex items-center gap-x-1"
-                            key={index}
-                          >
-                            <Kbd>{key}</Kbd>
-                            {index < (item.keys.Mac?.length || 0) - 1 && (
-                              <span className="txt-compact-xsmall text-ui-fg-subtle">
-                                {t("app.keyboardShortcuts.then")}
-                              </span>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
                   </CommandItem>
                 )
               })}
