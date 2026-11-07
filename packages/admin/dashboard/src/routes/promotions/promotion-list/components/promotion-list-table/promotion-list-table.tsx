@@ -63,6 +63,13 @@ export const PromotionListTable = () => {
       </div>
 
       <_DataTable
+        noRecords={{
+          kind: "promotions",
+          action: {
+            to: "create",
+            label: t("emptyStates.promotions.action"),
+          },
+        }}
         table={table}
         columns={columns}
         count={count}

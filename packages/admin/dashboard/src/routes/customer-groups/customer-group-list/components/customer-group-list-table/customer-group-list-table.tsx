@@ -1,9 +1,11 @@
 import { HttpTypes } from "@medusajs/types"
-import { Container, createDataTableColumnHelper } from "@medusajs/ui"
+import { Button, Container, createDataTableColumnHelper } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { Link } from "react-router-dom"
 
+import { EmptyState } from "../../../../../components/common/empty-state"
 import { DataTable } from "../../../../../components/data-table"
 import { useDataTableDateFilters } from "../../../../../components/data-table/helpers/general/use-data-table-date-filters"
 import { useCustomerGroups } from "../../../../../hooks/api"
@@ -63,8 +65,18 @@ export const CustomerGroupListTable = () => {
         }}
         emptyState={{
           empty: {
-            heading: t("customerGroups.list.empty.heading"),
-            description: t("customerGroups.list.empty.description"),
+            custom: (
+              <EmptyState
+                kind="customerGroups"
+                action={
+                  <Button size="small" variant="secondary" asChild>
+                    <Link to="/customer-groups/create">
+                      {t("emptyStates.customerGroups.action")}
+                    </Link>
+                  </Button>
+                }
+              />
+            ),
           },
           filtered: {
             heading: t("customerGroups.list.filtered.heading"),

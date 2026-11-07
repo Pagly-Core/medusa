@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { Button, Container, Heading, Text } from "@medusajs/ui"
+import { Button, Container, Heading } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
@@ -46,15 +46,19 @@ export const ShippingOptionTypeListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading>{t("shippingOptionTypes.domain")}</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            {t("shippingOptionTypes.subtitle")}
-          </Text>
         </div>
         <Button size="small" variant="secondary" asChild>
           <Link to="create">{t("actions.create")}</Link>
         </Button>
       </div>
       <_DataTable
+        noRecords={{
+          kind: "shippingOptionTypes",
+          action: {
+            to: "create",
+            label: t("emptyStates.shippingOptionTypes.action"),
+          },
+        }}
         table={table}
         filters={filters}
         isLoading={isLoading}
