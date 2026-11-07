@@ -63,7 +63,8 @@ export const Shell = ({ children }: PropsWithChildren) => {
     <KeybindProvider shortcuts={globalShortcuts}>
       <DocumentTitle />
       <LayoutCustomizerHostProvider>
-        <div className="relative flex h-screen flex-col items-start overflow-hidden lg:flex-row">
+        {/* Pagly: isolate, so nothing in the shell with a z-index paints over a portaled drawer or modal overlay. */}
+        <div className="relative isolate flex h-screen flex-col items-start overflow-hidden lg:flex-row">
           <NavigationBar loading={loading} />
           <div>
             <MobileSidebarContainer>{children}</MobileSidebarContainer>

@@ -2,4 +2,4 @@
 "@medusajs/dashboard": patch
 ---
 
-fix(dashboard): keep the settings sidebar search under drawer overlays
+fix(dashboard): nothing in the shell paints over drawer and modal overlays
