@@ -1,51 +1,34 @@
+// Pagly: the same kit as @pagly/storefront's admin components/empty-state/kit.tsx.
+// Keep the two in step: plugin pages and core pages draw alike.
+
 import { createContext, useContext, useId, type ReactNode } from "react"
 
-// Pagly: the same kit as @pagly/storefront's admin components/empty-state/kit.tsx.
-// Keep the two in step: plugin pages and core pages draw with one palette.
-
 /**
- * The "3D suave" illustration kit: a soft gradient stage with tilted cards
- * floating over it. Every empty-state drawing in `kinds/` is built from these
- * parts and draws with the `--es-*` tokens below, so light and dark mode come
- * from one place. Example text inside a drawing stays language-neutral
- * (names, numbers, codes), because the drawing is not translated.
+ * The empty-state illustration kit, in the admin's own style: small pieces of
+ * real interface (flat cards with hairline borders, status badges, a focused
+ * field, a pointer) on a faint dot grid. Every drawing in `kinds/` is built
+ * from these parts. Colours are the dashboard's tokens (`--bg-base`,
+ * `--fg-base`, `--tag-*`…), so light and dark mode follow the admin's theme;
+ * the `--es-*` names below only point at them. Example text inside a drawing
+ * stays language-neutral (names, numbers, codes): the drawing is not
+ * translated.
  */
-
-/** The palette, scoped to the drawings; `.dark` is the admin's dark theme. */
 const PALETTE = `
 [data-pagly-es] {
-  --es-stage-a: #ede9fe; --es-stage-b: #fdf2f8; --es-stage-c: #ffedd5;
-  --es-card-top: #ffffff; --es-card-bottom: #f4f4f5; --es-card-edge: rgba(0, 0, 0, 0);
-  --es-ink: #3f3f46; --es-ink-soft: #d4d4d8; --es-ink-faint: #e4e4e7;
-  --es-field: #ffffff; --es-field-edge: #e4e4e7;
-  --es-thumb-a: #c4b5fd; --es-thumb-b: #fdba74;
-  --es-gold-a: #fcd34d; --es-gold-b: #f97316;
-  --es-mint: #10b981; --es-violet: #8b5cf6; --es-peach: #fb923c; --es-on-accent: #ffffff;
-  --es-tint-violet: #ede9fe; --es-tint-mint: #d1fae5; --es-tint-peach: #ffedd5;
-  --es-glow: #ffffff; --es-glow-o: 0.45;
-  --es-shadow: #3f3f46; --es-shadow-o: 0.16; --es-grain-o: 0.07;
+  --es-ink: var(--fg-base); --es-ink-soft: var(--fg-disabled); --es-ink-faint: var(--border-base);
+  --es-card-top: var(--bg-base); --es-field: var(--bg-field); --es-field-edge: var(--border-strong);
+  --es-mint: var(--tag-green-icon); --es-violet: var(--tag-purple-icon); --es-peach: var(--tag-orange-icon);
+  --es-on-accent: var(--bg-base);
+  --es-tint-mint: var(--tag-neutral-bg); --es-tint-violet: var(--tag-neutral-bg); --es-tint-peach: var(--tag-neutral-bg);
+  --es-stage-a: var(--bg-subtle); --es-stage-b: var(--bg-subtle); --es-stage-c: var(--bg-subtle);
+  --es-gold-a: var(--tag-orange-icon); --es-gold-b: var(--tag-orange-icon);
+  --es-photo: var(--tag-neutral-bg); --es-photo-mark: var(--tag-neutral-icon);
+  --es-shadow-o: 0.07;
 }
-.dark [data-pagly-es] {
-  --es-stage-a: #241a3d; --es-stage-b: #2a1d2c; --es-stage-c: #33221a;
-  --es-card-top: #34343a; --es-card-bottom: #2a2a2f; --es-card-edge: rgba(255, 255, 255, 0.08);
-  --es-ink: #e4e4e7; --es-ink-soft: #52525b; --es-ink-faint: #3f3f46;
-  --es-field: #212124; --es-field-edge: rgba(255, 255, 255, 0.1);
-  --es-thumb-a: #7c3aed; --es-thumb-b: #ea580c;
-  --es-tint-violet: #2e1065; --es-tint-mint: #022c22; --es-tint-peach: #431407;
-  --es-glow-o: 0.06;
-  --es-shadow: #000000; --es-shadow-o: 0.5; --es-grain-o: 0.12;
-}
+.dark [data-pagly-es] { --es-shadow-o: 0.45; }
 `
 
-type Ids = {
-  stage: string
-  card: string
-  thumb: string
-  gold: string
-  shadow: string
-  grain: string
-  clip: string
-}
+type Ids = { dots: string; fade: string; mask: string; shadow: string }
 
 const IdsContext = createContext<Ids | null>(null)
 
@@ -59,14 +42,12 @@ const useIds = () => {
 
 const url = (id: string) => `url(#${id})`
 
-/** Turns degrees around a point into an SVG transform. */
-const tilt = (deg: number | undefined, cx: number, cy: number) =>
-  deg ? `rotate(${deg} ${cx} ${cy})` : undefined
-
-/** The gradient paints a drawing can fill its own shapes with. */
+/** The fills a drawing can use for its own shapes: a photo placeholder and the stars' orange. */
 export type Paints = { thumb: string; gold: string }
 
-/** The 240 × 144 stage every drawing sits on. Pass a function to fill custom shapes with the kit's gradients. */
+const PAINTS: Paints = { thumb: "var(--es-photo)", gold: "var(--es-gold-a)" }
+
+/** The 240 × 144 stage: a dot grid that fades out at the edges. Pass a function to use the kit's fills. */
 export const Art = ({
   children,
 }: {
@@ -74,13 +55,10 @@ export const Art = ({
 }) => {
   const base = useId().replace(/[^A-Za-z0-9_-]/g, "")
   const ids: Ids = {
-    stage: `es${base}stage`,
-    card: `es${base}card`,
-    thumb: `es${base}thumb`,
-    gold: `es${base}gold`,
+    dots: `es${base}dots`,
+    fade: `es${base}fade`,
+    mask: `es${base}mask`,
     shadow: `es${base}shadow`,
-    grain: `es${base}grain`,
-    clip: `es${base}clip`,
   }
 
   return (
@@ -98,102 +76,61 @@ export const Art = ({
     >
       <style>{PALETTE}</style>
       <defs>
-        <linearGradient id={ids.stage} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" style={{ stopColor: "var(--es-stage-a)" }} />
-          <stop offset="0.55" style={{ stopColor: "var(--es-stage-b)" }} />
-          <stop offset="1" style={{ stopColor: "var(--es-stage-c)" }} />
-        </linearGradient>
-        <linearGradient id={ids.card} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" style={{ stopColor: "var(--es-card-top)" }} />
-          <stop offset="1" style={{ stopColor: "var(--es-card-bottom)" }} />
-        </linearGradient>
-        <linearGradient id={ids.thumb} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" style={{ stopColor: "var(--es-thumb-a)" }} />
-          <stop offset="1" style={{ stopColor: "var(--es-thumb-b)" }} />
-        </linearGradient>
-        <linearGradient id={ids.gold} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" style={{ stopColor: "var(--es-gold-a)" }} />
-          <stop offset="1" style={{ stopColor: "var(--es-gold-b)" }} />
-        </linearGradient>
-        <filter id={ids.shadow} x="-30%" y="-30%" width="160%" height="170%">
-          <feDropShadow
-            dx="0"
-            dy="8"
-            stdDeviation="7"
-            style={{
-              floodColor: "var(--es-shadow)",
-              floodOpacity: "var(--es-shadow-o)",
-            }}
-          />
+        <pattern
+          id={ids.dots}
+          width="8"
+          height="8"
+          patternUnits="userSpaceOnUse"
+        >
+          <circle cx="4" cy="4" r="0.8" fill="var(--border-strong)" />
+        </pattern>
+        <radialGradient id={ids.fade} cx="0.5" cy="0.5" r="0.6">
+          <stop offset="0.35" stopColor="white" stopOpacity="1" />
+          <stop offset="1" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+        <mask id={ids.mask}>
+          <rect x="0" y="0" width="240" height="144" fill={url(ids.fade)} />
+        </mask>
+        <filter id={ids.shadow} x="-20%" y="-20%" width="140%" height="160%">
           <feDropShadow
             dx="0"
             dy="1"
             stdDeviation="1"
-            style={{
-              floodColor: "var(--es-shadow)",
-              floodOpacity: "var(--es-shadow-o)",
-            }}
+            style={{ floodColor: "black", floodOpacity: "var(--es-shadow-o)" }}
+          />
+          <feDropShadow
+            dx="0"
+            dy="6"
+            stdDeviation="6"
+            style={{ floodColor: "black", floodOpacity: "var(--es-shadow-o)" }}
           />
         </filter>
-        <filter id={ids.grain}>
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.9"
-            numOctaves={2}
-          />
-          <feColorMatrix type="saturate" values="0" />
-          <feComponentTransfer>
-            <feFuncA type="table" tableValues="0 1" />
-          </feComponentTransfer>
-          <feComposite in2="SourceGraphic" operator="in" />
-        </filter>
-        <clipPath id={ids.clip}>
-          <rect x="8" y="8" width="224" height="128" rx="22" />
-        </clipPath>
       </defs>
       <rect
-        x="8"
-        y="8"
-        width="224"
-        height="128"
-        rx="22"
-        fill={url(ids.stage)}
+        x="0"
+        y="0"
+        width="240"
+        height="144"
+        fill={url(ids.dots)}
+        mask={url(ids.mask)}
       />
-      <g clipPath={url(ids.clip)}>
-        <rect
-          x="8"
-          y="8"
-          width="224"
-          height="128"
-          fill="black"
-          filter={url(ids.grain)}
-          style={{ opacity: "var(--es-grain-o)" }}
-        />
-        <circle
-          cx="34"
-          cy="124"
-          r="30"
-          fill="var(--es-glow)"
-          style={{ opacity: "var(--es-glow-o)" }}
-        />
-      </g>
       <IdsContext.Provider value={ids}>
-        {typeof children === "function"
-          ? children({ thumb: url(ids.thumb), gold: url(ids.gold) })
-          : children}
+        {typeof children === "function" ? children(PAINTS) : children}
       </IdsContext.Provider>
     </svg>
   )
 }
 
-/** A floating card: soft gradient face, deep shadow, an optional tilt in degrees. */
+/**
+ * A card, like the admin's containers: flat, hairline border, soft shadow.
+ * Corners are the admin's 8px unless a shape asks for a round one (r > 20).
+ */
 export const Card = ({
   x,
   y,
   w,
   h,
-  r = 14,
-  tilt: deg,
+  r = 8,
   faded,
   children,
 }: {
@@ -202,37 +139,44 @@ export const Card = ({
   w: number
   h: number
   r?: number
-  tilt?: number
   faded?: boolean
   children?: ReactNode
 }) => {
   const ids = useIds()
   return (
-    <g
-      transform={tilt(deg, x + w / 2, y + h / 2)}
-      filter={url(ids.shadow)}
-      opacity={faded ? 0.75 : undefined}
-    >
+    <g opacity={faded ? 0.6 : undefined}>
       <rect
         x={x}
         y={y}
         width={w}
         height={h}
-        rx={r}
-        fill={url(ids.card)}
-        stroke="var(--es-card-edge)"
+        rx={r > 20 ? r : Math.min(r, 8)}
+        fill="var(--bg-base)"
+        stroke="var(--border-base)"
+        filter={url(ids.shadow)}
       />
       {children}
     </g>
   )
 }
 
+export type Accent = "mint" | "violet" | "peach"
+
+/** The admin's tag colours for each accent. */
+const TAG: Record<Accent, string> = {
+  mint: "green",
+  violet: "purple",
+  peach: "orange",
+}
+
+const accent = (tone: Accent) => `var(--tag-${TAG[tone]}-icon)`
+
 /** A text line drawn as a rounded bar. */
 export const Bar = ({
   x,
   y,
   w,
-  h = 6,
+  h = 5,
   tone = "ink",
 }: {
   x: number
@@ -245,33 +189,33 @@ export const Bar = ({
     x={x}
     y={y}
     width={w}
-    height={h}
-    rx={h / 2}
+    height={Math.min(h, 6)}
+    rx={Math.min(h, 6) / 2}
     fill={
       tone === "ink"
-        ? "var(--es-ink)"
+        ? "var(--fg-base)"
         : tone === "soft"
-        ? "var(--es-ink-soft)"
+        ? "var(--fg-disabled)"
         : tone === "faint"
-        ? "var(--es-ink-faint)"
+        ? "var(--border-strong)"
         : accent(tone)
     }
   />
 )
 
-/** A product photo: a violet-to-peach square with a soft highlight. */
+/** A product photo: the admin's placeholder, a tile with a small landscape. */
 export const Thumb = ({
   x,
   y,
   size,
-  r = 10,
+  r = 6,
 }: {
   x: number
   y: number
   size: number
   r?: number
 }) => {
-  const ids = useIds()
+  const s = size / 40
   return (
     <g>
       <rect
@@ -279,23 +223,18 @@ export const Thumb = ({
         y={y}
         width={size}
         height={size}
-        rx={r}
-        fill={url(ids.thumb)}
+        rx={Math.min(r, 6)}
+        fill="var(--es-photo)"
       />
-      <circle
-        cx={x + size / 2}
-        cy={y + size / 2}
-        r={size * 0.22}
-        fill="white"
-        opacity={0.5}
+      <path
+        d={`M${x + 9 * s} ${y + 29 * s} l${8 * s} ${-10 * s} ${6 * s} ${
+          7 * s
+        } ${4 * s} ${-4 * s} ${8 * s} ${7 * s}z`}
+        fill="var(--es-photo-mark)"
       />
     </g>
   )
 }
-
-export type Accent = "mint" | "violet" | "peach"
-
-const accent = (tone: Accent) => `var(--es-${tone})`
 
 /** Example text inside a drawing; keep it language-neutral. */
 export const Label = ({
@@ -324,14 +263,12 @@ export const Label = ({
     textAnchor={anchor}
     fill={
       tone === "ink"
-        ? "var(--es-ink)"
+        ? "var(--fg-base)"
         : tone === "soft"
-        ? "var(--es-ink-soft)"
-        : tone === "onAccent"
-        ? "var(--es-on-accent)"
-        : tone === "onInk"
-        ? "var(--es-card-top)"
-        : accent(tone)
+        ? "var(--fg-muted)"
+        : tone === "onAccent" || tone === "onInk"
+        ? "var(--bg-base)"
+        : `var(--tag-${TAG[tone]}-text)`
     }
     style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
   >
@@ -339,14 +276,13 @@ export const Label = ({
   </text>
 )
 
-/** A solid pill floating over the scene, like "+ $200". */
+/** A status badge, like the admin's: a tinted pill with a dot and a short value. */
 export const Chip = ({
   x,
   y,
   w,
-  h = 22,
+  h = 18,
   tone = "mint",
-  tilt: deg,
   children,
 }: {
   x: number
@@ -354,35 +290,48 @@ export const Chip = ({
   w: number
   h?: number
   tone?: Accent
-  tilt?: number
   children?: ReactNode
 }) => {
-  const ids = useIds()
+  const tag = TAG[tone]
   return (
-    <g transform={tilt(deg, x + w / 2, y + h / 2)} filter={url(ids.shadow)}>
-      <rect x={x} y={y} width={w} height={h} rx={h / 2} fill={accent(tone)} />
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={5}
+        fill={`var(--tag-${tag}-bg)`}
+        stroke={`var(--tag-${tag}-border)`}
+      />
+      <circle
+        cx={x + 8}
+        cy={y + h / 2}
+        r={2.4}
+        fill={`var(--tag-${tag}-icon)`}
+      />
       {children ? (
-        <Label
-          x={x + w / 2}
-          y={y + h / 2 + 3.2}
-          size={9}
-          weight={700}
-          tone="onAccent"
-          anchor="middle"
+        <text
+          x={x + 14}
+          y={y + h / 2 + 3}
+          fontSize={8.5}
+          fontWeight={500}
+          fill={`var(--tag-${tag}-text)`}
+          style={{ fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
         >
           {children}
-        </Label>
+        </text>
       ) : null}
     </g>
   )
 }
 
-/** A soft tinted pill inside a card, like a status badge. */
+/** A status badge with no words, for rows of a list. */
 export const Tag = ({
   x,
   y,
   w,
-  h = 12,
+  h = 14,
   tone = "mint",
 }: {
   x: number
@@ -390,33 +339,43 @@ export const Tag = ({
   w: number
   h?: number
   tone?: Accent
-}) => (
-  <g>
-    <rect
-      x={x}
-      y={y}
-      width={w}
-      height={h}
-      rx={h / 2}
-      fill={`var(--es-tint-${tone})`}
-    />
-    <rect
-      x={x + 6}
-      y={y + h / 2 - 1.5}
-      width={w - 12}
-      height={3}
-      rx={1.5}
-      fill={accent(tone)}
-      opacity={0.7}
-    />
-  </g>
-)
+}) => {
+  const tag = TAG[tone]
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={4}
+        fill={`var(--tag-${tag}-bg)`}
+        stroke={`var(--tag-${tag}-border)`}
+      />
+      <circle
+        cx={x + 6.5}
+        cy={y + h / 2}
+        r={2.2}
+        fill={`var(--tag-${tag}-icon)`}
+      />
+      <rect
+        x={x + 12}
+        y={y + h / 2 - 1.5}
+        width={Math.max(w - 18, 4)}
+        height={3}
+        rx={1.5}
+        fill={`var(--tag-${tag}-text)`}
+        opacity={0.6}
+      />
+    </g>
+  )
+}
 
-/** A round floating badge with a check mark. */
+/** A small round badge with a check: done, approved, issued. */
 export const CheckBadge = ({
   cx,
   cy,
-  r = 15,
+  r = 12,
   tone = "mint",
 }: {
   cx: number
@@ -425,14 +384,21 @@ export const CheckBadge = ({
   tone?: Accent
 }) => {
   const ids = useIds()
-  const s = r / 15
+  const s = Math.min(r, 14) / 15
   return (
-    <g filter={url(ids.shadow)}>
-      <circle cx={cx} cy={cy} r={r} fill={accent(tone)} />
+    <g>
+      <circle
+        cx={cx}
+        cy={cy}
+        r={Math.min(r, 14)}
+        fill="var(--bg-base)"
+        stroke="var(--border-base)"
+        filter={url(ids.shadow)}
+      />
       <path
-        d={`M${cx - 7 * s} ${cy} l${5 * s} ${5 * s} ${9 * s} ${-10 * s}`}
-        stroke="var(--es-on-accent)"
-        strokeWidth={2.6 * s}
+        d={`M${cx - 6 * s} ${cy} l${4.5 * s} ${4.5 * s} ${8 * s} ${-9 * s}`}
+        stroke={accent(tone)}
+        strokeWidth={2.2}
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -444,14 +410,14 @@ export const CheckBadge = ({
 const STAR =
   "M0 -5 l1.5 3.1 3.4.5-2.5 2.4.6 3.4-3-1.6-3 1.6.6-3.4-2.5-2.4 3.4-.5z"
 
-/** A row of gold stars; the ones past `filled` are drawn soft. */
+/** A row of stars in the admin's orange; the ones past `filled` are drawn soft. */
 export const Stars = ({
   x,
   y,
   count = 5,
   filled = count,
-  gap = 14,
-  scale = 1,
+  gap = 13,
+  scale = 0.9,
 }: {
   x: number
   y: number
@@ -459,28 +425,25 @@ export const Stars = ({
   filled?: number
   gap?: number
   scale?: number
-}) => {
-  const ids = useIds()
-  return (
-    <g>
-      {Array.from({ length: count }, (_, index) => (
-        <path
-          key={index}
-          d={STAR}
-          transform={`translate(${x + index * gap} ${y}) scale(${scale})`}
-          fill={index < filled ? url(ids.gold) : "var(--es-ink-soft)"}
-        />
-      ))}
-    </g>
-  )
-}
+}) => (
+  <g>
+    {Array.from({ length: count }, (_, index) => (
+      <path
+        key={index}
+        d={STAR}
+        transform={`translate(${x + index * gap} ${y}) scale(${scale})`}
+        fill={index < filled ? "var(--tag-orange-icon)" : "var(--fg-disabled)"}
+      />
+    ))}
+  </g>
+)
 
-/** An input field holding an example value, with a caret after it. */
+/** An input holding an example value; with a caret it is focused, with the admin's blue ring. */
 export const Field = ({
   x,
   y,
   w,
-  h = 26,
+  h = 24,
   value,
   caretAt,
 }: {
@@ -490,41 +453,56 @@ export const Field = ({
   h?: number
   value?: string
   caretAt?: number
-}) => (
-  <g>
-    <rect
-      x={x}
-      y={y}
-      width={w}
-      height={h}
-      rx={9}
-      fill="var(--es-field)"
-      stroke="var(--es-field-edge)"
-    />
-    {value ? (
-      <Label x={x + 10} y={y + h / 2 + 4} size={11}>
-        {value}
-      </Label>
-    ) : null}
-    {caretAt !== undefined ? (
+}) => {
+  const focused = caretAt !== undefined
+  return (
+    <g>
+      {focused ? (
+        <rect
+          x={x}
+          y={y}
+          width={w}
+          height={h}
+          rx={6}
+          fill="none"
+          stroke="var(--bg-interactive)"
+          strokeOpacity={0.3}
+          strokeWidth={3}
+        />
+      ) : null}
       <rect
-        x={x + caretAt}
-        y={y + 6.5}
-        width={1.5}
-        height={h - 13}
-        rx={0.75}
-        fill="var(--es-violet)"
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={6}
+        fill="var(--bg-field)"
+        stroke={focused ? "var(--bg-interactive)" : "var(--border-strong)"}
       />
-    ) : null}
-  </g>
-)
+      {value ? (
+        <Label x={x + 9} y={y + h / 2 + 3.6} size={10.5} weight={400}>
+          {value}
+        </Label>
+      ) : null}
+      {focused ? (
+        <rect
+          x={x + caretAt}
+          y={y + 5}
+          width={1.2}
+          height={h - 10}
+          fill="var(--fg-base)"
+        />
+      ) : null}
+    </g>
+  )
+}
 
-/** A solid button inside a card. */
+/** A button: `ink` is the admin's primary (inverted), an accent is a secondary one. */
 export const Button = ({
   x,
   y,
   w,
-  h = 14,
+  h = 16,
   tone = "ink",
 }: {
   x: number
@@ -532,27 +510,42 @@ export const Button = ({
   w: number
   h?: number
   tone?: "ink" | Accent
-}) => (
-  <g>
-    <rect
-      x={x}
-      y={y}
-      width={w}
-      height={h}
-      rx={h / 2}
-      fill={tone === "ink" ? "var(--es-ink)" : accent(tone)}
-    />
-    <rect
-      x={x + w * 0.3}
-      y={y + h / 2 - 1.5}
-      width={w * 0.4}
-      height={3}
-      rx={1.5}
-      fill={tone === "ink" ? "var(--es-card-top)" : "var(--es-on-accent)"}
-      opacity={0.85}
-    />
-  </g>
-)
+}) =>
+  tone === "ink" ? (
+    <g>
+      <rect x={x} y={y} width={w} height={h} rx={5} fill="var(--fg-base)" />
+      <rect
+        x={x + w * 0.28}
+        y={y + h / 2 - 1.5}
+        width={w * 0.44}
+        height={3}
+        rx={1.5}
+        fill="var(--bg-base)"
+        opacity={0.85}
+      />
+    </g>
+  ) : (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={5}
+        fill="var(--bg-base)"
+        stroke="var(--border-strong)"
+      />
+      <rect
+        x={x + w * 0.28}
+        y={y + h / 2 - 1.5}
+        width={w * 0.44}
+        height={3}
+        rx={1.5}
+        fill="var(--fg-base)"
+        opacity={0.75}
+      />
+    </g>
+  )
 
 /** A small round avatar. */
 export const Avatar = ({
@@ -563,7 +556,37 @@ export const Avatar = ({
   cx: number
   cy: number
   r?: number
-}) => {
-  const ids = useIds()
-  return <circle cx={cx} cy={cy} r={r} fill={url(ids.thumb)} />
-}
+}) => (
+  <g>
+    <circle
+      cx={cx}
+      cy={cy}
+      r={r}
+      fill="var(--tag-neutral-bg)"
+      stroke="var(--border-base)"
+    />
+    <circle
+      cx={cx}
+      cy={cy - r * 0.18}
+      r={r * 0.3}
+      fill="var(--tag-neutral-icon)"
+    />
+    <path
+      d={`M${cx - r * 0.5} ${cy + r * 0.55} a${r * 0.5} ${
+        r * 0.42
+      } 0 0 1 ${r} 0`}
+      fill="var(--tag-neutral-icon)"
+    />
+  </g>
+)
+
+/** The mouse pointer, its tip at (x, y): what the merchant is about to click. */
+export const Pointer = ({ x, y }: { x: number; y: number }) => (
+  <path
+    d={`M${x} ${y} l0 15 4-4 3 6 3-1.4 -3-6 5.5 0z`}
+    fill="var(--fg-base)"
+    stroke="var(--bg-base)"
+    strokeWidth={1.2}
+    strokeLinejoin="round"
+  />
+)
