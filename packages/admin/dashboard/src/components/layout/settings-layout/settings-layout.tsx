@@ -184,7 +184,7 @@ const toNavEntries = (items: INavItem[]) =>
     </LayoutComposer.Entry>
   ))
 
-const SettingsSidebar = () => {
+export const SettingsSidebar = () => {
   const { getMenu } = useExtension()
 
   const coreGeneralRoutes = useSettingRoutes()

@@ -83,3 +83,50 @@ describe("NavItem actions a plugin registers", () => {
     expect(screen.queryByRole("button", { name: "store actions" })).toBeNull()
   })
 })
+
+/**
+ * Pagly: a nav entry that stands for a tab group (Products › Organization)
+ * stays highlighted on every tab of the group.
+ */
+describe("NavItem for a tab group", () => {
+  const renderProductsAt = (pathname: string) =>
+    render(
+      <MemoryRouter initialEntries={[pathname]}>
+        <TooltipProvider>
+          <LayoutEditContext.Provider
+            value={{
+              editMode: false,
+              orderChildren: (children) => children,
+              setChildrenOrder: () => {},
+              isHidden: () => false,
+              toggleHidden: () => {},
+            }}
+          >
+            <NavItem
+              label="Products"
+              to="/products"
+              items={[
+                { label: "Collections", to: "/collections" },
+                { label: "Organization", to: "/categories" },
+              ]}
+            />
+          </LayoutEditContext.Provider>
+        </TooltipProvider>
+      </MemoryRouter>
+    )
+
+  const isHighlighted = (name: string) =>
+    screen
+      .getAllByRole("link", { name })
+      .some((link) => link.className.includes("shadow-elevation-card-rest"))
+
+  it.each(["/categories", "/product-options", "/product-types/ptyp_01", "/product-tags"])(
+    "highlights Organization, not Products, on %s",
+    (pathname) => {
+      renderProductsAt(pathname)
+      expect(isHighlighted("Organization")).toBe(true)
+      expect(isHighlighted("Products")).toBe(false)
+      expect(isHighlighted("Collections")).toBe(false)
+    }
+  )
+})
