@@ -8,7 +8,7 @@ import { ActionMenu } from "../../../../../components/common/action-menu"
 import { NoRecords } from "../../../../../components/common/empty-table-content"
 import { IconAvatar } from "../../../../../components/common/icon-avatar"
 import { useFulfillmentProviders } from "../../../../../hooks/api"
-import { formatProvider } from "../../../../../lib/format-provider"
+import { formatProvider, providerLogo } from "../../../../../lib/format-provider"
 
 type LocationsFulfillmentProvidersSectionProps = {
   location: HttpTypes.AdminStockLocation
@@ -53,7 +53,16 @@ function LocationsFulfillmentProvidersSection({
               return (
                 <Fragment key={fulfillmentProvider.id}>
                   <IconAvatar>
-                    <HandTruck className="text-ui-fg-subtle" />
+                    {/* Pagly: a provider's logo, when a plugin gives one. */}
+                    {providerLogo(fulfillmentProvider.id) ? (
+                      <img
+                        src={providerLogo(fulfillmentProvider.id)!}
+                        alt=""
+                        className="h-full w-full rounded-[4px] object-cover"
+                      />
+                    ) : (
+                      <HandTruck className="text-ui-fg-subtle" />
+                    )}
                   </IconAvatar>
 
                   <div className="txt-compact-small">
