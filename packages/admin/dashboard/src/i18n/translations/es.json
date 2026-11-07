@@ -2030,6 +2030,7 @@
         "action": "Gestionar áreas",
         "label": "Áreas",
         "hint": "Seleccioná las áreas geográficas que cubre la zona de servicio.",
+        "wholeCountry": "Todo el país",
         "successToast": "Áreas para {{name}} actualizadas correctamente."
       },
       "fields": {

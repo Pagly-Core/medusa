@@ -11,6 +11,7 @@ import { z } from "zod"
 
 import { ChipGroup } from "../../../../../components/common/chip-group"
 import { Form } from "../../../../../components/common/form"
+import { Combobox } from "../../../../../components/inputs/combobox"
 import {
   StackedFocusModal,
   useStackedModal,
@@ -25,10 +26,16 @@ import { useCountries } from "../../../../regions/common/hooks/use-countries"
 import { useCountryTableColumns } from "../../../../regions/common/hooks/use-country-table-columns"
 import { useCountryTableQuery } from "../../../../regions/common/hooks/use-country-table-query"
 import { GEO_ZONE_STACKED_MODAL_ID } from "../../constants"
+import { registeredProvinces } from "../../utils/geo-zone-areas"
 
 const GeoZoneSchema = z.object({
   countries: z.array(
-    z.object({ iso_2: z.string().min(2), display_name: z.string() })
+    // Pagly: the provinces a country is covered by; none is the whole country.
+    z.object({
+      iso_2: z.string().min(2),
+      display_name: z.string(),
+      provinces: z.array(z.string()).optional(),
+    })
   ),
 })
 
@@ -95,9 +102,53 @@ const GeoZoneFormImpl = <TForm extends UseFormReturn<any>>({
                 </ChipGroup>
               )}
             </Form.Control>
+            {/* Pagly: a country a plugin lists provinces for can be covered by some of them. */}
+            {fields.map((field, index) =>
+              registeredProvinces(field.iso_2).length ? (
+                <ProvincesField key={field.iso_2} form={castForm} index={index} />
+              ) : null
+            )}
           </Form.Item>
         )
       }}
+    />
+  )
+}
+
+/** Pagly: the provinces of one of the zone's countries, empty for all of it. */
+const ProvincesField = ({
+  form,
+  index,
+}: {
+  form: UseFormReturn<z.infer<typeof GeoZoneSchema>>
+  index: number
+}) => {
+  const { t } = useTranslation()
+  const country = form.getValues(`countries.${index}`)
+  const options = registeredProvinces(country.iso_2).map((province) => ({
+    value: province.code,
+    label: province.name,
+  }))
+
+  return (
+    <Form.Field
+      control={form.control}
+      name={`countries.${index}.provinces`}
+      render={({ field }) => (
+        <Form.Item className="pb-4">
+          <Form.Label>{country.display_name}</Form.Label>
+          <Form.Control>
+            <Combobox
+              {...field}
+              value={field.value ?? []}
+              onChange={(value) => field.onChange(Array.isArray(value) ? value : [])}
+              options={options}
+              placeholder={t("stockLocations.serviceZones.manageAreas.wholeCountry")}
+              displayMode="chips"
+            />
+          </Form.Control>
+        </Form.Item>
+      )}
     />
   )
 }
@@ -123,9 +174,9 @@ const AreaStackedModal = <TForm extends UseFormReturn<any>>({
   const open = getIsOpen(GEO_ZONE_STACKED_MODAL_ID)
 
   const [selection, setSelection] = useState<RowSelectionState>({})
-  const [state, setState] = useState<{ iso_2: string; display_name: string }[]>(
-    []
-  )
+  const [state, setState] = useState<
+    { iso_2: string; display_name: string; provinces?: string[] }[]
+  >([])
 
   const { searchParams, raw } = useCountryTableQuery({
     pageSize: PAGE_SIZE,
@@ -154,6 +205,8 @@ const AreaStackedModal = <TForm extends UseFormReturn<any>>({
         countries.map((country) => ({
           iso_2: country.iso_2,
           display_name: country.display_name,
+          // Pagly: a country kept keeps its provinces.
+          provinces: country.provinces,
         }))
       )
 

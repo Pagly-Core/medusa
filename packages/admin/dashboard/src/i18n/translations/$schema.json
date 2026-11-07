@@ -7726,11 +7726,21 @@
                 "hint": {
                   "type": "string"
                 },
+                "wholeCountry": {
+                  "type": "string"
+                },
                 "successToast": {
                   "type": "string"
                 }
               },
-              "required": ["header", "action", "label", "hint", "successToast"],
+              "required": [
+                "header",
+                "action",
+                "label",
+                "hint",
+                "wholeCountry",
+                "successToast"
+              ],
               "additionalProperties": false
             },
             "fields": {

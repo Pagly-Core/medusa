@@ -1983,6 +1983,7 @@
         "action": "Manage areas",
         "label": "Areas",
         "hint": "Select the geographical areas that the service zone covers.",
+        "wholeCountry": "Whole country",
         "successToast": "Areas for {{name}} were successfully updated."
       },
       "fields": {

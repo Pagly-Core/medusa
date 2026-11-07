@@ -18,11 +18,19 @@ import {
   FulfillmentSetType,
   GEO_ZONE_STACKED_MODAL_ID,
 } from "../../../common/constants"
+import { toGeoZones } from "../../../common/utils/geo-zone-areas"
 
 const CreateServiceZoneSchema = z.object({
   name: z.string().min(1),
   countries: z
-    .array(z.object({ iso_2: z.string().min(2), display_name: z.string() }))
+    .array(
+      z.object({
+        iso_2: z.string().min(2),
+        display_name: z.string(),
+        // Pagly: the provinces it covers; none is the whole country.
+        provinces: z.array(z.string()).optional(),
+      })
+    )
     .min(1),
 })
 
@@ -56,10 +64,8 @@ export function CreateServiceZoneForm({
     await mutateAsync(
       {
         name: data.name,
-        geo_zones: data.countries.map(({ iso_2 }) => ({
-          country_code: iso_2,
-          type: "country",
-        })),
+        // Pagly: a country covered by some of its provinces saves them.
+        geo_zones: toGeoZones(data.countries),
       },
       {
         onSuccess: () => {

@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 
 import { countries, getCountryByIso2 } from "./data/countries"
+import { provinceName } from "./provinces"
 
 export const isSameAddress = (
   a?: HttpTypes.AdminOrderAddress | null,
@@ -64,7 +65,8 @@ export const getFormattedAddress = ({
     formattedAddress.push(address_2)
   }
 
-  const cityProvincePostal = [city, province, postal_code]
+  // Pagly: a province saved by a registered code reads by its name.
+  const cityProvincePostal = [city, province && provinceName(province), postal_code]
     .filter(Boolean)
     .join(" ")
 

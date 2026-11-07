@@ -15,10 +15,21 @@ import { useUpdateFulfillmentSetServiceZone } from "../../../../../hooks/api/ful
 import { countries } from "../../../../../lib/data/countries"
 import { GeoZoneForm } from "../../../common/components/geo-zone-form"
 import { GEO_ZONE_STACKED_MODAL_ID } from "../../../common/constants"
+import {
+  fromGeoZones,
+  toGeoZones,
+} from "../../../common/utils/geo-zone-areas"
 
 const EditeServiceZoneSchema = z.object({
   countries: z
-    .array(z.object({ iso_2: z.string().min(2), display_name: z.string() }))
+    .array(
+      z.object({
+        iso_2: z.string().min(2),
+        display_name: z.string(),
+        // Pagly: the provinces it covers; none is the whole country.
+        provinces: z.array(z.string()).optional(),
+      })
+    )
     .min(1),
 })
 
@@ -38,14 +49,13 @@ export function EditServiceZoneAreasForm({
 
   const form = useForm<z.infer<typeof EditeServiceZoneSchema>>({
     defaultValues: {
-      countries: zone.geo_zones.map((z) => {
-        const country = countries.find((c) => c.iso_2 === z.country_code)
-
-        return {
-          iso_2: z.country_code,
-          display_name: country?.display_name || z.country_code.toUpperCase(),
-        }
-      }),
+      // Pagly: a zone's provinces come back under their country.
+      countries: fromGeoZones(
+        zone.geo_zones,
+        (iso2) =>
+          countries.find((c) => c.iso_2 === iso2)?.display_name ||
+          iso2.toUpperCase()
+      ),
     },
     resolver: zodResolver(EditeServiceZoneSchema),
   })
@@ -56,10 +66,8 @@ export function EditServiceZoneAreasForm({
   const handleSubmit = form.handleSubmit(async (data) => {
     await editServiceZone(
       {
-        geo_zones: data.countries.map(({ iso_2 }) => ({
-          country_code: iso_2,
-          type: "country",
-        })),
+        // Pagly: a country covered by some of its provinces saves them.
+        geo_zones: toGeoZones(data.countries),
       },
       {
         onSuccess: () => {

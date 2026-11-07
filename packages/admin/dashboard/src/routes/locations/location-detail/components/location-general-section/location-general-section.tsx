@@ -38,10 +38,7 @@ import {
   useDeleteStockLocation,
 } from "../../../../../hooks/api/stock-locations"
 import { getFormattedAddress } from "../../../../../lib/addresses"
-import {
-  StaticCountry,
-  countries as staticCountries,
-} from "../../../../../lib/data/countries"
+import { countries as staticCountries } from "../../../../../lib/data/countries"
 import { formatProvider } from "../../../../../lib/format-provider"
 import {
   isOptionEnabledInStore,
@@ -51,6 +48,7 @@ import {
   FulfillmentSetType,
   ShippingOptionPriceType,
 } from "../../../common/constants"
+import { areaLabels } from "../../../common/utils/geo-zone-areas"
 
 type LocationGeneralSectionProps = {
   location: HttpTypes.AdminStockLocation
@@ -326,29 +324,18 @@ function ServiceZone({
     })
   }
 
-  const countries = useMemo(() => {
-    const countryGeoZones = zone.geo_zones.filter((g) => g.type === "country")
-
-    const countries = countryGeoZones
-      .map(({ country_code }) =>
-        staticCountries.find((c) => c.iso_2 === country_code)
-      )
-      .filter((c) => !!c) as StaticCountry[]
-
-    if (
-      process.env.NODE_ENV === "development" &&
-      countryGeoZones.length !== countries.length
-    ) {
-      console.warn(
-        "Some countries are missing in the static countries list",
-        countryGeoZones
-          .filter((g) => !countries.find((c) => c.iso_2 === g.country_code))
-          .map((g) => g.country_code)
-      )
-    }
-
-    return countries.sort((c1, c2) => c1.name.localeCompare(c2.name))
-  }, [zone.geo_zones])
+  // Pagly: what the zone covers, with the provinces of a country it covers
+  // only in part ("Uruguay · Maldonado, Rocha").
+  const areas = useMemo(
+    () =>
+      areaLabels(
+        zone.geo_zones.filter((g) => g.type === "country" || g.type === "province"),
+        (iso2) =>
+          staticCountries.find((c) => c.iso_2 === iso2)?.display_name ??
+          iso2.toUpperCase()
+      ).sort((a, b) => a.localeCompare(b)),
+    [zone.geo_zones]
+  )
 
   const [shippingOptionsCount, returnOptionsCount] = useMemo(() => {
     const options = zone.shipping_options
@@ -374,7 +361,7 @@ function ServiceZone({
           <div className="flex items-center gap-2">
             <ListSummary
               variant="base"
-              list={countries.map((c) => c.display_name)}
+              list={areas}
               inline
               n={1}
             />
