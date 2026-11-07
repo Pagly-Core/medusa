@@ -78,6 +78,7 @@ const LOCATION = {
               ],
             }),
             option("so_ues", "UES · Envío a domicilio", { price_type: "calculated", provider_id: "ues_ues" }),
+            option("so_hidden", "Moto", { rules: [], prices: [{ amount: 12.5, currency_code: "uyu" }] }),
             option("so_back", "Devolución", { rules: returns, prices: [{ amount: 150, currency_code: "uyu" }] }),
           ],
         },
@@ -145,6 +146,16 @@ describe("a location's shipping", () => {
     expect(local.textContent).toMatch(/stockLocations\.shippingOptions\.fields\.free/)
     const ues = screen.getByText("UES · Envío a domicilio").closest("[data-rate]") as HTMLElement
     expect(ues.textContent).toMatch(/stockLocations\.shippingOptions\.fields\.carrierRate:\{"name":"UES"\}/)
+  })
+
+  it("prices in whole pesos when there are no cents, and says when checkout doesn't show a rate", () => {
+    renderSection()
+    const standard = screen.getByText("Standard").closest("[data-rate]") as HTMLElement
+    expect(standard.textContent).not.toMatch(/290[.,]00/)
+    const moto = screen.getByText("Moto").closest("[data-rate]") as HTMLElement
+    expect(moto.textContent).toMatch(/12[.,]50/)
+    expect(moto.textContent).toMatch(/stockLocations\.shippingOptions\.fields\.hiddenInStore/)
+    expect(standard.textContent).not.toMatch(/hiddenInStore/)
   })
 
   it("shows no empty option sections, and returns only where a zone has some", () => {
