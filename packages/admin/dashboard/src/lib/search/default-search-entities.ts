@@ -246,13 +246,12 @@ export const DEFAULT_SEARCH_ENTITIES: Record<string, SearchEntityDefinition> = {
     shortcut: {
       keys: { Mac: ["G", ",", "P"] },
       label: (t) => t("app.keyboardShortcuts.settings.goToProductTypes"),
-      type: "settingShortcut",
-      to: "/settings/product-types",
+      to: "/product-types",
     },
     transform: (productType: HttpTypes.AdminProductType) => ({
       id: productType.id,
       title: productType.value,
-      to: `/settings/product-types/${productType.id}`,
+      to: `/product-types/${productType.id}`,
       value: `productType:${productType.id}`,
     }),
   },
@@ -260,7 +259,7 @@ export const DEFAULT_SEARCH_ENTITIES: Record<string, SearchEntityDefinition> = {
     transform: (productTag: HttpTypes.AdminProductTag) => ({
       id: productTag.id,
       title: productTag.value,
-      to: `/settings/product-tags/${productTag.id}`,
+      to: `/product-tags/${productTag.id}`,
       value: `productTag:${productTag.id}`,
     }),
   },

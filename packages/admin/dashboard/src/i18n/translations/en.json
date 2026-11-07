@@ -279,9 +279,24 @@
       "salesChannels": "Sales channels",
       "settings": {
         "header": "Settings",
-        "general": "General",
-        "developer": "Developer",
-        "myAccount": "My Account"
+        "store": "Store",
+        "sell": "Selling",
+        "customers": "Customers",
+        "advanced": "Advanced",
+        "search": "Search",
+        "storeGeneral": "General",
+        "shipping": "Shipping"
+      },
+      "tabs": {
+        "organization": "Organization",
+        "types": "Types",
+        "tags": "Tags",
+        "returns": "Returns",
+        "returnReasons": "Return reasons",
+        "refundReasons": "Refund reasons",
+        "apiKeys": "API keys",
+        "publishable": "Publishable",
+        "secret": "Secret"
       }
     }
   },
@@ -1994,7 +2009,7 @@
     }
   },
   "taxRegions": {
-    "domain": "Tax Regions",
+    "domain": "Taxes",
     "list": {
       "hint": "Manage what you charge your customers when they shop from different countries and regions."
     },
@@ -3026,7 +3041,7 @@
     }
   },
   "regions": {
-    "domain": "Regions",
+    "domain": "Markets",
     "subtitle": "A region is an area that you sell products in. It can cover multiple countries, and has different tax rates, providers, and currency.",
     "createRegion": "Create Region",
     "createRegionHint": "Manage tax rates and providers for a set of countries.",
@@ -3277,7 +3292,7 @@
     }
   },
   "returnReasons": {
-    "domain": "Return Reasons",
+    "domain": "Return reasons",
     "subtitle": "Manage reasons for returned items.",
     "calloutHint": "Manage the reasons to categorize returns.",
     "editReason": "Edit Return Reason",

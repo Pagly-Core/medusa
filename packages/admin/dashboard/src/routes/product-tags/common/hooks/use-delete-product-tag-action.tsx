@@ -38,7 +38,7 @@ export const useDeleteProductTagAction = ({
             value: productTag.value,
           })
         )
-        navigate("/settings/product-tags", {
+        navigate("/product-tags", {
           replace: true,
         })
       },

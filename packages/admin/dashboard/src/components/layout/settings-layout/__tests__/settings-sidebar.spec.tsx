@@ -131,12 +131,16 @@ describe("the settings sidebar", () => {
     expect(
       screen.getByRole("link", { name: "workflowExecutions.domain" })
     ).toBeTruthy()
-    expect(screen.getByRole("link", { name: "app.nav.tabs.apiKeys" })).toBeTruthy()
+    expect(
+      screen.getByRole("link", { name: "app.nav.tabs.apiKeys" })
+    ).toBeTruthy()
   })
 
   it("opens Advanced by itself while one of its pages is open", () => {
     renderSidebar("/settings/secret-api-keys")
-    expect(screen.getByRole("link", { name: "app.nav.tabs.apiKeys" })).toBeTruthy()
+    expect(
+      screen.getByRole("link", { name: "app.nav.tabs.apiKeys" })
+    ).toBeTruthy()
   })
 
   it("has no Developer or My account groups, and no profile", () => {

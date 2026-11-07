@@ -32,10 +32,12 @@ export interface LayoutSectionRegistry {
   [CORE_LAYOUT_IDS.SINGLE_COLUMN]: "main"
   [CORE_LAYOUT_IDS.SINGLE_ROW]: "main"
   [CORE_LAYOUT_IDS.TWO_COLUMN]: "main" | "side"
+  // Pagly: the settings sidebar's groups (see the dashboard's SETTINGS_NAV_GROUPS).
   [CORE_LAYOUT_IDS.SETTINGS_SIDEBAR]:
-    | "general"
-    | "developer"
-    | "myAccount"
+    | "store"
+    | "sell"
+    | "customers"
+    | "advanced"
     | "extensions"
 }
 

@@ -44,7 +44,7 @@ export const ProductOrganizationSection = ({
                 <OrganizationTag
                   key={tag.id}
                   label={tag.value}
-                  to={`/settings/product-tags/${tag.id}`}
+                  to={`/product-tags/${tag.id}`}
                 />
               ))
             : undefined
@@ -56,7 +56,7 @@ export const ProductOrganizationSection = ({
           product.type ? (
             <OrganizationTag
               label={product.type.value}
-              to={`/settings/product-types/${product.type_id}`}
+              to={`/product-types/${product.type_id}`}
             />
           ) : undefined
         }

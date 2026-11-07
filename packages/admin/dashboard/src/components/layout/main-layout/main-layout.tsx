@@ -212,13 +212,11 @@ const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           label: t("collections.domain"),
           to: "/collections",
         },
+        // Pagly: categories, options, types and tags are the tabs of one
+        // Organization page (see TAB_GROUPS); its entry is the first tab.
         {
-          label: t("categories.domain"),
+          label: t("app.nav.tabs.organization"),
           to: "/categories",
-        },
-        {
-          label: t("productOptions.domain"),
-          to: "/product-options",
         },
         // TODO: Enable when domin is introduced
         // {

@@ -326,9 +326,24 @@
       "salesChannels": "Canales de venta",
       "settings": {
         "header": "Configuraciones",
-        "general": "General",
-        "developer": "Desarrollador",
-        "myAccount": "Mi cuenta"
+        "store": "Tienda",
+        "sell": "Vender",
+        "customers": "Clientes",
+        "advanced": "Avanzado",
+        "search": "Buscar",
+        "storeGeneral": "General",
+        "shipping": "Envíos"
+      },
+      "tabs": {
+        "organization": "Organización",
+        "types": "Tipos",
+        "tags": "Etiquetas",
+        "returns": "Devoluciones",
+        "returnReasons": "Motivos de devolución",
+        "refundReasons": "Motivos de reembolso",
+        "apiKeys": "Claves API",
+        "publishable": "Publicables",
+        "secret": "Secretas"
       }
     }
   },
@@ -2052,7 +2067,7 @@
     }
   },
   "taxRegions": {
-    "domain": "Regiones impositivas",
+    "domain": "Impuestos",
     "list": {
       "hint": "Gestioná lo que les cobrás a tus clientes cuando compran desde diferentes países y regiones."
     },
@@ -3137,7 +3152,7 @@
     }
   },
   "regions": {
-    "domain": "Regiones",
+    "domain": "Mercados",
     "subtitle": "Una región es un área donde vendés productos. Puede cubrir varios países y tiene diferentes tasas impositivas, proveedores y monedas.",
     "createRegion": "Crear región",
     "createRegionHint": "Gestioná tasas impositivas y proveedores para un conjunto de países.",
@@ -3388,7 +3403,7 @@
     }
   },
   "returnReasons": {
-    "domain": "Razones de devolución",
+    "domain": "Motivos de devolución",
     "subtitle": "Gestioná las razones de los artículos devueltos.",
     "calloutHint": "Gestioná las razones para categorizar las devoluciones.",
     "editReason": "Editar razón de devolución",

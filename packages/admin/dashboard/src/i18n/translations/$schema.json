@@ -1130,17 +1130,82 @@
                 "header": {
                   "type": "string"
                 },
-                "general": {
+                "store": {
                   "type": "string"
                 },
-                "developer": {
+                "sell": {
                   "type": "string"
                 },
-                "myAccount": {
+                "customers": {
+                  "type": "string"
+                },
+                "advanced": {
+                  "type": "string"
+                },
+                "search": {
+                  "type": "string"
+                },
+                "storeGeneral": {
+                  "type": "string"
+                },
+                "shipping": {
                   "type": "string"
                 }
               },
-              "required": ["header", "general", "developer", "myAccount"],
+              "required": [
+                "header",
+                "store",
+                "sell",
+                "customers",
+                "advanced",
+                "search",
+                "storeGeneral",
+                "shipping"
+              ],
+              "additionalProperties": false
+            },
+            "tabs": {
+              "type": "object",
+              "properties": {
+                "organization": {
+                  "type": "string"
+                },
+                "types": {
+                  "type": "string"
+                },
+                "tags": {
+                  "type": "string"
+                },
+                "returns": {
+                  "type": "string"
+                },
+                "returnReasons": {
+                  "type": "string"
+                },
+                "refundReasons": {
+                  "type": "string"
+                },
+                "apiKeys": {
+                  "type": "string"
+                },
+                "publishable": {
+                  "type": "string"
+                },
+                "secret": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "organization",
+                "types",
+                "tags",
+                "returns",
+                "returnReasons",
+                "refundReasons",
+                "apiKeys",
+                "publishable",
+                "secret"
+              ],
               "additionalProperties": false
             }
           },
@@ -1149,7 +1214,8 @@
             "common",
             "main",
             "salesChannels",
-            "settings"
+            "settings",
+            "tabs"
           ],
           "additionalProperties": false
         }

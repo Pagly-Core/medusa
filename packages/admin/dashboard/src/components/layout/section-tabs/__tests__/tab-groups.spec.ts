@@ -60,9 +60,7 @@ describe("findTabGroup", () => {
   })
 
   test("finds the group of a page under a tab", () => {
-    expect(findTabGroup("/product-types/ptyp_01/edit")?.id).toBe(
-      "organization"
-    )
+    expect(findTabGroup("/product-types/ptyp_01/edit")?.id).toBe("organization")
     expect(findTabGroup("/settings/secret-api-keys/create")?.id).toBe("apiKeys")
   })
 

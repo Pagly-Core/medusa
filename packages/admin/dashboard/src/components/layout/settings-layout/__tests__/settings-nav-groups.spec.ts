@@ -193,8 +193,13 @@ describe("searching the settings", () => {
     "searchIndexes.domain": "Búsqueda",
   }
   const es = (key: string) => SPANISH[key] ?? key
+  // The sidebar is handed core labels already translated.
+  const routes = ALL_ROUTES.map((route) => ({
+    ...route,
+    label: es(route.label),
+  }))
   const search = (query: string) =>
-    filterSettingsSections(groupSettingsRoutes(ALL_ROUTES, es), query, es).map(
+    filterSettingsSections(groupSettingsRoutes(routes, es), query, es).map(
       (item) => item.to
     )
 

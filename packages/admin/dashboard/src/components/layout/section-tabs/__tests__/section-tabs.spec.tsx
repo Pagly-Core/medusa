@@ -24,8 +24,7 @@ const renderAt = (pathname: string) =>
     </MemoryRouter>
   )
 
-const tabLabels = () =>
-  screen.getAllByRole("tab").map((tab) => tab.textContent)
+const tabLabels = () => screen.getAllByRole("tab").map((tab) => tab.textContent)
 
 describe("the section tabs", () => {
   test("show every tab of the page's group, in order", () => {
@@ -43,7 +42,9 @@ describe("the section tabs", () => {
     const selected = screen
       .getAllByRole("tab")
       .filter((tab) => tab.getAttribute("aria-selected") === "true")
-    expect(selected.map((tab) => tab.textContent)).toEqual(["app.nav.tabs.tags"])
+    expect(selected.map((tab) => tab.textContent)).toEqual([
+      "app.nav.tabs.tags",
+    ])
   })
 
   test("render the page under them", () => {

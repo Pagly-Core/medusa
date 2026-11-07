@@ -29,9 +29,11 @@ export const CORE_LAYOUTS: LayoutDefinition[] = [
   {
     id: CORE_LAYOUT_IDS.SETTINGS_SIDEBAR,
     sections: [
-      { id: "general", ordering: "list" },
-      { id: "developer", ordering: "list" },
-      { id: "myAccount", ordering: "list" },
+      // Pagly: the settings sidebar's groups (see SETTINGS_NAV_GROUPS).
+      { id: "store", ordering: "list" },
+      { id: "sell", ordering: "list" },
+      { id: "customers", ordering: "list" },
+      { id: "advanced", ordering: "list" },
       { id: "extensions", ordering: "list" },
     ],
     Component: SettingsSidebarLayoutComponent,

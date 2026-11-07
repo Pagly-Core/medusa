@@ -29,6 +29,7 @@ import { NavLink, To, useLocation } from "react-router-dom"
 import { useLayoutEdit } from "../../../hooks/use-layout-edit"
 import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks"
 import { ConditionalTooltip } from "../../common/conditional-tooltip"
+import { getActivePaths } from "../section-tabs/tab-groups"
 
 type ItemType = "core" | "extension" | "setting"
 
@@ -78,13 +79,18 @@ const isPathActive = (pathname: string, to: string) => {
   return pathname === to || pathname.startsWith(to + "/")
 }
 
+// Pagly: an entry that stands for a tab group (see `TAB_GROUPS`) is active on
+// every tab of the group.
+const isEntryActive = (pathname: string, to: string) =>
+  getActivePaths(to).some((p) => isPathActive(pathname, p))
+
 const getIsOpen = (
   to: string,
   items: NestedItemProps[] | undefined,
   pathname: string
 ) => {
   return [to, ...(items?.map((i) => i.to) ?? [])].some((p) =>
-    isPathActive(pathname, p)
+    isEntryActive(pathname, p)
   )
 }
 
@@ -343,7 +349,7 @@ export const NavItem = ({
 
   // Pagly: while one of its nested items is active, the parent is not.
   const isNestedItemActive = !!items?.some((item) =>
-    isPathActive(pathname, item.to)
+    isEntryActive(pathname, item.to)
   )
 
   const navLinkClassNames = useCallback(
@@ -362,7 +368,7 @@ export const NavItem = ({
       // (e.g. "/content/metaobjects/123" keeps "Metaobjects" active) for
       // extensions too, whose NavLinks match exactly.
       if (["core", "setting"].includes(type) || isNested) {
-        isActive = isPathActive(pathname, linkTo)
+        isActive = isEntryActive(pathname, linkTo)
       }
 
       if (linkTo === to && isNestedItemActive) {

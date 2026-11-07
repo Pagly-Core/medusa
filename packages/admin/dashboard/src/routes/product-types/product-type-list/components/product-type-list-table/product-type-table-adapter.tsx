@@ -42,7 +42,7 @@ export function createProductTypeTableAdapter({
         )
       return { data: product_types, count, isLoading, isError, error }
     },
-    getRowHref: (row) => `/settings/product-types/${row.id}`,
+    getRowHref: (row) => `/product-types/${row.id}`,
     renderRowActions: (row) => <ProductTypeRowActions productType={row} />,
     transformColumns: (columns) => {
       const ALLOWED_FILTERS = [

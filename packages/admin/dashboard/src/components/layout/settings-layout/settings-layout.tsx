@@ -1,6 +1,6 @@
 import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
 import { ArrowUturnLeft } from "@medusajs/icons"
-import { clx, Divider, Text } from "@medusajs/ui"
+import { clx, Divider, Input, Text } from "@medusajs/ui"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
@@ -14,8 +14,11 @@ import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
 import { INavItem, NavItem } from "../nav-item"
 import { Shell } from "../shell"
 import { UserMenu } from "../user-menu"
-// Pagly: the plugin settings pages listed under General.
-import { GENERAL_EXTENSION_PATHS } from "./general-extension-paths"
+import {
+  filterSettingsSections,
+  groupSettingsRoutes,
+  SettingsNavSection,
+} from "./settings-nav-groups"
 
 export const SettingsLayout = () => {
   return (
@@ -25,11 +28,16 @@ export const SettingsLayout = () => {
   )
 }
 
-const useSettingRoutes = (): INavItem[] => {
+/**
+ * Every core settings page the admin can open. Where each one shows in the
+ * sidebar is up to `SETTINGS_NAV_GROUPS`; the profile lives in the user menu.
+ */
+const useCoreSettingRoutes = (): INavItem[] => {
   const isTranslationsEnabled = useFeatureFlag("translation")
   const isRbacEnabled = useFeatureFlag("rbac")
   const isViewConfigEnabled = useFeatureFlag("view_configurations")
   const { hasPermission } = usePermissions()
+  const { enabled: isSearchEnabled } = useSearchIndexes()
   const { t } = useTranslation()
 
   const canReadRoles = isRbacEnabled && hasPermission("rbac_role:read")
@@ -37,62 +45,20 @@ const useSettingRoutes = (): INavItem[] => {
 
   return useMemo(
     () => [
-      {
-        label: t("store.domain"),
-        to: "/settings/store",
-      },
-      {
-        label: t("users.domain"),
-        to: "/settings/users",
-      },
+      { label: t("store.domain"), to: "/settings/store" },
+      { label: t("users.domain"), to: "/settings/users" },
       ...(canReadRoles
-        ? [
-            {
-              label: t("roles.domain"),
-              to: "/settings/roles",
-            },
-          ]
+        ? [{ label: t("roles.domain"), to: "/settings/roles" }]
         : []),
       ...(canReadPolicies
-        ? [
-            {
-              label: t("policies.domain"),
-              to: "/settings/policies",
-            },
-          ]
+        ? [{ label: t("policies.domain"), to: "/settings/policies" }]
         : []),
-      {
-        label: t("regions.domain"),
-        to: "/settings/regions",
-      },
-      {
-        label: t("taxRegions.domain"),
-        to: "/settings/tax-regions",
-      },
-      {
-        label: t("returnReasons.domain"),
-        to: "/settings/return-reasons",
-      },
-      {
-        label: t("refundReasons.domain"),
-        to: "/settings/refund-reasons",
-      },
-      {
-        label: t("salesChannels.domain"),
-        to: "/settings/sales-channels",
-      },
-      {
-        label: t("productTypes.domain"),
-        to: "/settings/product-types",
-      },
-      {
-        label: t("productTags.domain"),
-        to: "/settings/product-tags",
-      },
-      {
-        label: t("stockLocations.domain"),
-        to: "/settings/locations",
-      },
+      { label: t("regions.domain"), to: "/settings/regions" },
+      { label: t("taxRegions.domain"), to: "/settings/tax-regions" },
+      { label: t("returnReasons.domain"), to: "/settings/return-reasons" },
+      { label: t("refundReasons.domain"), to: "/settings/refund-reasons" },
+      { label: t("salesChannels.domain"), to: "/settings/sales-channels" },
+      { label: t("stockLocations.domain"), to: "/settings/locations" },
       ...(isViewConfigEnabled
         ? [
             {
@@ -102,30 +68,8 @@ const useSettingRoutes = (): INavItem[] => {
           ]
         : []),
       ...(isTranslationsEnabled
-        ? [
-            {
-              label: t("translations.domain"),
-              to: "/settings/translations",
-            },
-          ]
+        ? [{ label: t("translations.domain"), to: "/settings/translations" }]
         : []),
-    ],
-    [
-      t,
-      isTranslationsEnabled,
-      isViewConfigEnabled,
-      canReadRoles,
-      canReadPolicies,
-    ]
-  )
-}
-
-const useDeveloperRoutes = (): INavItem[] => {
-  const { t } = useTranslation()
-  const { enabled: isSearchEnabled } = useSearchIndexes()
-
-  return useMemo(
-    () => [
       {
         label: t("apiKeyManagement.domain.publishable"),
         to: "/settings/publishable-api-keys",
@@ -134,34 +78,19 @@ const useDeveloperRoutes = (): INavItem[] => {
         label: t("apiKeyManagement.domain.secret"),
         to: "/settings/secret-api-keys",
       },
-      {
-        label: t("workflowExecutions.domain"),
-        to: "/settings/workflows",
-      },
+      { label: t("workflowExecutions.domain"), to: "/settings/workflows" },
       ...(isSearchEnabled
-        ? [
-            {
-              label: t("searchIndexes.domain"),
-              to: "/settings/search",
-            },
-          ]
+        ? [{ label: t("searchIndexes.domain"), to: "/settings/search" }]
         : []),
     ],
-    [t, isSearchEnabled]
-  )
-}
-
-const useMyAccountRoutes = (): INavItem[] => {
-  const { t } = useTranslation()
-
-  return useMemo(
-    () => [
-      {
-        label: t("profile.domain"),
-        to: "/settings/profile",
-      },
-    ],
-    [t]
+    [
+      t,
+      isTranslationsEnabled,
+      isViewConfigEnabled,
+      isSearchEnabled,
+      canReadRoles,
+      canReadPolicies,
+    ]
   )
 }
 
@@ -184,50 +113,73 @@ const toNavEntries = (items: INavItem[]) =>
     </LayoutComposer.Entry>
   ))
 
+const sectionEntries = (sections: SettingsNavSection[], id: string) =>
+  toNavEntries(sections.find((section) => section.id === id)?.items ?? [])
+
 export const SettingsSidebar = () => {
+  const { t } = useTranslation()
   const { getMenu } = useExtension()
+  const [query, setQuery] = useState("")
 
-  const coreGeneralRoutes = useSettingRoutes()
-  const developerRoutes = useDeveloperRoutes()
-  const myAccountRoutes = useMyAccountRoutes()
-  const allExtensionRoutes = getMenu("settingsExtensions")
+  const coreRoutes = useCoreSettingRoutes()
+  const extensionRoutes = getMenu("settingsExtensions")
 
-  const generalExtensionRoutes = GENERAL_EXTENSION_PATHS.flatMap((path) =>
-    allExtensionRoutes.filter((route) => route.to === path)
+  const sections = useMemo(
+    () =>
+      groupSettingsRoutes(
+        [...coreRoutes, ...extensionRoutes],
+        t as (key: string) => string
+      ),
+    [coreRoutes, extensionRoutes, t]
   )
-  const extensionRoutes = allExtensionRoutes.filter(
-    (route) => !GENERAL_EXTENSION_PATHS.includes(route.to)
-  )
-  const routes = [
-    ...coreGeneralRoutes.slice(0, 1),
-    ...generalExtensionRoutes,
-    ...coreGeneralRoutes.slice(1),
-  ]
+  const searching = query.trim().length > 0
+  const matches = searching
+    ? filterSettingsSections(sections, query, t as (key: string) => string)
+    : []
 
   return (
     <aside className="relative flex flex-1 flex-col justify-between overflow-y-auto">
-      <div className="bg-ui-bg-subtle sticky top-0">
+      <div className="bg-ui-bg-subtle sticky top-0 z-[1]">
         <Header />
+        <div className="px-3 pb-3">
+          <Input
+            type="search"
+            size="small"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={t("app.nav.settings.search")}
+            aria-label={t("app.nav.settings.search")}
+          />
+        </div>
         <div className="flex items-center justify-center px-3">
           <Divider variant="dashed" />
         </div>
       </div>
       <div className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col overflow-y-auto">
-          <LayoutComposer
-            widgetsZonePrefix="settings.sidebar"
-            preferredLayoutId={CORE_LAYOUT_IDS.SETTINGS_SIDEBAR}
-            hasOutlet={false}
-            disableWidgets
-            customizeId={CUSTOMIZE_IDS.SETTINGS_SIDEBAR}
-            controlSize="small"
-            sections={{
-              general: toNavEntries(routes),
-              developer: toNavEntries(developerRoutes),
-              myAccount: toNavEntries(myAccountRoutes),
-              extensions: toNavEntries(extensionRoutes),
-            }}
-          />
+          {searching ? (
+            <div className="flex flex-col gap-y-0.5 p-3">
+              {matches.map((item) => (
+                <NavItem key={item.to} type="setting" {...item} />
+              ))}
+            </div>
+          ) : (
+            <LayoutComposer
+              widgetsZonePrefix="settings.sidebar"
+              preferredLayoutId={CORE_LAYOUT_IDS.SETTINGS_SIDEBAR}
+              hasOutlet={false}
+              disableWidgets
+              customizeId={CUSTOMIZE_IDS.SETTINGS_SIDEBAR}
+              controlSize="small"
+              sections={{
+                store: sectionEntries(sections, "store"),
+                sell: sectionEntries(sections, "sell"),
+                customers: sectionEntries(sections, "customers"),
+                advanced: sectionEntries(sections, "advanced"),
+                extensions: sectionEntries(sections, "extensions"),
+              }}
+            />
+          )}
         </div>
         <div className="bg-ui-bg-subtle sticky bottom-0">
           <UserSection />
