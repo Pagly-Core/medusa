@@ -80,3 +80,20 @@ describe("the settings navigation copy", () => {
     })
   })
 })
+
+describe("return reasons in Spanish", () => {
+  const strings = (value: unknown, prefix = ""): [string, string][] =>
+    typeof value === "string"
+      ? [[prefix, value]]
+      : Object.entries(value as object).flatMap(([key, child]) =>
+          strings(child, prefix ? `${prefix}.${key}` : key)
+        )
+
+  test("are motivos everywhere, never razones, like the page title", () => {
+    const razones = [
+      ...strings(es.returnReasons, "returnReasons"),
+      ["permissions.resources.return_reason", es.permissions.resources.return_reason],
+    ].filter(([, value]) => /raz[oó]n/i.test(value))
+    expect(razones).toEqual([])
+  })
+})

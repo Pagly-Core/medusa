@@ -167,4 +167,16 @@ describe("the settings sidebar", () => {
     fireEvent.change(search, { target: { value: "" } })
     expect(screen.getByText("app.nav.settings.store")).toBeTruthy()
   })
+
+  it("clears the search once the merchant opens a result", () => {
+    renderSidebar()
+    const search = screen.getByRole("searchbox", {
+      name: "app.nav.settings.search",
+    })
+    fireEvent.change(search, { target: { value: "notif" } })
+    fireEvent.click(screen.getByRole("link", { name: "Notificaciones" }))
+
+    expect((search as HTMLInputElement).value).toBe("")
+    expect(screen.getByText("app.nav.settings.store")).toBeTruthy()
+  })
 })

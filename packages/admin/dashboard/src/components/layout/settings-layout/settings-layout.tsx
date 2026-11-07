@@ -119,7 +119,13 @@ const sectionEntries = (sections: SettingsNavSection[], id: string) =>
 export const SettingsSidebar = () => {
   const { t } = useTranslation()
   const { getMenu } = useExtension()
+  const { pathname } = useLocation()
   const [query, setQuery] = useState("")
+
+  // Opening a result ends the search: the groups come back, current page lit.
+  useEffect(() => {
+    setQuery("")
+  }, [pathname])
 
   const coreRoutes = useCoreSettingRoutes()
   const extensionRoutes = getMenu("settingsExtensions")
