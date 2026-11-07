@@ -101,6 +101,19 @@ describe("a zone's provinces", () => {
       )
     ).toEqual(["Argentina", "Uruguay · Rocha, Maldonado"])
   })
+
+  it("count many provinces instead of naming them all", () => {
+    ;(globalThis as Record<string, unknown>)[HOOK] = {
+      uy: ["a", "b", "c", "d", "e"].map((code) => ({ code, name: code.toUpperCase() })),
+    }
+    expect(
+      areaLabels(
+        ["a", "b", "c", "d"].map((code) => ({ type: "province", country_code: "uy", province_code: code })),
+        name,
+        (count, total) => `${count} de ${total}`
+      )
+    ).toEqual(["Uruguay · 4 de 5"])
+  })
 })
 
 // Pagly: within a location's set an area sits in one zone, so the form shows
