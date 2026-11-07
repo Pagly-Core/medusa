@@ -1865,7 +1865,7 @@
     },
     "fulfillmentSets": {
       "pickup": {
-        "header": "Retiro en el local"
+        "header": "Pickup"
       },
       "shipping": {
         "header": "Envío"
@@ -2011,7 +2011,8 @@
         "type": "Tipo de opción de envío",
         "fulfillmentOption": "Opción de cumplimiento",
         "free": "Gratis",
-        "carrierRate": "Tarifa {{name}}"
+        "carrierRate": "Tarifa {{name}}",
+        "hiddenInStore": "Oculta en la tienda"
       }
     },
     "serviceZones": {

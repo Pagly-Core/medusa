@@ -7646,6 +7646,9 @@
                 },
                 "carrierRate": {
                   "type": "string"
+                },
+                "hiddenInStore": {
+                  "type": "string"
                 }
               },
               "required": [
@@ -7657,7 +7660,8 @@
                 "type",
                 "fulfillmentOption",
                 "free",
-                "carrierRate"
+                "carrierRate",
+                "hiddenInStore"
               ],
               "additionalProperties": false
             }

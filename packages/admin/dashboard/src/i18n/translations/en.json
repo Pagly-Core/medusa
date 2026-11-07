@@ -1964,7 +1964,8 @@
         "type": "Shipping option type",
         "fulfillmentOption": "Fulfillment option",
         "free": "Free",
-        "carrierRate": "{{name}} rate"
+        "carrierRate": "{{name}} rate",
+        "hiddenInStore": "Hidden in store"
       }
     },
     "serviceZones": {

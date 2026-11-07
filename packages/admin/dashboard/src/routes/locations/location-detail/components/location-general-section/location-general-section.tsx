@@ -35,7 +35,6 @@ import {
 import { getFormattedAddress } from "../../../../../lib/addresses"
 import { countries as staticCountries } from "../../../../../lib/data/countries"
 import { formatProvider } from "../../../../../lib/format-provider"
-import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
 import {
   isOptionEnabledInStore,
   isReturnOption,
@@ -118,9 +117,18 @@ const rateLabel = (option: HttpTypes.AdminShippingOption, t: TFunction) => {
     return ""
   }
 
-  return Number(base.amount) === 0
-    ? t("stockLocations.shippingOptions.fields.free")
-    : getLocaleAmount(Number(base.amount), base.currency_code)
+  const amount = Number(base.amount)
+  if (amount === 0) {
+    return t("stockLocations.shippingOptions.fields.free")
+  }
+
+  // Whole amounts read without cents ("$ 290"), others with them.
+  return new Intl.NumberFormat([], {
+    style: "currency",
+    currencyDisplay: "narrowSymbol",
+    currency: base.currency_code,
+    ...(Number.isInteger(amount) ? { minimumFractionDigits: 0, maximumFractionDigits: 0 } : {}),
+  }).format(amount)
 }
 
 type RateRowProps = {
@@ -175,7 +183,7 @@ function RateRow({ option, fulfillmentSetId, locationId }: RateRowProps) {
       </Text>
       {!isOptionEnabledInStore(option) && (
         <Text size="small" leading="compact" className="text-ui-fg-muted">
-          {t("general.admin")}
+          {t("stockLocations.shippingOptions.fields.hiddenInStore")}
         </Text>
       )}
       <Text
