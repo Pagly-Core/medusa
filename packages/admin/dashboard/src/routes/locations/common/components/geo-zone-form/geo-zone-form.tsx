@@ -208,7 +208,7 @@ const ZoneAreaList = ({
                     <Text size="small" leading="compact" className="text-ui-fg-muted">
                       {taken.whole}
                     </Text>
-                  ) : check === "indeterminate" ? (
+                  ) : picked > 0 && picked < provinces.length ? (
                     <Text size="small" leading="compact" className="text-ui-fg-subtle">
                       {t("stockLocations.serviceZones.manageAreas.someOfAll", {
                         count: picked,

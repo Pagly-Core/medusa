@@ -117,16 +117,21 @@ export const areaConflicts = (countries: AreaCountry[], otherZones: OtherZone[])
   return conflicts
 }
 
-/** What a zone covers, one line per country: "Uruguay" or "Uruguay · Maldonado, Rocha". */
+/**
+ * What a zone covers, one line per country: "Uruguay", "Uruguay · Maldonado,
+ * Rocha", or with `someOfAll`, "Uruguay · 16 of 19" for many provinces.
+ */
 export const areaLabels = (
   geoZones: GeoZoneLike[],
-  displayName: (iso2: string) => string
+  displayName: (iso2: string) => string,
+  someOfAll?: (count: number, total: number) => string
 ): string[] =>
-  fromGeoZones(geoZones, displayName).map((country) =>
-    country.provinces?.length
-      ? `${country.display_name} · ${country.provinces.map(provinceName).join(", ")}`
-      : country.display_name
-  )
+  fromGeoZones(geoZones, displayName).map((country) => {
+    const chip = areaChip(country)
+    if (chip.kind === "whole") return country.display_name
+    if (chip.kind === "count" && someOfAll) return `${country.display_name} · ${someOfAll(chip.count, chip.total)}`
+    return `${country.display_name} · ${country.provinces!.map(provinceName).join(", ")}`
+  })
 
 /**
  * The countries a zone can cover, as a plugin registers them on

@@ -325,16 +325,17 @@ function ServiceZone({
   }
 
   // Pagly: what the zone covers, with the provinces of a country it covers
-  // only in part ("Uruguay · Maldonado, Rocha").
+  // only in part ("Uruguay · Maldonado, Rocha", or "Uruguay · 16 de 19").
   const areas = useMemo(
     () =>
       areaLabels(
         zone.geo_zones.filter((g) => g.type === "country" || g.type === "province"),
         (iso2) =>
           staticCountries.find((c) => c.iso_2 === iso2)?.display_name ??
-          iso2.toUpperCase()
+          iso2.toUpperCase(),
+        (count, total) => t("stockLocations.serviceZones.manageAreas.someOfAll", { count, total })
       ).sort((a, b) => a.localeCompare(b)),
-    [zone.geo_zones]
+    [zone.geo_zones, t]
   )
 
   const [shippingOptionsCount, returnOptionsCount] = useMemo(() => {
