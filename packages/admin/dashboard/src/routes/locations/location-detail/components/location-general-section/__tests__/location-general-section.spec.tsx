@@ -28,8 +28,8 @@ vi.mock("../../../../../../hooks/api/stock-locations", () => ({
   useDeleteStockLocation: mutation,
 }))
 
-const inStore = [{ attribute: "enabled_in_store", value: "true" }]
-const returns = [...inStore, { attribute: "is_return", value: "true" }]
+const inStore = [{ attribute: "enabled_in_store", value: "true", operator: "eq" }]
+const returns = [...inStore, { attribute: "is_return", value: "true", operator: "eq" }]
 
 const option = (id: string, name: string, extra: Record<string, unknown> = {}) => ({
   id,

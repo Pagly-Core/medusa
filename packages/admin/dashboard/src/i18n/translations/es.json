@@ -1865,7 +1865,7 @@
     },
     "fulfillmentSets": {
       "pickup": {
-        "header": "Recogida"
+        "header": "Retiro en el local"
       },
       "shipping": {
         "header": "Envío"
@@ -1929,7 +1929,9 @@
           "details": "Detalles",
           "prices": "Precios"
         },
-        "action": "Crear opción"
+        "action": "Crear opción",
+        "addRate": "Agregar tarifa",
+        "addReturn": "Agregar devolución"
       },
       "delete": {
         "confirmation": "Estás a punto de eliminar la opción de envío {{name}}. Esta acción no puede deshacerse.",
@@ -2007,14 +2009,16 @@
         "provider": "Proveedor de cumplimiento",
         "profile": "Perfil de envío",
         "type": "Tipo de opción de envío",
-        "fulfillmentOption": "Opción de cumplimiento"
+        "fulfillmentOption": "Opción de cumplimiento",
+        "free": "Gratis",
+        "carrierRate": "Tarifa {{name}}"
       }
     },
     "serviceZones": {
       "create": {
         "headerPickup": "Crear zona de servicio para recogida desde {{location}}",
         "headerShipping": "Crear zona de servicio para envío desde {{location}}",
-        "action": "Crear zona de servicio",
+        "action": "Agregar zona",
         "successToast": "Zona de servicio {{name}} creada correctamente."
       },
       "edit": {

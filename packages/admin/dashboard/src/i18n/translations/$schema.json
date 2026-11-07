@@ -7332,9 +7332,15 @@
                 },
                 "action": {
                   "type": "string"
+                },
+                "addRate": {
+                  "type": "string"
+                },
+                "addReturn": {
+                  "type": "string"
                 }
               },
-              "required": ["shipping", "pickup", "returns", "tabs", "action"],
+              "required": ["shipping", "pickup", "returns", "tabs", "action", "addRate", "addReturn"],
               "additionalProperties": false
             },
             "delete": {
@@ -7634,6 +7640,12 @@
                 },
                 "fulfillmentOption": {
                   "type": "string"
+                },
+                "free": {
+                  "type": "string"
+                },
+                "carrierRate": {
+                  "type": "string"
                 }
               },
               "required": [
@@ -7643,7 +7655,9 @@
                 "provider",
                 "profile",
                 "type",
-                "fulfillmentOption"
+                "fulfillmentOption",
+                "free",
+                "carrierRate"
               ],
               "additionalProperties": false
             }
