@@ -374,7 +374,6 @@ const AreaStackedModal = <TForm extends UseFormReturn<any>>({
   const { data: zoneCountryCodes, isPending: zoneCountriesPending } = useQuery({
     queryKey: ["pagly", "zone-countries"],
     queryFn: () => zoneCountries() ?? Promise.resolve(null),
-    staleTime: Infinity,
     retry: false,
   })
   const listed = (zoneCountryCodes ?? []).flatMap((code) => {

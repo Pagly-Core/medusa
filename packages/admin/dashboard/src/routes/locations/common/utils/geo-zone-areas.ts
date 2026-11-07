@@ -183,9 +183,10 @@ export const toggleCountry = (areas: AreaCountry[], country: PickedCountry, take
   }
   if (taken.whole) return areas
   if (!Object.keys(taken.provinces).length) {
-    return withProvinces(areas, country, registeredProvinces(country.iso_2).map((p) => p.code), taken).map((area) =>
-      sameIso(country.iso_2)(area) ? { ...area, provinces: [] } : area
-    )
+    // Nothing of it is held: the whole country, provinces listed or not.
+    const whole: AreaCountry = { ...country, provinces: [] }
+    const index = areas.findIndex(sameIso(country.iso_2))
+    return index < 0 ? [...areas, whole] : areas.map((area, i) => (i === index ? whole : area))
   }
   return withProvinces(areas, country, freeProvinces(country.iso_2, taken), taken)
 }

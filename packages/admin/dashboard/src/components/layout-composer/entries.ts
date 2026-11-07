@@ -150,7 +150,14 @@ export function buildDisplayEntries(
       pref?.section && validSections.has(pref.section)
         ? pref.section
         : undefined
-    const effectiveSection = overrideSection ?? entry.naturalSection
+    // Pagly: an entry for a section this layout lacks (a side widget on a
+    // one-column page) renders in main rather than nowhere.
+    const naturalSection = validSections.has(entry.naturalSection)
+      ? entry.naturalSection
+      : validSections.has("main")
+        ? "main"
+        : entry.naturalSection
+    const effectiveSection = overrideSection ?? naturalSection
     // Entries with no saved order share order 0; their relative placement
     // (widgets before core, each group in source order) comes from insertion
     // order preserved by the stable sort below.

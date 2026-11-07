@@ -14,11 +14,19 @@ export const getDecimalDigits = (currency: string) => {
  * getFormattedAmount(10, "usd") // '$10.00' if the browser's locale is en-US
  * getFormattedAmount(10, "usd") // '10,00 $' if the browser's locale is fr-FR
  */
-export const getLocaleAmount = (amount: number, currencyCode: string) => {
+export const getLocaleAmount = (
+  amount: number,
+  currencyCode: string,
+  // Pagly: "$ 290" rather than "$ 290.00" where cents add nothing.
+  { wholeWithoutCents = false }: { wholeWithoutCents?: boolean } = {}
+) => {
   const formatter = new Intl.NumberFormat([], {
     style: "currency",
     currencyDisplay: "narrowSymbol",
     currency: currencyCode,
+    ...(wholeWithoutCents && Number.isInteger(amount)
+      ? { minimumFractionDigits: 0, maximumFractionDigits: 0 }
+      : {}),
   })
 
   return formatter.format(amount)

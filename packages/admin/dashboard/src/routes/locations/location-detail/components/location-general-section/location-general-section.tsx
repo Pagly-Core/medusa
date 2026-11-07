@@ -32,9 +32,11 @@ import {
   useCreateStockLocationFulfillmentSet,
   useDeleteStockLocation,
 } from "../../../../../hooks/api/stock-locations"
+import { useStore } from "../../../../../hooks/api/store"
 import { getFormattedAddress } from "../../../../../lib/addresses"
 import { countries as staticCountries } from "../../../../../lib/data/countries"
 import { formatProvider } from "../../../../../lib/format-provider"
+import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
 import {
   isOptionEnabledInStore,
   isReturnOption,
@@ -91,44 +93,35 @@ export const LocationGeneralSection = ({
   )
 }
 
-/** The provider's name as the dashboard shows it (a carrier's own, "UES"). */
-const providerName = (id: string) => {
-  const looks = (globalThis as Record<string, unknown>).__paglyProviderLooks as
-    | Record<string, { name?: string } | undefined>
-    | undefined
-  return looks?.[id]?.name ?? formatProvider(id)
-}
-
-/** What a rate charges: the carrier's rate, free, or its base price. */
-const rateLabel = (option: HttpTypes.AdminShippingOption, t: TFunction) => {
+/**
+ * What a rate charges: the carrier's rate, free, or its own price in the
+ * store's default currency. A price with rules (free over an amount, a
+ * region's) is a variation, never the rate's own.
+ */
+const rateLabel = (
+  option: HttpTypes.AdminShippingOption,
+  defaultCurrency: string | undefined,
+  t: TFunction
+) => {
   if (option.price_type === ShippingOptionPriceType.Calculated) {
     return t("stockLocations.shippingOptions.fields.carrierRate", {
-      name: providerName(option.provider_id),
+      name: formatProvider(option.provider_id),
     })
   }
 
-  const prices = option.prices ?? []
-  // The base price; one with rules (free over an amount) is a variation of it.
-  const base =
-    prices.find((price) => !(price as { price_rules?: unknown[] }).price_rules?.length) ??
-    prices[0]
+  const own = (option.prices ?? []).filter(
+    (price) => !(price as { price_rules?: unknown[] }).price_rules?.length
+  )
+  const base = own.find((price) => price.currency_code === defaultCurrency) ?? own[0]
 
   if (!base) {
     return ""
   }
 
   const amount = Number(base.amount)
-  if (amount === 0) {
-    return t("stockLocations.shippingOptions.fields.free")
-  }
-
-  // Whole amounts read without cents ("$ 290"), others with them.
-  return new Intl.NumberFormat([], {
-    style: "currency",
-    currencyDisplay: "narrowSymbol",
-    currency: base.currency_code,
-    ...(Number.isInteger(amount) ? { minimumFractionDigits: 0, maximumFractionDigits: 0 } : {}),
-  }).format(amount)
+  return amount === 0
+    ? t("stockLocations.shippingOptions.fields.free")
+    : getLocaleAmount(amount, base.currency_code, { wholeWithoutCents: true })
 }
 
 type RateRowProps = {
@@ -142,6 +135,8 @@ function RateRow({ option, fulfillmentSetId, locationId }: RateRowProps) {
   const { t } = useTranslation()
 
   const { mutateAsync } = useDeleteShippingOption(option.id)
+  const { store } = useStore()
+  const defaultCurrency = store?.supported_currencies?.find((c) => c.is_default)?.currency_code
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -191,7 +186,7 @@ function RateRow({ option, fulfillmentSetId, locationId }: RateRowProps) {
         leading="compact"
         className={calculated ? "text-ui-fg-subtle" : undefined}
       >
-        {rateLabel(option, t)}
+        {rateLabel(option, defaultCurrency, t)}
       </Text>
       <ActionMenu
         groups={[
