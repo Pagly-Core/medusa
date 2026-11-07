@@ -70,6 +70,18 @@ describe("a zone's provinces", () => {
     ])
   })
 
+  it("read a country the zone covers whole as whole, whatever else it lists for it", () => {
+    expect(
+      fromGeoZones(
+        [
+          { type: "province", country_code: "uy", province_code: "uy-ma" },
+          { type: "country", country_code: "uy" },
+        ],
+        name
+      )
+    ).toEqual([{ iso_2: "uy", display_name: "Uruguay", provinces: [] }])
+  })
+
   it("read as one line per country", () => {
     expect(
       areaLabels(
