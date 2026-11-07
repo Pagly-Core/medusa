@@ -273,10 +273,7 @@
         "storeSettings": "تنظیمات فروشگاه"
       },
       "settings": {
-        "header": "تنظیمات",
-        "general": "عمومی",
-        "developer": "توسعه‌دهنده",
-        "myAccount": "حساب من"
+        "header": "تنظیمات"
       }
     }
   },

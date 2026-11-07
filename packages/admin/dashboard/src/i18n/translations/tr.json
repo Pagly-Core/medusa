@@ -288,10 +288,7 @@
         "storeSettings": "Mağaza Ayarları"
       },
       "settings": {
-        "header": "Ayarlar",
-        "general": "Genel",
-        "developer": "Geliştirici",
-        "myAccount": "Hesabım"
+        "header": "Ayarlar"
       }
     }
   },

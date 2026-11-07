@@ -293,10 +293,7 @@
         "storeSettings": "Memorează setările"
       },
       "settings": {
-        "header": "Setări",
-        "general": "General",
-        "developer": "Dezvoltator",
-        "myAccount": "Contul meu"
+        "header": "Setări"
       }
     }
   },

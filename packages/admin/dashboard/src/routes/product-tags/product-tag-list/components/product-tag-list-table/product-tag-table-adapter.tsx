@@ -41,7 +41,7 @@ export function createProductTagTableAdapter({
       )
       return { data: product_tags, count, isLoading, isError, error }
     },
-    getRowHref: (row) => `/settings/product-tags/${row.id}`,
+    getRowHref: (row) => `/product-tags/${row.id}`,
     renderRowActions: (row) => <ProductTagListTableActions productTag={row} />,
     transformColumns: (columns) => {
       const ALLOWED_FILTERS = [

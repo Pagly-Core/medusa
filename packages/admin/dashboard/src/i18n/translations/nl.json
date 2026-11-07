@@ -288,10 +288,7 @@
         "storeSettings": "Winkelinstellingen"
       },
       "settings": {
-        "header": "Instellingen",
-        "general": "Algemeen",
-        "developer": "Ontwikkelaar",
-        "myAccount": "Mijn account"
+        "header": "Instellingen"
       }
     }
   },

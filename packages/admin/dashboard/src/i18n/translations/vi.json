@@ -288,10 +288,7 @@
         "storeSettings": "Cài đặt cửa hàng"
       },
       "settings": {
-        "header": "Cài đặt",
-        "general": "Chung",
-        "developer": "Nhà phát triển",
-        "myAccount": "Tài khoản của tôi"
+        "header": "Cài đặt"
       }
     }
   },

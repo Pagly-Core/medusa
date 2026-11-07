@@ -288,10 +288,7 @@
         "storeSettings": "Paramètres de la boutique"
       },
       "settings": {
-        "header": "Paramètres",
-        "general": "General",
-        "developer": "Développeur",
-        "myAccount": "Mon compte"
+        "header": "Paramètres"
       }
     }
   },

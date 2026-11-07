@@ -288,10 +288,7 @@
         "storeSettings": "ストア設定"
       },
       "settings": {
-        "header": "設定",
-        "general": "一般",
-        "developer": "開発者",
-        "myAccount": "マイアカウント"
+        "header": "設定"
       }
     }
   },

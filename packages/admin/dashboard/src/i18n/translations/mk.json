@@ -288,10 +288,7 @@
         "storeSettings": "Поставки за складирање"
       },
       "settings": {
-        "header": "Поставки",
-        "general": "Општо",
-        "developer": "Програмер",
-        "myAccount": "Моја сметка"
+        "header": "Поставки"
       }
     }
   },

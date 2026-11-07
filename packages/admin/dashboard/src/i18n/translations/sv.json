@@ -273,10 +273,7 @@
         "storeSettings": "Butiksinställningar"
       },
       "settings": {
-        "header": "Inställningar",
-        "general": "Allmänt",
-        "developer": "Utvecklare",
-        "myAccount": "Mitt konto"
+        "header": "Inställningar"
       }
     }
   },
