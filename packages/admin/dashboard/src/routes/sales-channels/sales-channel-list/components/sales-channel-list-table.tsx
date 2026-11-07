@@ -1,8 +1,10 @@
 import { HttpTypes } from "@medusajs/types"
-import { Container, createDataTableColumnHelper } from "@medusajs/ui"
+import { Button, Container, createDataTableColumnHelper } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { Link } from "react-router-dom"
+import { EmptyState } from "../../../../components/common/empty-state"
 import { DataTable } from "../../../../components/data-table"
 import * as hooks from "../../../../components/data-table/helpers/sales-channels"
 import { useStore } from "../../../../hooks/api"
@@ -57,9 +59,24 @@ export const SalesChannelListTable = () => {
         pageSize={PAGE_SIZE}
         filters={filters}
         isLoading={isPending}
-        emptyState={emptyState}
+        emptyState={{
+          ...emptyState,
+          empty: {
+            custom: (
+              <EmptyState
+                kind="salesChannels"
+                action={
+                  <Button size="small" variant="secondary" asChild>
+                    <Link to="/settings/sales-channels/create">
+                      {t("emptyStates.salesChannels.action")}
+                    </Link>
+                  </Button>
+                }
+              />
+            ),
+          },
+        }}
         heading={t("salesChannels.domain")}
-        subHeading={t("salesChannels.subtitle")}
         action={{
           label: t("actions.create"),
           to: "/settings/sales-channels/create",

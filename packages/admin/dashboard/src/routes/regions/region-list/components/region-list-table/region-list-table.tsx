@@ -1,5 +1,5 @@
 import type { HttpTypes } from "@medusajs/types"
-import { Button, Container, Heading, Text } from "@medusajs/ui"
+import { Button, Container, Heading } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
@@ -57,9 +57,6 @@ export const RegionListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading>{t("regions.domain")}</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            {t("regions.subtitle")}
-          </Text>
         </div>
         <Link to="/settings/regions/create">
           <Button size="small" variant="secondary">
@@ -85,7 +82,11 @@ export const RegionListTable = () => {
         search
         queryObject={raw}
         noRecords={{
-          message: t("regions.list.noRecordsMessage"),
+          kind: "regions",
+          action: {
+            to: "/settings/regions/create",
+            label: t("emptyStates.regions.action"),
+          },
         }}
       />
     </Container>

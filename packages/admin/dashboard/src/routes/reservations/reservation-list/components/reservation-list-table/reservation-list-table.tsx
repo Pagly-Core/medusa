@@ -1,4 +1,4 @@
-import { Button, Container, Heading, Text } from "@medusajs/ui"
+import { Button, Container, Heading } from "@medusajs/ui"
 
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
@@ -43,15 +43,19 @@ export const ReservationListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading>{t("reservations.domain")}</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            {t("reservations.subtitle")}
-          </Text>
         </div>
         <Button variant="secondary" size="small" asChild>
           <Link to="create">{t("actions.create")}</Link>
         </Button>
       </div>
       <_DataTable
+        noRecords={{
+          kind: "reservations",
+          action: {
+            to: "create",
+            label: t("emptyStates.reservations.action"),
+          },
+        }}
         table={table}
         columns={columns}
         pageSize={PAGE_SIZE}

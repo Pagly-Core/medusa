@@ -72,7 +72,7 @@ export const OrderListTable = () => {
         ]}
         queryObject={raw}
         noRecords={{
-          message: t("orders.list.noRecordsMessage"),
+          kind: "orders",
         }}
       />
       <Outlet />

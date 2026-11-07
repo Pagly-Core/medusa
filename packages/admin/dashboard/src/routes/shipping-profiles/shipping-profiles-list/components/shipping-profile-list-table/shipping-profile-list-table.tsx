@@ -1,4 +1,4 @@
-import { Button, Container, Heading, Text } from "@medusajs/ui"
+import { Button, Container, Heading } from "@medusajs/ui"
 import { Link } from "react-router-dom"
 
 import { keepPreviousData } from "@tanstack/react-query"
@@ -45,9 +45,6 @@ export const ShippingProfileListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading>{t("shippingProfile.domain")}</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            {t("shippingProfile.subtitle")}
-          </Text>
         </div>
         <div>
           <Button size="small" variant="secondary" asChild>
@@ -56,6 +53,13 @@ export const ShippingProfileListTable = () => {
         </div>
       </div>
       <_DataTable
+        noRecords={{
+          kind: "shippingProfiles",
+          action: {
+            to: "create",
+            label: t("emptyStates.shippingProfiles.action"),
+          },
+        }}
         table={table}
         pageSize={PAGE_SIZE}
         count={count}

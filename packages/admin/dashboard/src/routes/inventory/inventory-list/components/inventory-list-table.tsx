@@ -1,4 +1,4 @@
-import { Button, Container, Heading, Text } from "@medusajs/ui"
+import { Button, Container, Heading } from "@medusajs/ui"
 
 import { RowSelectionState } from "@tanstack/react-table"
 import { useState } from "react"
@@ -61,9 +61,6 @@ export const InventoryListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading>{t("inventory.domain")}</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            {t("inventory.subtitle")}
-          </Text>
         </div>
         <div className="flex items-center justify-center gap-x-2">
           <Button size="small" variant="secondary" asChild>
@@ -75,6 +72,13 @@ export const InventoryListTable = () => {
         </div>
       </div>
       <_DataTable
+        noRecords={{
+          kind: "inventory",
+          action: {
+            to: "create",
+            label: t("emptyStates.inventory.action"),
+          },
+        }}
         table={table}
         columns={columns}
         pageSize={PAGE_SIZE}

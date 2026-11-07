@@ -55,6 +55,13 @@ export const CampaignListTable = () => {
       </div>
 
       <_DataTable
+        noRecords={{
+          kind: "campaigns",
+          action: {
+            to: "/campaigns/create",
+            label: t("emptyStates.campaigns.action"),
+          },
+        }}
         table={table}
         columns={columns}
         count={count}

@@ -14953,7 +14953,532 @@
       },
       "required": ["domain"],
       "additionalProperties": false
-    }
+    },
+    "emptyStates": {
+    "type": "object",
+    "properties": {
+      "orders": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "draftOrders": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "products": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "collections": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "categories": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "productOptions": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "productTypes": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "productTags": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "inventory": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "reservations": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "customers": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "customerGroups": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "promotions": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "campaigns": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "priceLists": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "locations": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "shippingProfiles": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "shippingOptionTypes": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "regions": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "taxRegions": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "salesChannels": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "returnReasons": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "refundReasons": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "apiKeys": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "action"
+        ],
+        "additionalProperties": false
+      },
+      "workflows": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "orders",
+      "draftOrders",
+      "products",
+      "collections",
+      "categories",
+      "productOptions",
+      "productTypes",
+      "productTags",
+      "inventory",
+      "reservations",
+      "customers",
+      "customerGroups",
+      "promotions",
+      "campaigns",
+      "priceLists",
+      "locations",
+      "shippingProfiles",
+      "shippingOptionTypes",
+      "regions",
+      "taxRegions",
+      "salesChannels",
+      "returnReasons",
+      "refundReasons",
+      "apiKeys",
+      "workflows"
+    ],
+    "additionalProperties": false
+  }
   },
   "required": [
     "$schema",
@@ -15021,7 +15546,8 @@
     "auth",
     "permissions",
     "onlineStore",
-    "home"
+    "home",
+    "emptyStates"
   ],
   "additionalProperties": false
 }
