@@ -86,6 +86,14 @@ const links = () =>
 afterEach(cleanup)
 
 describe("the settings sidebar", () => {
+  // Pagly: the search's sticky header stacks inside the sidebar only, so a
+  // full-screen form (FocusModal, z-index auto) draws over it.
+  it("keeps its sticky search header inside its own stacking context", () => {
+    renderSidebar()
+    const search = screen.getByRole("searchbox")
+    expect(search.closest("aside")?.className).toMatch(/isolate/)
+  })
+
   it("shows Store, Selling, Customers and Advanced, in that order", () => {
     renderSidebar()
     const headings = [
