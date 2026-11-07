@@ -1,10 +1,11 @@
-import { Container, createDataTableColumnHelper } from "@medusajs/ui"
+import { Button, Container, createDataTableColumnHelper } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 import { keepPreviousData } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 
+import { EmptyState } from "../../../../../components/common/empty-state"
 import { useProductOptions } from "../../../../../hooks/api/product-options"
 import { useProductOptionTableColumns } from "../../../../../hooks/table/columns/use-product-option-table-columns"
 import { useProductOptionTableQuery } from "../../../../../hooks/table/query/use-product-option-table-query"
@@ -60,6 +61,24 @@ export const ProductOptionListTable = () => {
     throw error
   }
 
+  // Pagly: the page always sets is_exclusive, so the table counts itself as
+  // filtered. With nothing else set, an empty list is a store with no options.
+  const onlyDefaultFilter = [...urlSearchParams.keys()].every(
+    (key) => key === "is_exclusive"
+  )
+  const empty = {
+    custom: (
+      <EmptyState
+        kind="productOptions"
+        action={
+          <Button size="small" variant="secondary" asChild>
+            <Link to="create">{t("emptyStates.productOptions.action")}</Link>
+          </Button>
+        }
+      />
+    ),
+  }
+
   return (
     <Container className="divide-y p-0">
       <DataTable
@@ -70,15 +89,14 @@ export const ProductOptionListTable = () => {
         pageSize={PAGE_SIZE}
         getRowId={(row) => row.id}
         heading={t("productOptions.domain")}
-        subHeading={t("productOptions.subtitle")}
         emptyState={{
-          empty: {
-            heading: t("general.noRecordsMessage"),
-          },
-          filtered: {
-            heading: t("general.noRecordsMessage"),
-            description: t("general.noRecordsMessageFiltered"),
-          },
+          empty,
+          filtered: onlyDefaultFilter
+            ? empty
+            : {
+                heading: t("general.noRecordsMessage"),
+                description: t("general.noRecordsMessageFiltered"),
+              },
         }}
         actions={[
           {

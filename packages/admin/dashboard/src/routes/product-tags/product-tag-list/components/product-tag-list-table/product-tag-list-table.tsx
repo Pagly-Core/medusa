@@ -59,6 +59,13 @@ export const ProductTagListTable = () => {
         </Button>
       </div>
       <_DataTable
+        noRecords={{
+          kind: "productTags",
+          action: {
+            to: "create",
+            label: t("emptyStates.productTags.action"),
+          },
+        }}
         table={table}
         filters={filters}
         queryObject={raw}

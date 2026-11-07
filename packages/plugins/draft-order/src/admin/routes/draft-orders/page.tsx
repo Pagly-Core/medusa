@@ -1,7 +1,8 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { LayoutComposer } from "@medusajs/dashboard/components"
+import { EmptyState, LayoutComposer } from "@medusajs/dashboard/components"
 import type { HttpTypes } from "@medusajs/types"
 import {
+  Button,
   Container,
   createDataTableColumnHelper,
   DataTableFilter,
@@ -9,6 +10,7 @@ import {
 } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { useMemo } from "react"
+import { Link } from "react-router-dom"
 
 import { DataTable } from "../../components/common/data-table"
 import { useCustomers } from "../../hooks/api/customers"
@@ -76,8 +78,18 @@ const List = () => {
                 rowHref={(row) => `${row.id}`}
                 emptyState={{
                   empty: {
-                    heading: t("draftOrders.list.noRecordsMessage"),
-                    description: t("draftOrders.list.description"),
+                    custom: (
+                      <EmptyState
+                        kind="draftOrders"
+                        action={
+                          <Button size="small" variant="secondary" asChild>
+                            <Link to="create">
+                              {t("emptyStates.draftOrders.action")}
+                            </Link>
+                          </Button>
+                        }
+                      />
+                    ),
                   },
                   filtered: {
                     heading: t("draftOrders.list.filtered.heading"),

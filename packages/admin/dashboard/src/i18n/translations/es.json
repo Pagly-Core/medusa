@@ -3908,5 +3908,130 @@
   },
   "home": {
     "domain": "Inicio"
+  },
+  "emptyStates": {
+    "orders": {
+      "title": "Tus ventas aparecen acá",
+      "description": "Cada pedido que hagan en tu tienda llega acá para que lo prepares y lo envíes."
+    },
+    "draftOrders": {
+      "title": "Armá pedidos a mano",
+      "description": "Creá un pedido para un cliente y mandale el link para que lo pague.",
+      "action": "Crear borrador"
+    },
+    "products": {
+      "title": "Sumá tu primer producto",
+      "description": "Cargá fotos, precio y variantes para empezar a vender en tu tienda.",
+      "action": "Crear producto"
+    },
+    "collections": {
+      "title": "Agrupá productos en colecciones",
+      "description": "Agrupá productos, como los de verano o los más vendidos, para mostrarlos en tu tienda y tus menús.",
+      "action": "Crear colección"
+    },
+    "categories": {
+      "title": "Ordená tu catálogo",
+      "description": "Las categorías arman el árbol de tu tienda, como ropa, remeras y buzos.",
+      "action": "Crear categoría"
+    },
+    "productOptions": {
+      "title": "Definí talles y colores",
+      "description": "Las opciones como talle o color se comparten entre productos y arman sus variantes.",
+      "action": "Crear opción"
+    },
+    "productTypes": {
+      "title": "Clasificá tus productos",
+      "description": "Un tipo dice qué es cada producto, como remera, taza o póster.",
+      "action": "Crear tipo"
+    },
+    "productTags": {
+      "title": "Etiquetá tus productos",
+      "description": "Las etiquetas marcan productos con palabras como nuevo o algodón para filtrarlos.",
+      "action": "Crear etiqueta"
+    },
+    "inventory": {
+      "title": "Controlá tu stock",
+      "description": "Cada artículo guarda cuántas unidades tenés en cada ubicación.",
+      "action": "Crear artículo"
+    },
+    "reservations": {
+      "title": "Todavía no hay reservas",
+      "description": "Una reserva aparta unidades para un pedido hasta que lo envíes.",
+      "action": "Crear reserva"
+    },
+    "customers": {
+      "title": "Tus clientes aparecen acá",
+      "description": "Cada persona que compra o crea una cuenta en tu tienda queda guardada acá.",
+      "action": "Crear cliente"
+    },
+    "customerGroups": {
+      "title": "Agrupá a tus clientes",
+      "description": "Armá grupos como mayoristas o VIP para darles precios y promociones propias.",
+      "action": "Crear grupo"
+    },
+    "promotions": {
+      "title": "Creá tu primera promoción",
+      "description": "Ofrecé descuentos con un código o automáticos en el carrito.",
+      "action": "Crear promoción"
+    },
+    "campaigns": {
+      "title": "Agrupá promociones en campañas",
+      "description": "Una campaña junta promociones con las mismas fechas y presupuesto.",
+      "action": "Crear campaña"
+    },
+    "priceLists": {
+      "title": "Poné precios especiales",
+      "description": "Una lista cambia precios para una temporada o un grupo de clientes.",
+      "action": "Crear lista de precios"
+    },
+    "locations": {
+      "title": "Sumá desde dónde enviás",
+      "description": "Una ubicación es tu depósito o local, con su stock y sus formas de envío.",
+      "action": "Crear ubicación"
+    },
+    "shippingProfiles": {
+      "title": "Agrupá productos por envío",
+      "description": "Un perfil reúne productos que viajan igual, como los frágiles o los grandes.",
+      "action": "Crear perfil"
+    },
+    "shippingOptionTypes": {
+      "title": "Nombrá tus formas de envío",
+      "description": "Los tipos, como estándar o exprés, ayudan a tus clientes a elegir cómo recibir.",
+      "action": "Crear tipo"
+    },
+    "regions": {
+      "title": "Elegí dónde vendés",
+      "description": "Una región junta países con su moneda, impuestos y medios de pago.",
+      "action": "Crear región"
+    },
+    "taxRegions": {
+      "title": "Configurá tus impuestos",
+      "description": "Definí qué impuestos se cobran en cada país o provincia donde vendés.",
+      "action": "Crear región de impuestos"
+    },
+    "salesChannels": {
+      "title": "Elegí dónde se venden tus productos",
+      "description": "Un canal es un lugar de venta, como tu tienda online o los agentes de IA.",
+      "action": "Crear canal"
+    },
+    "returnReasons": {
+      "title": "Sabé por qué te devuelven",
+      "description": "Los motivos, como talle incorrecto, se eligen al registrar una devolución.",
+      "action": "Crear motivo"
+    },
+    "refundReasons": {
+      "title": "Sabé por qué reembolsás",
+      "description": "Los motivos se eligen al devolverle dinero a un cliente.",
+      "action": "Crear motivo"
+    },
+    "apiKeys": {
+      "title": "Conectá otras aplicaciones",
+      "description": "Una clave da acceso a tu tienda desde otra aplicación o tu propio código.",
+      "action": "Crear clave"
+    },
+    "workflows": {
+      "title": "Todavía no hay flujos de trabajo",
+      "description": "Acá ves cada proceso que corre tu tienda, como crear un pedido, paso a paso."
+    }
   }
 }

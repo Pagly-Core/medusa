@@ -86,7 +86,11 @@ export const ProductListTable = () => {
           { key: "updated_at", label: t("fields.updatedAt") },
         ]}
         noRecords={{
-          message: t("products.list.noRecordsMessage"),
+          kind: "products",
+          action: {
+            to: "create",
+            label: t("emptyStates.products.action"),
+          },
         }}
       />
       <Outlet />

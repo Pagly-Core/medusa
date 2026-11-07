@@ -3891,5 +3891,130 @@
   },
   "home": {
     "domain": "Home"
+  },
+  "emptyStates": {
+    "orders": {
+      "title": "Your sales show up here",
+      "description": "Every order placed in your store arrives here for you to pack and ship."
+    },
+    "draftOrders": {
+      "title": "Build orders by hand",
+      "description": "Create an order for a customer and send them the link to pay.",
+      "action": "Create draft"
+    },
+    "products": {
+      "title": "Add your first product",
+      "description": "Add photos, a price and variants to start selling in your store.",
+      "action": "Create product"
+    },
+    "collections": {
+      "title": "Group products into collections",
+      "description": "Group products, like summer picks or best sellers, to show them in your store and menus.",
+      "action": "Create collection"
+    },
+    "categories": {
+      "title": "Organize your catalog",
+      "description": "Categories build your store's tree, like clothing, t-shirts and hoodies.",
+      "action": "Create category"
+    },
+    "productOptions": {
+      "title": "Set sizes and colours",
+      "description": "Options like size or colour are shared across products and build their variants.",
+      "action": "Create option"
+    },
+    "productTypes": {
+      "title": "Classify your products",
+      "description": "A type says what each product is, like a t-shirt, a mug or a poster.",
+      "action": "Create type"
+    },
+    "productTags": {
+      "title": "Tag your products",
+      "description": "Tags mark products with words like new or cotton so you can filter them.",
+      "action": "Create tag"
+    },
+    "inventory": {
+      "title": "Keep track of your stock",
+      "description": "Each item keeps how many units you have at each location.",
+      "action": "Create item"
+    },
+    "reservations": {
+      "title": "No reservations yet",
+      "description": "A reservation sets units aside for an order until you ship it.",
+      "action": "Create reservation"
+    },
+    "customers": {
+      "title": "Your customers show up here",
+      "description": "Everyone who buys or creates an account in your store is kept here.",
+      "action": "Create customer"
+    },
+    "customerGroups": {
+      "title": "Group your customers",
+      "description": "Build groups like wholesale or VIP to give them their own prices and promotions.",
+      "action": "Create group"
+    },
+    "promotions": {
+      "title": "Create your first promotion",
+      "description": "Offer discounts with a code or automatically in the cart.",
+      "action": "Create promotion"
+    },
+    "campaigns": {
+      "title": "Group promotions into campaigns",
+      "description": "A campaign brings together promotions with the same dates and budget.",
+      "action": "Create campaign"
+    },
+    "priceLists": {
+      "title": "Set special prices",
+      "description": "A price list changes prices for a season or a group of customers.",
+      "action": "Create price list"
+    },
+    "locations": {
+      "title": "Add where you ship from",
+      "description": "A location is your warehouse or shop, with its stock and shipping options.",
+      "action": "Create location"
+    },
+    "shippingProfiles": {
+      "title": "Group products by shipping",
+      "description": "A profile gathers products that travel the same way, like fragile or large ones.",
+      "action": "Create profile"
+    },
+    "shippingOptionTypes": {
+      "title": "Name your shipping methods",
+      "description": "Types like standard or express help customers choose how to receive their order.",
+      "action": "Create type"
+    },
+    "regions": {
+      "title": "Choose where you sell",
+      "description": "A region groups countries with their currency, taxes and payment methods.",
+      "action": "Create region"
+    },
+    "taxRegions": {
+      "title": "Set up your taxes",
+      "description": "Define which taxes apply in each country or province where you sell.",
+      "action": "Create tax region"
+    },
+    "salesChannels": {
+      "title": "Choose where your products sell",
+      "description": "A channel is a place to sell, like your online store or AI agents.",
+      "action": "Create channel"
+    },
+    "returnReasons": {
+      "title": "Know why items come back",
+      "description": "Reasons like wrong size are picked when you record a return.",
+      "action": "Create reason"
+    },
+    "refundReasons": {
+      "title": "Know why you refund",
+      "description": "Reasons are picked when you give money back to a customer.",
+      "action": "Create reason"
+    },
+    "apiKeys": {
+      "title": "Connect other apps",
+      "description": "A key gives another app or your own code access to your store.",
+      "action": "Create key"
+    },
+    "workflows": {
+      "title": "No workflows yet",
+      "description": "See each process your store runs, like creating an order, step by step."
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Button, Container, Heading, Text } from "@medusajs/ui"
+import { Button, Container, Heading } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 
@@ -48,9 +48,6 @@ export const CollectionListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading>{t("collections.domain")}</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            {t("collections.subtitle")}
-          </Text>
         </div>
         <Link to="/collections/create">
           <Button size="small" variant="secondary">
@@ -59,6 +56,13 @@ export const CollectionListTable = () => {
         </Link>
       </div>
       <_DataTable
+        noRecords={{
+          kind: "collections",
+          action: {
+            to: "/collections/create",
+            label: t("emptyStates.collections.action"),
+          },
+        }}
         table={table}
         columns={columns}
         pageSize={PAGE_SIZE}
