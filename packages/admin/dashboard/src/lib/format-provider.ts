@@ -1,12 +1,3 @@
-/**
- * Providers only have an ID to identify them. This function formats the ID
- * into a human-readable string.
- *
- * Format example: pp_stripe-blik_dkk
- *
- * @param id - The ID of the provider
- * @returns A formatted string
- */
 // Pagly: a plugin registers how its providers read (a carrier's name and
 // logo) on globalThis.__paglyProviderLooks, as @pagly/storefront registers its
 // media picker. See PAGLY-CORE-DIVERGENCE.md.
@@ -18,7 +9,15 @@ const lookOf = (id: string): ProviderLook | undefined =>
 /** The logo a plugin gives a provider, or null. */
 export const providerLogo = (id: string): string | null => lookOf(id)?.logo ?? null
 
-
+/**
+ * Providers only have an ID to identify them. This function formats the ID
+ * into a human-readable string.
+ *
+ * Format example: pp_stripe-blik_dkk
+ *
+ * @param id - The ID of the provider
+ * @returns A formatted string
+ */
 export const formatProvider = (id: string) => {
   // Pagly: the name a plugin gives its provider wins.
   const given = lookOf(id)?.name

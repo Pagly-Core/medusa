@@ -50,13 +50,15 @@ function LocationsFulfillmentProvidersSection({
         <div className="flex flex-col gap-y-4 pt-4">
           <div className="grid grid-cols-[28px_1fr] items-center gap-x-3 gap-y-3">
             {fulfillment_providers?.map((fulfillmentProvider) => {
+              const logo = providerLogo(fulfillmentProvider.id)
+
               return (
                 <Fragment key={fulfillmentProvider.id}>
                   <IconAvatar>
                     {/* Pagly: a provider's logo, when a plugin gives one. */}
-                    {providerLogo(fulfillmentProvider.id) ? (
+                    {logo ? (
                       <img
-                        src={providerLogo(fulfillmentProvider.id)!}
+                        src={logo}
                         alt=""
                         className="h-full w-full rounded-[4px] object-cover"
                       />
