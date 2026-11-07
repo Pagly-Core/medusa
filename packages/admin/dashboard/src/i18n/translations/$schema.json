@@ -7726,7 +7726,7 @@
                 "hint": {
                   "type": "string"
                 },
-                "wholeCountry": {
+                "someOfAll": {
                   "type": "string"
                 },
                 "inOtherZone_one": {
@@ -7744,7 +7744,7 @@
                 "action",
                 "label",
                 "hint",
-                "wholeCountry",
+                "someOfAll",
                 "inOtherZone_one",
                 "inOtherZone_other",
                 "successToast"

@@ -138,7 +138,7 @@ export function CreateServiceZoneForm({
                 <GeoZoneForm form={form} otherZones={otherZones} />
               </div>
             </div>
-            <GeoZoneForm.AreaDrawer form={form} />
+            <GeoZoneForm.AreaDrawer form={form} otherZones={otherZones} />
           </StackedFocusModal>
         </RouteFocusModal.Body>
 

@@ -119,7 +119,7 @@ export function EditServiceZoneAreasForm({
               </div>
             </div>
 
-            <GeoZoneForm.AreaDrawer form={form} />
+            <GeoZoneForm.AreaDrawer form={form} otherZones={otherZones} />
           </StackedFocusModal>
         </RouteFocusModal.Body>
         <RouteFocusModal.Footer>

@@ -1,4 +1,6 @@
-import { Button, Checkbox, Hint } from "@medusajs/ui"
+import { TriangleDownMini } from "@medusajs/icons"
+import { Button, Checkbox, Heading, Hint, Label, Text, clx } from "@medusajs/ui"
+import { useQuery } from "@tanstack/react-query"
 import {
   OnChangeFn,
   RowSelectionState,
@@ -6,12 +8,12 @@ import {
 } from "@tanstack/react-table"
 import { useEffect, useMemo, useState } from "react"
 import { UseFormReturn, useFieldArray } from "react-hook-form"
+import type { TFunction } from "i18next"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
 
 import { ChipGroup } from "../../../../../components/common/chip-group"
 import { Form } from "../../../../../components/common/form"
-import { Combobox } from "../../../../../components/inputs/combobox"
 import {
   StackedFocusModal,
   useStackedModal,
@@ -27,10 +29,16 @@ import { useCountryTableColumns } from "../../../../regions/common/hooks/use-cou
 import { useCountryTableQuery } from "../../../../regions/common/hooks/use-country-table-query"
 import { GEO_ZONE_STACKED_MODAL_ID } from "../../constants"
 import {
+  areaChip,
   areaConflicts,
+  countryCheck,
   provinceName,
   registeredProvinces,
   takenIn,
+  toggleCountry,
+  toggleProvince,
+  zoneCountries,
+  type AreaCountry,
   type OtherZone,
 } from "../../utils/geo-zone-areas"
 
@@ -103,34 +111,30 @@ const GeoZoneFormImpl = <TForm extends UseFormReturn<any>>({
                   onRemove={remove}
                   className="py-4"
                 >
-                  {fields.map((field, index) => (
-                    <ChipGroup.Chip key={field.iso_2} index={index}>
-                      {field.display_name}
+                  {/* Pagly: a chip says which of the country's provinces the zone covers. */}
+                  {/* (A field array's iso_2 is its key, so the values come from the form.) */}
+                  {(castForm.watch("countries") ?? []).map((country, index) => (
+                    <ChipGroup.Chip key={country.iso_2} index={index}>
+                      {chipLabel(country, t)}
                     </ChipGroup.Chip>
                   ))}
                 </ChipGroup>
               )}
             </Form.Control>
-            {/* Pagly: a country a plugin lists provinces for can be covered by some of them. */}
-            {/* (A field array's iso_2 is its key, so the codes come from the values.) */}
-            {(castForm.watch("countries") ?? []).map((country, index) =>
-              registeredProvinces(country.iso_2).length ? (
-                <ProvincesField key={country.iso_2} form={castForm} index={index} otherZones={otherZones} />
-              ) : null
+            {/* Pagly: what another zone of the set already covers. */}
+            {(castForm.watch("countries") ?? []).flatMap((country) =>
+              areaConflicts([country], otherZones).map((conflict) => (
+                <Hint key={`${conflict.iso_2}-${conflict.zone}`} variant="error">
+                  {t("stockLocations.serviceZones.manageAreas.inOtherZone", {
+                    count: conflict.areas.length,
+                    areas: conflict.areas
+                      .map((area) => (area === country.iso_2 ? country.display_name : provinceName(area)))
+                      .join(", "),
+                    zone: conflict.zone,
+                  })}
+                </Hint>
+              ))
             )}
-            {/* Pagly: a country without provinces another zone of the set already covers. */}
-            {areaConflicts(
-              (castForm.watch("countries") ?? []).filter((country) => !registeredProvinces(country.iso_2).length),
-              otherZones
-            ).map((conflict) => (
-              <Hint key={`${conflict.iso_2}-${conflict.zone}`} variant="error">
-                {t("stockLocations.serviceZones.manageAreas.inOtherZone", {
-                  count: 1,
-                  areas: castForm.getValues("countries").find((country) => country.iso_2 === conflict.iso_2)?.display_name,
-                  zone: conflict.zone,
-                })}
-              </Hint>
-            ))}
           </Form.Item>
         )
       }}
@@ -138,68 +142,130 @@ const GeoZoneFormImpl = <TForm extends UseFormReturn<any>>({
   )
 }
 
-/** Pagly: the provinces of one of the zone's countries, empty for all of it. */
-const ProvincesField = ({
-  form,
-  index,
+/** Pagly: "Uruguay", "Uruguay · Maldonado, Rocha" or "Uruguay · 18 of 19". */
+const chipLabel = (country: AreaCountry, t: TFunction) => {
+  const chip = areaChip(country)
+  if (chip.kind === "whole") return country.display_name
+  const covered =
+    chip.kind === "names"
+      ? chip.names.join(", ")
+      : t("stockLocations.serviceZones.manageAreas.someOfAll", { count: chip.count, total: chip.total })
+  return `${country.display_name} · ${covered}`
+}
+
+/**
+ * Pagly: the countries a zone can cover (the store's), each with its
+ * provinces collapsed under it. One another zone of the set holds reads as
+ * that zone's and can't be ticked.
+ */
+const ZoneAreaList = ({
+  countries,
+  areas,
   otherZones,
+  onChange,
 }: {
-  form: UseFormReturn<z.infer<typeof GeoZoneSchema>>
-  index: number
+  countries: { iso_2: string; display_name: string }[]
+  areas: AreaCountry[]
   otherZones: OtherZone[]
+  onChange: (areas: AreaCountry[]) => void
 }) => {
   const { t } = useTranslation()
-  const country = form.getValues(`countries.${index}`)
-  // A province (or the whole country) another zone of the set holds reads
-  // as that zone's and can't be picked.
-  const taken = takenIn(otherZones, country.iso_2)
-  const options = registeredProvinces(country.iso_2).map((province) => {
-    const holder = taken.whole ?? taken.provinces[province.code]
-    return {
-      value: province.code,
-      label: holder ? `${province.name} · ${holder}` : province.name,
-      disabled: !!holder,
-    }
-  })
-  const chosen = form.watch(`countries.${index}`)
-  const conflicts = areaConflicts(chosen ? [chosen] : [], otherZones)
-  const names = (areas: string[]) =>
-    areas.map((area) => (area === country.iso_2 ? country.display_name : provinceName(area))).join(", ")
+  const [open, setOpen] = useState<Record<string, boolean>>({})
 
   return (
-    <Form.Field
-      control={form.control}
-      name={`countries.${index}.provinces`}
-      render={({ field }) => (
-        <Form.Item className="pb-4">
-          <Form.Label>{country.display_name}</Form.Label>
-          <Form.Control>
-            <Combobox
-              {...field}
-              value={field.value ?? []}
-              onChange={(value) => field.onChange(Array.isArray(value) ? value : [])}
-              options={options}
-              placeholder={t("stockLocations.serviceZones.manageAreas.wholeCountry")}
-              displayMode="chips"
-            />
-          </Form.Control>
-          {conflicts.map((conflict) => (
-            <Hint key={conflict.zone} variant="error" className="mt-1">
-              {t("stockLocations.serviceZones.manageAreas.inOtherZone", {
-                count: conflict.areas.length,
-                areas: names(conflict.areas),
-                zone: conflict.zone,
-              })}
-            </Hint>
-          ))}
-        </Form.Item>
-      )}
-    />
+    <div className="flex w-full max-w-[720px] flex-col gap-y-4 px-2 py-16">
+      <Heading>{t("stockLocations.serviceZones.manageAreas.label")}</Heading>
+      <div className="shadow-elevation-card-rest bg-ui-bg-base divide-y overflow-hidden rounded-lg">
+        {countries.map((country) => {
+          const taken = takenIn(otherZones, country.iso_2)
+          const provinces = registeredProvinces(country.iso_2)
+          const area = areas.find((one) => one.iso_2 === country.iso_2)
+          const check = countryCheck(areas, country.iso_2, taken)
+          const expanded = !!open[country.iso_2]
+          const picked = area ? (area.provinces?.length ? area.provinces.length : provinces.length) : 0
+
+          return (
+            <div key={country.iso_2}>
+              <div className="flex items-center gap-x-3 px-4 py-3">
+                <Checkbox
+                  id={`zone-area-${country.iso_2}`}
+                  aria-label={country.display_name}
+                  checked={check}
+                  disabled={!!taken.whole}
+                  onCheckedChange={() => onChange(toggleCountry(areas, country, taken))}
+                />
+                <button
+                  type="button"
+                  className="flex flex-1 items-center gap-x-2 text-left outline-none"
+                  aria-expanded={expanded}
+                  disabled={!provinces.length}
+                  onClick={() => setOpen((prev) => ({ ...prev, [country.iso_2]: !expanded }))}
+                >
+                  <Text size="small" leading="compact" weight="plus" className="flex-1">
+                    {country.display_name}
+                  </Text>
+                  {taken.whole ? (
+                    <Text size="small" leading="compact" className="text-ui-fg-muted">
+                      {taken.whole}
+                    </Text>
+                  ) : check === "indeterminate" ? (
+                    <Text size="small" leading="compact" className="text-ui-fg-subtle">
+                      {t("stockLocations.serviceZones.manageAreas.someOfAll", {
+                        count: picked,
+                        total: provinces.length,
+                      })}
+                    </Text>
+                  ) : null}
+                  {provinces.length > 0 && (
+                    <TriangleDownMini
+                      className={clx("text-ui-fg-muted transition-transform", expanded && "rotate-180")}
+                    />
+                  )}
+                </button>
+              </div>
+              {expanded && (
+                <div className="bg-ui-bg-subtle divide-y">
+                  {provinces.map((province) => {
+                    const holder = taken.whole ?? taken.provinces[province.code]
+                    const on = !!area && (!area.provinces?.length || area.provinces.includes(province.code))
+                    const id = `zone-area-${province.code}`
+                    return (
+                      <div key={province.code} className="flex items-center gap-x-3 py-2.5 pl-11 pr-4">
+                        <Checkbox
+                          id={id}
+                          checked={on && !holder}
+                          disabled={!!holder}
+                          onCheckedChange={() => onChange(toggleProvince(areas, country, province.code, taken))}
+                        />
+                        <Label
+                          htmlFor={id}
+                          size="small"
+                          className={clx("flex-1", holder && "text-ui-fg-disabled")}
+                        >
+                          {province.name}
+                        </Label>
+                        {holder && (
+                          <Text size="small" leading="compact" className="text-ui-fg-muted">
+                            {holder}
+                          </Text>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
 type AreasStackedModalProps<TForm extends UseFormReturn<any>> = {
   form: TForm
+  /** Pagly: the set's other zones, whose areas this one can't take. */
+  otherZones?: OtherZone[]
 }
 
 const PREFIX = "ac"
@@ -207,6 +273,7 @@ const PAGE_SIZE = 50
 
 const AreaStackedModal = <TForm extends UseFormReturn<any>>({
   form,
+  otherZones = [],
 }: AreasStackedModalProps<TForm>) => {
   const castForm = form as unknown as UseFormReturn<
     z.infer<typeof GeoZoneSchema>
@@ -302,6 +369,19 @@ const AreaStackedModal = <TForm extends UseFormReturn<any>>({
     setIsOpen(GEO_ZONE_STACKED_MODAL_ID, false)
   }
 
+  // Pagly: a plugin can limit zones to some countries (the store's), listed
+  // with their provinces instead of every country.
+  const { data: zoneCountryCodes, isPending: zoneCountriesPending } = useQuery({
+    queryKey: ["pagly", "zone-countries"],
+    queryFn: () => zoneCountries() ?? Promise.resolve(null),
+    staleTime: Infinity,
+    retry: false,
+  })
+  const listed = (zoneCountryCodes ?? []).flatMap((code) => {
+    const found = staticCountries.find((country) => country.iso_2 === code)
+    return found ? [{ iso_2: found.iso_2, display_name: found.display_name }] : []
+  })
+
   const columns = useColumns()
 
   const { table } = useDataTable({
@@ -335,6 +415,13 @@ const AreaStackedModal = <TForm extends UseFormReturn<any>>({
           </span>
         </StackedFocusModal.Description>
       </StackedFocusModal.Header>
+      {zoneCountriesPending ? (
+        <StackedFocusModal.Body className="flex-1" />
+      ) : listed.length ? (
+        <StackedFocusModal.Body className="flex flex-1 flex-col items-center overflow-auto">
+          <ZoneAreaList countries={listed} areas={state} otherZones={otherZones} onChange={setState} />
+        </StackedFocusModal.Body>
+      ) : (
       <StackedFocusModal.Body className="flex-1 overflow-hidden">
         <_DataTable
           table={table}
@@ -352,6 +439,7 @@ const AreaStackedModal = <TForm extends UseFormReturn<any>>({
           prefix={PREFIX}
         />
       </StackedFocusModal.Body>
+      )}
       <StackedFocusModal.Footer>
         <div className="flex items-center justify-end gap-x-2">
           <StackedFocusModal.Close type="button" asChild>
