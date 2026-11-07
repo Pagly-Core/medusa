@@ -103,9 +103,10 @@ const GeoZoneFormImpl = <TForm extends UseFormReturn<any>>({
               )}
             </Form.Control>
             {/* Pagly: a country a plugin lists provinces for can be covered by some of them. */}
-            {fields.map((field, index) =>
-              registeredProvinces(field.iso_2).length ? (
-                <ProvincesField key={field.iso_2} form={castForm} index={index} />
+            {/* (A field array's iso_2 is its key, so the codes come from the values.) */}
+            {(castForm.watch("countries") ?? []).map((country, index) =>
+              registeredProvinces(country.iso_2).length ? (
+                <ProvincesField key={country.iso_2} form={castForm} index={index} />
               ) : null
             )}
           </Form.Item>
