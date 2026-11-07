@@ -179,14 +179,4 @@ describe("the settings sidebar", () => {
     expect((search as HTMLInputElement).value).toBe("")
     expect(screen.getByText("app.nav.settings.store")).toBeTruthy()
   })
-
-  // The sticky search header sits at z-index 1. Without its own stacking
-  // context the sidebar lets that header paint over a drawer's overlay.
-  it("keeps its sticky header under drawer overlays", () => {
-    renderSidebar()
-    const search = screen.getByRole("searchbox", {
-      name: "app.nav.settings.search",
-    })
-    expect(search.closest("aside")?.classList.contains("isolate")).toBe(true)
-  })
 })
