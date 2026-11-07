@@ -91,7 +91,7 @@ describe("the settings sidebar", () => {
   it("keeps its sticky search header inside its own stacking context", () => {
     renderSidebar()
     const search = screen.getByRole("searchbox")
-    expect(search.closest("aside")?.className).toMatch(/isolate/)
+    expect(search.closest("aside")?.className.split(" ")).toContain("isolate")
   })
 
   it("shows Store, Selling, Customers and Advanced, in that order", () => {
