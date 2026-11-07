@@ -3901,7 +3901,7 @@
     },
     "collections": {
       "title": "Group products into collections",
-      "description": "Build showcases like summer or best sellers for your store and menus.",
+      "description": "Group products, like summer picks or best sellers, to show them in your store and menus.",
       "action": "Create collection"
     },
     "categories": {
