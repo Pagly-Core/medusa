@@ -1,7 +1,7 @@
 import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
 import { ArrowUturnLeft } from "@medusajs/icons"
 import { clx, Divider, Input, Text } from "@medusajs/ui"
-import { useEffect, useMemo, useState } from "react"
+import { ReactNode, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
 
@@ -17,6 +17,7 @@ import { UserMenu } from "../user-menu"
 import {
   filterSettingsSections,
   groupSettingsRoutes,
+  SETTINGS_SIDEBAR_SECTION_IDS,
   SettingsNavSection,
 } from "./settings-nav-groups"
 
@@ -177,13 +178,14 @@ export const SettingsSidebar = () => {
               disableWidgets
               customizeId={CUSTOMIZE_IDS.SETTINGS_SIDEBAR}
               controlSize="small"
-              sections={{
-                store: sectionEntries(sections, "store"),
-                sell: sectionEntries(sections, "sell"),
-                customers: sectionEntries(sections, "customers"),
-                advanced: sectionEntries(sections, "advanced"),
-                extensions: sectionEntries(sections, "extensions"),
-              }}
+              sections={
+                Object.fromEntries(
+                  SETTINGS_SIDEBAR_SECTION_IDS.map((id) => [
+                    id,
+                    sectionEntries(sections, id),
+                  ])
+                ) as Record<(typeof SETTINGS_SIDEBAR_SECTION_IDS)[number], ReactNode>
+              }
             />
           )}
         </div>

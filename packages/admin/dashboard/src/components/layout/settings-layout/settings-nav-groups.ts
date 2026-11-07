@@ -49,6 +49,7 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
       { to: "/settings/locations", label: "app.nav.settings.shipping" },
       { to: "/settings/regions" },
       { to: "/settings/tax-regions" },
+      { to: "/settings/facturacion-electronica" },
       { to: "/settings/sales-channels" },
     ],
   },
@@ -75,6 +76,12 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
 ]
 
 export const EXTENSIONS_SECTION_ID = "extensions"
+
+/** The settings sidebar layout's sections, in order: the groups, then Extensions. */
+export const SETTINGS_SIDEBAR_SECTION_IDS = [
+  ...SETTINGS_NAV_GROUPS.map((group) => group.id),
+  EXTENSIONS_SECTION_ID,
+]
 
 export type SettingsNavSection = {
   id: SettingsNavGroupId | typeof EXTENSIONS_SECTION_ID

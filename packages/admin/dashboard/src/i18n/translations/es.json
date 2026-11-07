@@ -1833,7 +1833,7 @@
     }
   },
   "stockLocations": {
-    "domain": "Ubicaciones y envío",
+    "domain": "Envíos",
     "list": {
       "description": "Gestioná las ubicaciones de inventario de tu tienda y las opciones de envío.",
       "noRecordsMessage": "Sin registros",
@@ -3152,7 +3152,7 @@
     }
   },
   "regions": {
-    "domain": "Mercados",
+    "domain": "Regiones",
     "subtitle": "Una región es un área donde vendés productos. Puede cubrir varios países y tiene diferentes tasas impositivas, proveedores y monedas.",
     "createRegion": "Crear región",
     "createRegionHint": "Gestioná tasas impositivas y proveedores para un conjunto de países.",

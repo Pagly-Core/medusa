@@ -1786,7 +1786,7 @@
     }
   },
   "stockLocations": {
-    "domain": "Locations & Shipping",
+    "domain": "Shipping",
     "list": {
       "description": "Manage your store's stock locations and shipping options.",
       "noRecordsMessage": "No records",
@@ -3041,7 +3041,7 @@
     }
   },
   "regions": {
-    "domain": "Markets",
+    "domain": "Regions",
     "subtitle": "A region is an area that you sell products in. It can cover multiple countries, and has different tax rates, providers, and currency.",
     "createRegion": "Create Region",
     "createRegionHint": "Manage tax rates and providers for a set of countries.",

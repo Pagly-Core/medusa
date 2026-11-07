@@ -180,7 +180,7 @@ describe("searching the settings", () => {
     "app.nav.settings.storeGeneral": "General",
     "users.domain": "Usuarios",
     "app.nav.settings.shipping": "Envíos",
-    "regions.domain": "Mercados",
+    "regions.domain": "Regiones",
     "taxRegions.domain": "Impuestos",
     "salesChannels.domain": "Canales de venta",
     "app.nav.tabs.returns": "Devoluciones",
@@ -228,5 +228,23 @@ describe("searching the settings", () => {
 
   test("returns nothing for a blank query", () => {
     expect(search("   ")).toEqual([])
+  })
+})
+
+describe("plugin store setup pages", () => {
+  test("put electronic invoicing in Selling, after taxes", () => {
+    const sell = groupSettingsRoutes(
+      [
+        core("/settings/tax-regions", "taxRegions.domain"),
+        core("/settings/sales-channels", "salesChannels.domain"),
+        plugin("/settings/facturacion-electronica", "einvoicing.domain"),
+      ],
+      t
+    ).find((section) => section.id === "sell")
+    expect(sell?.items.map((item) => item.to)).toEqual([
+      "/settings/tax-regions",
+      "/settings/facturacion-electronica",
+      "/settings/sales-channels",
+    ])
   })
 })

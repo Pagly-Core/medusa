@@ -71,4 +71,19 @@ describe("the section tabs", () => {
     expect(screen.queryAllByRole("tab")).toHaveLength(0)
     expect(screen.getByTestId("where").textContent).toBe("/collections")
   })
+
+  test("are links, so a tab opens in a new browser tab", () => {
+    renderAt("/categories")
+    const types = screen.getByRole("tab", { name: "app.nav.tabs.types" })
+    expect(types.tagName).toBe("A")
+    expect(types.getAttribute("href")).toBe("/product-types")
+  })
+
+  test("stay on the page while the arrow keys move between them", () => {
+    renderAt("/categories")
+    const categories = screen.getByRole("tab", { name: "categories.domain" })
+    categories.focus()
+    fireEvent.keyDown(categories, { key: "ArrowRight" })
+    expect(screen.getByTestId("where").textContent).toBe("/categories")
+  })
 })

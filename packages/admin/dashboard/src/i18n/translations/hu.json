@@ -288,10 +288,7 @@
         "storeSettings": "Áruházbeállítások"
       },
       "settings": {
-        "header": "Beállítások",
-        "general": "Általános",
-        "developer": "Fejlesztő",
-        "myAccount": "Saját fiók"
+        "header": "Beállítások"
       }
     }
   },

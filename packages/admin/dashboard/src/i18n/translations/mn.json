@@ -288,10 +288,7 @@
         "storeSettings": "Дэлгүүрийн тохиргоо"
       },
       "settings": {
-        "header": "Тохиргоо",
-        "general": "Ерөнхий",
-        "developer": "Хөгжүүлэгч",
-        "myAccount": "Миний данс"
+        "header": "Тохиргоо"
       }
     }
   },

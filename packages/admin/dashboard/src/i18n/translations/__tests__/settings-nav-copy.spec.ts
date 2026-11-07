@@ -19,6 +19,7 @@ const pick = (json: any) => ({
   },
   tabs: json.app.nav.tabs,
   regions: json.regions.domain,
+  stockLocations: json.stockLocations.domain,
   taxRegions: json.taxRegions.domain,
   returnReasons: json.returnReasons.domain,
 })
@@ -46,7 +47,8 @@ describe("the settings navigation copy", () => {
         publishable: "Publicables",
         secret: "Secretas",
       },
-      regions: "Mercados",
+      regions: "Regiones",
+      stockLocations: "Envíos",
       taxRegions: "Impuestos",
       returnReasons: "Motivos de devolución",
     })
@@ -74,7 +76,8 @@ describe("the settings navigation copy", () => {
         publishable: "Publishable",
         secret: "Secret",
       },
-      regions: "Markets",
+      regions: "Regions",
+      stockLocations: "Shipping",
       taxRegions: "Taxes",
       returnReasons: "Return reasons",
     })

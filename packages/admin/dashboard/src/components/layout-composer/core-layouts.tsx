@@ -6,6 +6,7 @@ import {
   TwoColumnLayoutComponent,
 } from "../layout/pages"
 import { SettingsSidebarLayoutComponent } from "../layout/settings-layout/settings-sidebar-layout-component"
+import { SETTINGS_SIDEBAR_SECTION_IDS } from "../layout/settings-layout/settings-nav-groups"
 
 export const CORE_LAYOUTS: LayoutDefinition[] = [
   {
@@ -30,11 +31,10 @@ export const CORE_LAYOUTS: LayoutDefinition[] = [
     id: CORE_LAYOUT_IDS.SETTINGS_SIDEBAR,
     sections: [
       // Pagly: the settings sidebar's groups (see SETTINGS_NAV_GROUPS).
-      { id: "store", ordering: "list" },
-      { id: "sell", ordering: "list" },
-      { id: "customers", ordering: "list" },
-      { id: "advanced", ordering: "list" },
-      { id: "extensions", ordering: "list" },
+      ...SETTINGS_SIDEBAR_SECTION_IDS.map((id) => ({
+        id,
+        ordering: "list" as const,
+      })),
     ],
     Component: SettingsSidebarLayoutComponent,
   },

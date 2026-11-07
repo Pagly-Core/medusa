@@ -288,10 +288,7 @@
         "storeSettings": "Настройки на магазина"
       },
       "settings": {
-        "header": "Настройки",
-        "general": "Общи",
-        "developer": "Разработчик",
-        "myAccount": "Моят акаунт"
+        "header": "Настройки"
       }
     }
   },

@@ -1,6 +1,6 @@
 import { Tabs } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
 
 import { findTab } from "./tab-groups"
 
@@ -20,11 +20,17 @@ export const SectionTabs = () => {
   }
 
   return (
-    <Tabs value={current.tab.to} onValueChange={(to) => navigate(to)}>
+    // Manual activation: arrow keys move focus without navigating (each tab's
+    // page remounts this bar); links keep cmd-click and middle-click.
+    <Tabs
+      value={current.tab.to}
+      onValueChange={(to) => navigate(to)}
+      activationMode="manual"
+    >
       <Tabs.List>
         {current.group.tabs.map((tab) => (
-          <Tabs.Trigger key={tab.to} value={tab.to}>
-            {t(tab.label as any)}
+          <Tabs.Trigger key={tab.to} value={tab.to} asChild>
+            <Link to={tab.to}>{t(tab.label as any)}</Link>
           </Tabs.Trigger>
         ))}
       </Tabs.List>

@@ -288,10 +288,7 @@
         "storeSettings": "Store settings"
       },
       "settings": {
-        "header": "Settings",
-        "general": "General",
-        "developer": "Developer",
-        "myAccount": "My Account"
+        "header": "Settings"
       }
     }
   },

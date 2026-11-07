@@ -273,10 +273,7 @@
         "storeSettings": "Kaupan asetukset"
       },
       "settings": {
-        "header": "Asetukset",
-        "general": "Yleiset",
-        "developer": "Kehittäjä",
-        "myAccount": "Oma tili"
+        "header": "Asetukset"
       }
     }
   },
