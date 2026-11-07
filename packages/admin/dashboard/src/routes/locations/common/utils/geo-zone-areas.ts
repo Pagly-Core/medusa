@@ -52,6 +52,12 @@ export const fromGeoZones = (
     }
     countries.set(zone.country_code, country)
   }
+  // A country the zone also covers whole is covered whole.
+  for (const zone of geoZones) {
+    if (zone.type === "country") {
+      countries.get(zone.country_code)!.provinces = []
+    }
+  }
   return [...countries.values()]
 }
 
