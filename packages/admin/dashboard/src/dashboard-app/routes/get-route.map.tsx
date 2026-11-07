@@ -8,6 +8,8 @@ import { PublicLayout } from "../../components/layout/public-layout"
 import { SettingsLayout } from "../../components/layout/settings-layout"
 import { ErrorBoundary } from "../../components/utilities/error-boundary"
 import { HydrateFallback } from "../../components/utilities/hydrate-fallback"
+import { MovedRoute } from "./moved-route"
+import { withSectionTabs } from "./with-section-tabs"
 
 export function getRouteMap({
   settingsRoutes,
@@ -16,7 +18,7 @@ export function getRouteMap({
   settingsRoutes: RouteObject[]
   coreRoutes: RouteObject[]
 }) {
-  return [
+  return withSectionTabs([
     {
       element: <ProtectedRoute />,
       errorElement: <ErrorBoundary />,
@@ -367,6 +369,119 @@ export function getRouteMap({
                         import("../../routes/categories/category-organize"),
                     },
                     // Pagly: no raw metadata editor; metadata is edited through metaobjects.
+                  ],
+                },
+              ],
+            },
+            // Pagly: tabs of Products › Organization (see TAB_GROUPS).
+            {
+              path: "/product-types",
+              errorElement: <ErrorBoundary />,
+              element: <Outlet />,
+              handle: {
+                breadcrumb: () => t("productTypes.domain"),
+              },
+              children: [
+                {
+                  path: "",
+                  lazy: () =>
+                    import("../../routes/product-types/product-type-list"),
+                  children: [
+                    {
+                      path: "create",
+                      lazy: () =>
+                        import(
+                          "../../routes/product-types/product-type-create"
+                        ),
+                    },
+                  ],
+                },
+                {
+                  path: ":id",
+                  lazy: async () => {
+                    const { Component, Breadcrumb, loader, seo } = await import(
+                      "../../routes/product-types/product-type-detail"
+                    )
+
+                    return {
+                      Component,
+                      loader,
+                      handle: {
+                        breadcrumb: (
+                          match: UIMatch<HttpTypes.AdminProductTypeResponse>
+                        ) => <Breadcrumb {...match} />,
+                        seo,
+                      },
+                    }
+                  },
+                  children: [
+                    {
+                      path: "edit",
+                      lazy: () =>
+                        import("../../routes/product-types/product-type-edit"),
+                    },
+                    {
+                      path: "metadata/edit",
+                      lazy: () =>
+                        import(
+                          "../../routes/product-types/product-type-metadata"
+                        ),
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              path: "/product-tags",
+              errorElement: <ErrorBoundary />,
+              element: <Outlet />,
+              handle: {
+                breadcrumb: () => t("productTags.domain"),
+              },
+              children: [
+                {
+                  path: "",
+                  lazy: () =>
+                    import("../../routes/product-tags/product-tag-list"),
+                  children: [
+                    {
+                      path: "create",
+                      lazy: () =>
+                        import("../../routes/product-tags/product-tag-create"),
+                    },
+                  ],
+                },
+                {
+                  path: ":id",
+                  lazy: async () => {
+                    const { Component, Breadcrumb, loader, seo } = await import(
+                      "../../routes/product-tags/product-tag-detail"
+                    )
+
+                    return {
+                      Component,
+                      loader,
+                      handle: {
+                        breadcrumb: (
+                          match: UIMatch<HttpTypes.AdminProductTagResponse>
+                        ) => <Breadcrumb {...match} />,
+                        seo,
+                      },
+                    }
+                  },
+                  children: [
+                    {
+                      path: "edit",
+                      lazy: () =>
+                        import("../../routes/product-tags/product-tag-edit"),
+                    },
+                    {
+                      path: "metadata/edit",
+                      lazy: () =>
+                        import(
+                          "../../routes/product-tags/product-tag-metadata"
+                        ),
+                    },
                   ],
                 },
               ],
@@ -1681,60 +1796,14 @@ export function getRouteMap({
                 },
               ],
             },
+            // Pagly: product types and tags moved to Products › Organization.
             {
-              path: "product-tags",
-              errorElement: <ErrorBoundary />,
-              element: <Outlet />,
-              handle: {
-                breadcrumb: () => t("productTags.domain"),
-              },
-              children: [
-                {
-                  path: "",
-                  lazy: () =>
-                    import("../../routes/product-tags/product-tag-list"),
-                  children: [
-                    {
-                      path: "create",
-                      lazy: () =>
-                        import("../../routes/product-tags/product-tag-create"),
-                    },
-                  ],
-                },
-                {
-                  path: ":id",
-                  lazy: async () => {
-                    const { Component, Breadcrumb, loader, seo } = await import(
-                      "../../routes/product-tags/product-tag-detail"
-                    )
-
-                    return {
-                      Component,
-                      loader,
-                      handle: {
-                        breadcrumb: (
-                          match: UIMatch<HttpTypes.AdminProductTagResponse>
-                        ) => <Breadcrumb {...match} />,
-                        seo,
-                      },
-                    }
-                  },
-                  children: [
-                    {
-                      path: "edit",
-                      lazy: () =>
-                        import("../../routes/product-tags/product-tag-edit"),
-                    },
-                    {
-                      path: "metadata/edit",
-                      lazy: () =>
-                        import(
-                          "../../routes/product-tags/product-tag-metadata"
-                        ),
-                    },
-                  ],
-                },
-              ],
+              path: "product-tags/*",
+              element: <MovedRoute from="/settings/product-tags" to="/product-tags" />,
+            },
+            {
+              path: "product-types/*",
+              element: <MovedRoute from="/settings/product-types" to="/product-types" />,
             },
             {
               path: "workflows",
@@ -1781,63 +1850,6 @@ export function getRouteMap({
               },
               lazy: () =>
                 import("../../routes/search-indexes/search-index-list"),
-            },
-            {
-              path: "product-types",
-              errorElement: <ErrorBoundary />,
-              element: <Outlet />,
-              handle: {
-                breadcrumb: () => t("productTypes.domain"),
-              },
-              children: [
-                {
-                  path: "",
-                  lazy: () =>
-                    import("../../routes/product-types/product-type-list"),
-                  children: [
-                    {
-                      path: "create",
-                      lazy: () =>
-                        import(
-                          "../../routes/product-types/product-type-create"
-                        ),
-                    },
-                  ],
-                },
-                {
-                  path: ":id",
-                  lazy: async () => {
-                    const { Component, Breadcrumb, loader, seo } = await import(
-                      "../../routes/product-types/product-type-detail"
-                    )
-
-                    return {
-                      Component,
-                      loader,
-                      handle: {
-                        breadcrumb: (
-                          match: UIMatch<HttpTypes.AdminProductTypeResponse>
-                        ) => <Breadcrumb {...match} />,
-                        seo,
-                      },
-                    }
-                  },
-                  children: [
-                    {
-                      path: "edit",
-                      lazy: () =>
-                        import("../../routes/product-types/product-type-edit"),
-                    },
-                    {
-                      path: "metadata/edit",
-                      lazy: () =>
-                        import(
-                          "../../routes/product-types/product-type-metadata"
-                        ),
-                    },
-                  ],
-                },
-              ],
             },
             {
               path: "publishable-api-keys",
@@ -2252,5 +2264,5 @@ export function getRouteMap({
         },
       ],
     },
-  ]
+  ])
 }

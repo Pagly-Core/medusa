@@ -287,10 +287,7 @@
         "storeSettings": "Pengaturan toko"
       },
       "settings": {
-        "header": "Pengaturan",
-        "general": "Umum",
-        "developer": "Pengembang",
-        "myAccount": "Akun Saya"
+        "header": "Pengaturan"
       }
     }
   },

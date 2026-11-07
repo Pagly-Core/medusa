@@ -298,10 +298,7 @@
         "storeSettings": "Parduotuvės nustatymai"
       },
       "settings": {
-        "header": "Nustatymai",
-        "general": "Bendrieji",
-        "developer": "Kūrėjo",
-        "myAccount": "Mano Paskyra"
+        "header": "Nustatymai"
       }
     }
   },

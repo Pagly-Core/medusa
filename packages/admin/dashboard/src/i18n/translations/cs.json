@@ -298,10 +298,7 @@
         "storeSettings": "Nastavení obchodu"
       },
       "settings": {
-        "header": "Nastavení",
-        "general": "Obecné",
-        "developer": "Vývojář",
-        "myAccount": "Můj účet"
+        "header": "Nastavení"
       }
     }
   },

@@ -326,9 +326,24 @@
       "salesChannels": "Canales de venta",
       "settings": {
         "header": "Configuraciones",
-        "general": "General",
-        "developer": "Desarrollador",
-        "myAccount": "Mi cuenta"
+        "store": "Tienda",
+        "sell": "Vender",
+        "customers": "Clientes",
+        "advanced": "Avanzado",
+        "search": "Buscar",
+        "storeGeneral": "General",
+        "shipping": "Envíos"
+      },
+      "tabs": {
+        "organization": "Organización",
+        "types": "Tipos",
+        "tags": "Etiquetas",
+        "returns": "Devoluciones",
+        "returnReasons": "Motivos de devolución",
+        "refundReasons": "Motivos de reembolso",
+        "apiKeys": "Claves API",
+        "publishable": "Publicables",
+        "secret": "Secretas"
       }
     }
   },
@@ -1818,7 +1833,7 @@
     }
   },
   "stockLocations": {
-    "domain": "Ubicaciones y envío",
+    "domain": "Envíos",
     "list": {
       "description": "Gestioná las ubicaciones de inventario de tu tienda y las opciones de envío.",
       "noRecordsMessage": "Sin registros",
@@ -2052,7 +2067,7 @@
     }
   },
   "taxRegions": {
-    "domain": "Regiones impositivas",
+    "domain": "Impuestos",
     "list": {
       "hint": "Gestioná lo que les cobrás a tus clientes cuando compran desde diferentes países y regiones."
     },
@@ -2588,7 +2603,7 @@
       "shipping_option": "Opción de envío",
       "tax_region": "Región de impuestos",
       "api_key": "Clave de API",
-      "return_reason": "Razón de devolución",
+      "return_reason": "Motivo de devolución",
       "refund_reason": "Razón de reembolso",
       "workflow": "Flujo de trabajo",
       "translation": "Traducción"
@@ -3388,30 +3403,30 @@
     }
   },
   "returnReasons": {
-    "domain": "Razones de devolución",
-    "subtitle": "Gestioná las razones de los artículos devueltos.",
-    "calloutHint": "Gestioná las razones para categorizar las devoluciones.",
-    "editReason": "Editar razón de devolución",
+    "domain": "Motivos de devolución",
+    "subtitle": "Gestioná los motivos de los artículos devueltos.",
+    "calloutHint": "Gestioná los motivos para categorizar las devoluciones.",
+    "editReason": "Editar motivo de devolución",
     "create": {
-      "header": "Agregar razón de devolución",
-      "subtitle": "Especificá las razones más comunes para las devoluciones.",
-      "hint": "Creá una razón de devolución para categorizar las devoluciones.",
-      "successToast": "Razón de devolución {{label}} creada exitosamente."
+      "header": "Agregar motivo de devolución",
+      "subtitle": "Especificá los motivos más comunes para las devoluciones.",
+      "hint": "Creá un motivo de devolución para categorizar las devoluciones.",
+      "successToast": "Motivo de devolución {{label}} creado exitosamente."
     },
     "edit": {
-      "header": "Editar razón de devolución",
-      "subtitle": "Editá el valor de la razón de devolución.",
-      "successToast": "Razón de devolución {{label}} actualizada exitosamente."
+      "header": "Editar motivo de devolución",
+      "subtitle": "Editá el valor del motivo de devolución.",
+      "successToast": "Motivo de devolución {{label}} actualizado exitosamente."
     },
     "delete": {
-      "confirmation": "Estás a punto de eliminar la razón de devolución {{label}}. Esta acción no puede deshacerse.",
-      "successToast": "Razón de devolución {{label}} eliminada exitosamente."
+      "confirmation": "Estás a punto de eliminar el motivo de devolución {{label}}. Esta acción no puede deshacerse.",
+      "successToast": "Motivo de devolución {{label}} eliminado exitosamente."
     },
     "fields": {
       "value": {
         "label": "Valor",
         "placeholder": "wrong_size",
-        "tooltip": "El valor debe ser un identificador único para la razón de devolución."
+        "tooltip": "El valor debe ser un identificador único para el motivo de devolución."
       },
       "label": {
         "label": "Etiqueta",

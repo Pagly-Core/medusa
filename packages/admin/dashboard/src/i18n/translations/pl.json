@@ -283,10 +283,7 @@
         "storeSettings": "Ustawienia sklepu"
       },
       "settings": {
-        "header": "Ustawienia",
-        "general": "Ogólne",
-        "developer": "Deweloper",
-        "myAccount": "Moje Konto"
+        "header": "Ustawienia"
       }
     }
   },

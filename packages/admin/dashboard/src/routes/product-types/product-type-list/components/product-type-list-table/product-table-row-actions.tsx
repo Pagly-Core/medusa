@@ -27,7 +27,7 @@ export const ProductTypeRowActions = ({
             {
               label: t("actions.edit"),
               icon: <PencilSquare />,
-              to: `/settings/product-types/${productType.id}/edit`,
+              to: `/product-types/${productType.id}/edit`,
             },
           ],
         },

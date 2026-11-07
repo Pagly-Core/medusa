@@ -288,10 +288,7 @@
         "storeSettings": "การตั้งค่าร้านค้า"
       },
       "settings": {
-        "header": "การตั้งค่า",
-        "general": "ทั่วไป",
-        "developer": "นักพัฒนา",
-        "myAccount": "บัญชีของฉัน"
+        "header": "การตั้งค่า"
       }
     }
   },

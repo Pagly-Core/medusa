@@ -288,10 +288,7 @@
         "storeSettings": "Impostazioni negozio"
       },
       "settings": {
-        "header": "Impostazioni",
-        "general": "Generale",
-        "developer": "Sviluppatore",
-        "myAccount": "Il mio account"
+        "header": "Impostazioni"
       }
     }
   },

@@ -308,10 +308,7 @@
         "storeSettings": "إعدادات المتجر"
       },
       "settings": {
-        "header": "الإعدادات",
-        "general": "عام",
-        "developer": "المطور",
-        "myAccount": "حسابي"
+        "header": "الإعدادات"
       }
     }
   },

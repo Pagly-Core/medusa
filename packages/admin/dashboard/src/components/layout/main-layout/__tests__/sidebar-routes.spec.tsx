@@ -167,3 +167,40 @@ describe("the sales channels group in the main sidebar", () => {
     expect(within(entry).getByRole("link", { name: label })).toBeTruthy()
   })
 })
+
+/**
+ * Pagly: categories, options, types and tags share one Organization entry
+ * under Products.
+ */
+describe("the products entry in the main sidebar", () => {
+  it("nests Collections, then Organization", () => {
+    const { container } = renderSidebar([], "/products")
+
+    const entry = container.querySelector(
+      '[data-entry-id="nav:/products"]'
+    ) as HTMLElement
+    const nested = within(entry)
+      .getAllByRole("link")
+      .map((link) => [link.textContent, link.getAttribute("href")])
+    expect(nested).toEqual(
+      expect.arrayContaining([
+        ["collections.domain", "/collections"],
+        ["app.nav.tabs.organization", "/categories"],
+      ])
+    )
+    expect(nested.map((n) => n[0])).not.toContain("categories.domain")
+    expect(nested.map((n) => n[0])).not.toContain("productOptions.domain")
+  })
+
+  it("stays open on a tab's page", () => {
+    const { container } = renderSidebar([], "/product-tags")
+
+    const entry = container.querySelector(
+      '[data-entry-id="nav:/products"]'
+    ) as HTMLElement
+    expect(
+      within(entry).getAllByRole("link", { name: "app.nav.tabs.organization" })
+        .length
+    ).toBeGreaterThan(0)
+  })
+})

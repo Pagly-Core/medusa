@@ -25,7 +25,7 @@ export const useDeleteProductTypeAction = (id: string, value: string) => {
 
     await mutateAsync(undefined, {
       onSuccess: () => {
-        navigate("/settings/product-types", { replace: true })
+        navigate("/product-types", { replace: true })
         toast.success(t("productTypes.delete.successToast", { value }))
       },
       onError: (e) => {

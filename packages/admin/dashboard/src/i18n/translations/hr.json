@@ -278,10 +278,7 @@
         "storeSettings": "Postavke trgovine"
       },
       "settings": {
-        "header": "Postavke",
-        "general": "Opće",
-        "developer": "Razvoj",
-        "myAccount": "Moj račun"
+        "header": "Postavke"
       }
     }
   },
