@@ -2031,6 +2031,8 @@
         "label": "Áreas",
         "hint": "Seleccioná las áreas geográficas que cubre la zona de servicio.",
         "wholeCountry": "Todo el país",
+        "inOtherZone_one": "{{areas}} ya está en la zona {{zone}}.",
+        "inOtherZone_other": "{{areas}} ya están en la zona {{zone}}.",
         "successToast": "Áreas para {{name}} actualizadas correctamente."
       },
       "fields": {

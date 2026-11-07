@@ -1,4 +1,4 @@
-import { Button, Checkbox } from "@medusajs/ui"
+import { Button, Checkbox, Hint } from "@medusajs/ui"
 import {
   OnChangeFn,
   RowSelectionState,
@@ -26,7 +26,13 @@ import { useCountries } from "../../../../regions/common/hooks/use-countries"
 import { useCountryTableColumns } from "../../../../regions/common/hooks/use-country-table-columns"
 import { useCountryTableQuery } from "../../../../regions/common/hooks/use-country-table-query"
 import { GEO_ZONE_STACKED_MODAL_ID } from "../../constants"
-import { registeredProvinces } from "../../utils/geo-zone-areas"
+import {
+  areaConflicts,
+  provinceName,
+  registeredProvinces,
+  takenIn,
+  type OtherZone,
+} from "../../utils/geo-zone-areas"
 
 const GeoZoneSchema = z.object({
   countries: z.array(
@@ -41,10 +47,13 @@ const GeoZoneSchema = z.object({
 
 type GeoZoneFormImplProps<TForm extends UseFormReturn<any>> = {
   form: TForm
+  /** Pagly: the set's other zones, whose areas this one can't take. */
+  otherZones?: OtherZone[]
 }
 
 const GeoZoneFormImpl = <TForm extends UseFormReturn<any>>({
   form,
+  otherZones = [],
 }: GeoZoneFormImplProps<TForm>) => {
   const castForm = form as unknown as UseFormReturn<
     z.infer<typeof GeoZoneSchema>
@@ -106,9 +115,22 @@ const GeoZoneFormImpl = <TForm extends UseFormReturn<any>>({
             {/* (A field array's iso_2 is its key, so the codes come from the values.) */}
             {(castForm.watch("countries") ?? []).map((country, index) =>
               registeredProvinces(country.iso_2).length ? (
-                <ProvincesField key={country.iso_2} form={castForm} index={index} />
+                <ProvincesField key={country.iso_2} form={castForm} index={index} otherZones={otherZones} />
               ) : null
             )}
+            {/* Pagly: a country without provinces another zone of the set already covers. */}
+            {areaConflicts(
+              (castForm.watch("countries") ?? []).filter((country) => !registeredProvinces(country.iso_2).length),
+              otherZones
+            ).map((conflict) => (
+              <Hint key={`${conflict.iso_2}-${conflict.zone}`} variant="error">
+                {t("stockLocations.serviceZones.manageAreas.inOtherZone", {
+                  count: 1,
+                  areas: castForm.getValues("countries").find((country) => country.iso_2 === conflict.iso_2)?.display_name,
+                  zone: conflict.zone,
+                })}
+              </Hint>
+            ))}
           </Form.Item>
         )
       }}
@@ -120,16 +142,29 @@ const GeoZoneFormImpl = <TForm extends UseFormReturn<any>>({
 const ProvincesField = ({
   form,
   index,
+  otherZones,
 }: {
   form: UseFormReturn<z.infer<typeof GeoZoneSchema>>
   index: number
+  otherZones: OtherZone[]
 }) => {
   const { t } = useTranslation()
   const country = form.getValues(`countries.${index}`)
-  const options = registeredProvinces(country.iso_2).map((province) => ({
-    value: province.code,
-    label: province.name,
-  }))
+  // A province (or the whole country) another zone of the set holds reads
+  // as that zone's and can't be picked.
+  const taken = takenIn(otherZones, country.iso_2)
+  const options = registeredProvinces(country.iso_2).map((province) => {
+    const holder = taken.whole ?? taken.provinces[province.code]
+    return {
+      value: province.code,
+      label: holder ? `${province.name} · ${holder}` : province.name,
+      disabled: !!holder,
+    }
+  })
+  const chosen = form.watch(`countries.${index}`)
+  const conflicts = areaConflicts(chosen ? [chosen] : [], otherZones)
+  const names = (areas: string[]) =>
+    areas.map((area) => (area === country.iso_2 ? country.display_name : provinceName(area))).join(", ")
 
   return (
     <Form.Field
@@ -148,6 +183,15 @@ const ProvincesField = ({
               displayMode="chips"
             />
           </Form.Control>
+          {conflicts.map((conflict) => (
+            <Hint key={conflict.zone} variant="error" className="mt-1">
+              {t("stockLocations.serviceZones.manageAreas.inOtherZone", {
+                count: conflict.areas.length,
+                areas: names(conflict.areas),
+                zone: conflict.zone,
+              })}
+            </Hint>
+          ))}
         </Form.Item>
       )}
     />

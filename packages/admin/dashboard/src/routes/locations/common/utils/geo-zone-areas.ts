@@ -70,9 +70,52 @@ export type TakenAreas = { whole: string | null; provinces: Record<string, strin
 /** An overlap with another zone: its name and the areas (province codes, or the country) both would cover. */
 export type AreaConflict = { iso_2: string; zone: string; areas: string[] }
 
-export const takenIn = (_otherZones: OtherZone[], _iso2: string): TakenAreas => ({ whole: null, provinces: {} })
+export const takenIn = (otherZones: OtherZone[], iso2: string): TakenAreas => {
+  const country = iso2.toLowerCase()
+  const taken: TakenAreas = { whole: null, provinces: {} }
 
-export const areaConflicts = (_countries: AreaCountry[], _otherZones: OtherZone[]): AreaConflict[] => []
+  for (const zone of otherZones) {
+    for (const geo of zone.geo_zones ?? []) {
+      if (geo.country_code?.toLowerCase() !== country) continue
+      if (geo.type === "country") {
+        taken.whole = taken.whole ?? zone.name
+      } else if (geo.type === "province" && geo.province_code) {
+        taken.provinces[geo.province_code.toLowerCase()] = zone.name
+      }
+    }
+  }
+
+  return taken
+}
+
+/**
+ * Where a zone's areas would overlap the set's other zones: a province one
+ * of them holds, the whole country while one holds part of it, or any part
+ * of a country one holds whole. One entry per country and zone.
+ */
+export const areaConflicts = (countries: AreaCountry[], otherZones: OtherZone[]): AreaConflict[] => {
+  const conflicts: AreaConflict[] = []
+
+  for (const country of countries) {
+    const taken = takenIn(otherZones, country.iso_2)
+    if (taken.whole) {
+      conflicts.push({ iso_2: country.iso_2, zone: taken.whole, areas: [country.iso_2] })
+      continue
+    }
+
+    const wanted = country.provinces?.length ? country.provinces : Object.keys(taken.provinces)
+    const byZone = new Map<string, string[]>()
+    for (const province of wanted) {
+      const zone = taken.provinces[province.toLowerCase()]
+      if (zone) byZone.set(zone, [...(byZone.get(zone) ?? []), province])
+    }
+    for (const [zone, areas] of byZone) {
+      conflicts.push({ iso_2: country.iso_2, zone, areas })
+    }
+  }
+
+  return conflicts
+}
 
 /** What a zone covers, one line per country: "Uruguay" or "Uruguay · Maldonado, Rocha". */
 export const areaLabels = (

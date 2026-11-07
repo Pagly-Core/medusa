@@ -18,7 +18,7 @@ import {
   FulfillmentSetType,
   GEO_ZONE_STACKED_MODAL_ID,
 } from "../../../common/constants"
-import { toGeoZones } from "../../../common/utils/geo-zone-areas"
+import { areaConflicts, toGeoZones } from "../../../common/utils/geo-zone-areas"
 
 const CreateServiceZoneSchema = z.object({
   name: z.string().min(1),
@@ -60,7 +60,15 @@ export function CreateServiceZoneForm({
     fulfillmentSet.id
   )
 
+  // Pagly: an area sits in one zone of a set; the field says which.
+  const otherZones = fulfillmentSet.service_zones ?? []
+  const overlaps = areaConflicts(form.watch("countries") ?? [], otherZones).length > 0
+
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (areaConflicts(data.countries, otherZones).length) {
+      return
+    }
+
     await mutateAsync(
       {
         name: data.name,
@@ -127,7 +135,7 @@ export function CreateServiceZoneForm({
                   {t("stockLocations.serviceZones.fields.tip")}
                 </InlineTip>
 
-                <GeoZoneForm form={form} />
+                <GeoZoneForm form={form} otherZones={otherZones} />
               </div>
             </div>
             <GeoZoneForm.AreaDrawer form={form} />
@@ -141,7 +149,7 @@ export function CreateServiceZoneForm({
                 {t("actions.cancel")}
               </Button>
             </RouteFocusModal.Close>
-            <Button type="submit" size="small" isLoading={isPending}>
+            <Button type="submit" size="small" isLoading={isPending} disabled={overlaps}>
               {t("actions.save")}
             </Button>
           </div>

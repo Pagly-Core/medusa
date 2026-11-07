@@ -16,8 +16,10 @@ import { countries } from "../../../../../lib/data/countries"
 import { GeoZoneForm } from "../../../common/components/geo-zone-form"
 import { GEO_ZONE_STACKED_MODAL_ID } from "../../../common/constants"
 import {
+  areaConflicts,
   fromGeoZones,
   toGeoZones,
+  type OtherZone,
 } from "../../../common/utils/geo-zone-areas"
 
 const EditeServiceZoneSchema = z.object({
@@ -37,12 +39,15 @@ type EditServiceZoneAreasFormProps = {
   fulfillmentSetId: string
   locationId: string
   zone: HttpTypes.AdminServiceZone
+  /** Pagly: the set's other zones, whose areas this one can't take. */
+  otherZones?: OtherZone[]
 }
 
 export function EditServiceZoneAreasForm({
   fulfillmentSetId,
   locationId,
   zone,
+  otherZones = [],
 }: EditServiceZoneAreasFormProps) {
   const { t } = useTranslation()
   const { handleSuccess } = useRouteModal()
@@ -63,7 +68,14 @@ export function EditServiceZoneAreasForm({
   const { mutateAsync: editServiceZone, isPending: isLoading } =
     useUpdateFulfillmentSetServiceZone(fulfillmentSetId, zone.id)
 
+  // Pagly: an area sits in one zone of a set; the field says which.
+  const overlaps = areaConflicts(form.watch("countries") ?? [], otherZones).length > 0
+
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (areaConflicts(data.countries, otherZones).length) {
+      return
+    }
+
     await editServiceZone(
       {
         // Pagly: a country covered by some of its provinces saves them.
@@ -103,7 +115,7 @@ export function EditServiceZoneAreasForm({
                     name: zone.name,
                   })}
                 </Heading>
-                <GeoZoneForm form={form} />
+                <GeoZoneForm form={form} otherZones={otherZones} />
               </div>
             </div>
 
@@ -117,7 +129,7 @@ export function EditServiceZoneAreasForm({
                 {t("actions.cancel")}
               </Button>
             </RouteFocusModal.Close>
-            <Button type="submit" size="small" isLoading={isLoading}>
+            <Button type="submit" size="small" isLoading={isLoading} disabled={overlaps}>
               {t("actions.save")}
             </Button>
           </div>

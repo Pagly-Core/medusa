@@ -1984,6 +1984,8 @@
         "label": "Areas",
         "hint": "Select the geographical areas that the service zone covers.",
         "wholeCountry": "Whole country",
+        "inOtherZone_one": "{{areas}} is already in the zone {{zone}}.",
+        "inOtherZone_other": "{{areas}} are already in the zone {{zone}}.",
         "successToast": "Areas for {{name}} were successfully updated."
       },
       "fields": {
