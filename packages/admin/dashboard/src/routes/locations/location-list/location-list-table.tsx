@@ -1,7 +1,9 @@
-import { Container } from "@medusajs/ui"
+import { Button, Container } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
+import { Link } from "react-router-dom"
 
+import { EmptyState } from "../../../components/common/empty-state"
 import { DataTable } from "../../../components/data-table"
 import { useStockLocations } from "../../../hooks/api/stock-locations"
 import { LOCATION_LIST_FIELDS } from "./constants"
@@ -50,11 +52,18 @@ export const LocationListTable = () => {
         pageSize={PAGE_SIZE}
         getRowId={(row) => row.id}
         heading={t("stockLocations.domain")}
-        subHeading={t("stockLocations.list.description")}
         emptyState={{
           empty: {
-            heading: t("stockLocations.list.noRecordsMessage"),
-            description: t("stockLocations.list.noRecordsMessageEmpty"),
+            custom: (
+              <EmptyState
+                kind="locations"
+                action={
+                  <Button size="small" variant="secondary" asChild>
+                    <Link to="create">{t("emptyStates.locations.action")}</Link>
+                  </Button>
+                }
+              />
+            ),
           },
           filtered: {
             heading: t("stockLocations.list.noRecordsMessage"),

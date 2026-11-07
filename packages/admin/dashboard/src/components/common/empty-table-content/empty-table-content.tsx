@@ -4,6 +4,8 @@ import React from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 
+import { EmptyState, type EmptyStateKind } from "../empty-state"
+
 export type NoResultsProps = {
   title?: string
   message?: string
@@ -46,6 +48,11 @@ type NoRecordsProps = {
   className?: string
   buttonVariant?: string
   icon?: React.ReactNode
+  /**
+   * Pagly: a list page's kind. It draws the page's empty state (a drawing,
+   * its title and one sentence) instead of the plain block.
+   */
+  kind?: EmptyStateKind
 } & ActionProps
 
 const DefaultButton = ({ action }: ActionProps) =>
@@ -73,8 +80,22 @@ export const NoRecords = ({
   className,
   buttonVariant = "default",
   icon = <ExclamationCircle className="text-ui-fg-subtle" />,
+  kind,
 }: NoRecordsProps) => {
   const { t } = useTranslation()
+
+  if (kind) {
+    return (
+      <div className={className}>
+        <EmptyState
+          kind={kind}
+          title={title}
+          description={message}
+          action={action ? <DefaultButton action={action} /> : undefined}
+        />
+      </div>
+    )
+  }
 
   return (
     <div

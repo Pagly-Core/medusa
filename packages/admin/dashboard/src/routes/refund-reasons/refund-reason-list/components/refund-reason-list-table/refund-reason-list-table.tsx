@@ -1,8 +1,10 @@
 import { HttpTypes } from "@medusajs/types"
-import { Container, createDataTableColumnHelper } from "@medusajs/ui"
+import { Button, Container, createDataTableColumnHelper } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { Link } from "react-router-dom"
+import { EmptyState } from "../../../../../components/common/empty-state"
 import { DataTable } from "../../../../../components/data-table"
 import { useRefundReasons } from "../../../../../hooks/api"
 import { useRefundReasonTableColumns } from "../../../../../hooks/table/columns"
@@ -39,10 +41,20 @@ export const RefundReasonListTable = () => {
         pageSize={PAGE_SIZE}
         getRowId={(row) => row.id}
         heading={t("refundReasons.domain")}
-        subHeading={t("refundReasons.subtitle")}
         emptyState={{
           empty: {
-            heading: t("general.noRecordsMessage"),
+            custom: (
+              <EmptyState
+                kind="refundReasons"
+                action={
+                  <Button size="small" variant="secondary" asChild>
+                    <Link to="create">
+                      {t("emptyStates.refundReasons.action")}
+                    </Link>
+                  </Button>
+                }
+              />
+            ),
           },
           filtered: {
             heading: t("general.noRecordsMessage"),

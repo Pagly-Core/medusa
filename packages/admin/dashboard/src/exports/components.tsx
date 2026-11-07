@@ -55,6 +55,7 @@ export type {
 } from "../components/common/action-menu"
 
 export { ConditionalTooltip } from "../components/common/conditional-tooltip"
+export { EmptyState } from "../components/common/empty-state"
 export { default as DisplayId } from "../components/common/display-id/display-id"
 export { Form } from "../components/common/form"
 export { IconAvatar } from "../components/common/icon-avatar"

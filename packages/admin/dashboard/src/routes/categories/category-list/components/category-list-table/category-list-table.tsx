@@ -1,6 +1,6 @@
 import { GlobeEurope, PencilSquare, Trash } from "@medusajs/icons"
 import { AdminProductCategoryResponse } from "@medusajs/types"
-import { Button, Container, Heading, Text } from "@medusajs/ui"
+import { Button, Container, Heading } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
@@ -70,9 +70,6 @@ export const CategoryListTable = () => {
       <div className="flex items-center justify-between px-6 py-4">
         <div>
           <Heading>{t("categories.domain")}</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            {t("categories.subtitle")}
-          </Text>
         </div>
         <div className="flex items-center gap-x-2">
           {showRankingAction && (
@@ -86,6 +83,13 @@ export const CategoryListTable = () => {
         </div>
       </div>
       <_DataTable
+        noRecords={{
+          kind: "categories",
+          action: {
+            to: "create",
+            label: t("emptyStates.categories.action"),
+          },
+        }}
         table={table}
         columns={columns}
         count={count}

@@ -43,6 +43,13 @@ export const TaxRegionListView = () => {
           to: "create",
           label: t("actions.create"),
         }}
+        noRecords={{
+          kind: "taxRegions",
+          action: {
+            to: "create",
+            label: t("emptyStates.taxRegions.action"),
+          },
+        }}
         isPending={isPending}
         queryObject={raw}
         table={table}

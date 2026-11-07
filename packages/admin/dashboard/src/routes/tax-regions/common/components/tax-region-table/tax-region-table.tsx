@@ -1,7 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import { Table } from "@tanstack/react-table"
-import { ReactNode } from "react"
+import { ComponentProps, ReactNode } from "react"
 import { Link } from "react-router-dom"
 import {
   NoRecords,
@@ -21,6 +21,8 @@ type TaxRegionTableProps = {
   action: { label: string; to: string }
   prefix?: string
   children?: ReactNode
+  /** Pagly: the list page passes its kind; detail sections keep the plain block. */
+  noRecords?: ComponentProps<typeof NoRecords>
 }
 
 export const TaxRegionTable = ({
@@ -32,6 +34,7 @@ export const TaxRegionTable = ({
   queryObject,
   prefix,
   children,
+  noRecords: noRecordsProps,
 }: TaxRegionTableProps) => {
   if (isPending) {
     return (
@@ -81,7 +84,7 @@ export const TaxRegionTable = ({
         </div>
       </div>
       {noResults && <NoResults />}
-      {noRecords && <NoRecords />}
+      {noRecords && <NoRecords {...noRecordsProps} />}
       {!noRecords && !noResults
         ? !isPending
           ? table.getRowModel().rows.map((row) => {

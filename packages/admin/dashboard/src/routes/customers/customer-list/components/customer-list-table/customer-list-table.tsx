@@ -83,7 +83,11 @@ export const CustomerListTable = () => {
         search
         queryObject={raw}
         noRecords={{
-          message: t("customers.list.noRecordsMessage"),
+          kind: "customers",
+          action: {
+            to: "/customers/create",
+            label: t("emptyStates.customers.action"),
+          },
         }}
       />
     </Container>
