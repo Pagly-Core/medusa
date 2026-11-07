@@ -127,3 +127,28 @@ export const areaLabels = (
       ? `${country.display_name} · ${country.provinces.map(provinceName).join(", ")}`
       : country.display_name
   )
+
+// Pagly: the areas picker (stubs; see the spec).
+export const zoneCountries = (): Promise<string[]> | null => null
+
+export const countryCheck = (
+  _areas: AreaCountry[],
+  _iso2: string,
+  _taken: TakenAreas
+): boolean | "indeterminate" => false
+
+type PickedCountry = { iso_2: string; display_name: string }
+
+export const toggleCountry = (areas: AreaCountry[], _country: PickedCountry, _taken: TakenAreas): AreaCountry[] =>
+  areas
+
+export const toggleProvince = (
+  areas: AreaCountry[],
+  _country: PickedCountry,
+  _code: string,
+  _taken: TakenAreas
+): AreaCountry[] => areas
+
+export type AreaChip = { kind: "whole" } | { kind: "names"; names: string[] } | { kind: "count"; count: number; total: number }
+
+export const areaChip = (_country: AreaCountry): AreaChip => ({ kind: "whole" })
