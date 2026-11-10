@@ -145,9 +145,7 @@ export const SettingsSidebar = () => {
     : []
 
   return (
-    // Pagly: isolate keeps the search's sticky header (z-[1]) stacking inside
-    // the sidebar, under full-screen forms (FocusModal is z-index auto).
-    <aside className="relative isolate flex flex-1 flex-col justify-between overflow-y-auto">
+    <aside className="relative flex flex-1 flex-col justify-between overflow-y-auto">
       <div className="bg-ui-bg-subtle sticky top-0 z-[1]">
         <Header />
         <div className="px-3 pb-3">
