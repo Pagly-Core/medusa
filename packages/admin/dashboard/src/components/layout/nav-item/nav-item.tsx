@@ -14,11 +14,10 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { DotsSix, Eye, EyeSlash } from "@medusajs/icons"
-import { IconButton, Kbd, Text, clx } from "@medusajs/ui"
+import { IconButton, Text, clx } from "@medusajs/ui"
 import { Collapsible as RadixCollapsible } from "radix-ui"
 import {
   ComponentType,
-  PropsWithChildren,
   ReactNode,
   useCallback,
   useEffect,
@@ -27,8 +26,6 @@ import {
 import { useTranslation } from "react-i18next"
 import { NavLink, To, useLocation } from "react-router-dom"
 import { useLayoutEdit } from "../../../hooks/use-layout-edit"
-import { useGlobalShortcuts } from "../../../providers/keybind-provider/hooks"
-import { ConditionalTooltip } from "../../common/conditional-tooltip"
 import { getActivePaths } from "../section-tabs/tab-groups"
 
 type ItemType = "core" | "extension" | "setting"
@@ -94,43 +91,6 @@ const getIsOpen = (
   )
 }
 
-const NavItemTooltip = ({
-  to,
-  children,
-}: PropsWithChildren<{ to: string }>) => {
-  const { t } = useTranslation()
-  const globalShortcuts = useGlobalShortcuts()
-  const shortcut = globalShortcuts.find((s) => s.to === to)
-
-  return (
-    <ConditionalTooltip
-      showTooltip={!!shortcut}
-      maxWidth={9999} // Don't limit the width of the tooltip
-      content={
-        <div className="txt-compact-xsmall flex h-5 items-center justify-between gap-x-2 whitespace-nowrap">
-          <span>{shortcut?.label}</span>
-          <div className="flex items-center gap-x-1">
-            {shortcut?.keys.Mac?.map((key, index) => (
-              <div className="flex items-center gap-x-1" key={index}>
-                <Kbd key={key}>{key}</Kbd>
-                {index < (shortcut.keys.Mac?.length || 0) - 1 && (
-                  <span className="text-ui-fg-muted txt-compact-xsmall">
-                    {t("app.keyboardShortcuts.then")}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      }
-      side="right"
-      delayDuration={1500}
-    >
-      <div className="w-full">{children}</div>
-    </ConditionalTooltip>
-  )
-}
-
 type SubItemLinkProps = {
   item: NestedItemProps
   isSetting: boolean
@@ -153,7 +113,7 @@ const SubItemLink = ({
   const itemLabel: string = item.translationNs ? t(item.label) : item.label
 
   return (
-    <NavItemTooltip to={item.to}>
+    <div className="w-full">
       <NavLink
         to={getLinkTarget(item.to)}
         end
@@ -172,7 +132,7 @@ const SubItemLink = ({
           {itemLabel}
         </Text>
       </NavLink>
-    </NavItemTooltip>
+    </div>
   )
 }
 
@@ -401,7 +361,7 @@ export const NavItem = ({
   return (
     <div>
       <div className="group/nav-item relative">
-        <NavItemTooltip to={to}>
+        <div className="w-full">
           <NavLink
             to={getLinkTarget(to)}
             end={items?.some((i) => i.to === pathname)}
@@ -427,7 +387,7 @@ export const NavItem = ({
               {displayLabel}
             </Text>
           </NavLink>
-        </NavItemTooltip>
+        </div>
         {/* Pagly: a plugin's quick actions, clickable only while shown. */}
         {NavActions && (
           <div
@@ -459,7 +419,7 @@ export const NavItem = ({
             <div className="flex flex-col gap-y-0.5 pb-2 pt-0.5">
               <ul className="flex flex-col gap-y-0.5">
                 <li className="flex w-full items-center gap-x-1 lg:hidden">
-                  <NavItemTooltip to={to}>
+                  <div className="w-full">
                     <NavLink
                       to={getLinkTarget(to)}
                       end
@@ -478,7 +438,7 @@ export const NavItem = ({
                         {displayLabel}
                       </Text>
                     </NavLink>
-                  </NavItemTooltip>
+                  </div>
                 </li>
                 <NavSubItems
                   parentTo={to}

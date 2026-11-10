@@ -1,3 +1,1 @@
-export { useRegisterShortcut } from "./hooks"
-export * from "./keybind-provider"
-export type { Shortcut, ShortcutType } from "./types"
+export type { Keys, Shortcut, ShortcutType } from "./types"
