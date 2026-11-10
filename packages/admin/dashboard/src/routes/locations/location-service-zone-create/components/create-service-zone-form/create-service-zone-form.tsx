@@ -18,11 +18,19 @@ import {
   FulfillmentSetType,
   GEO_ZONE_STACKED_MODAL_ID,
 } from "../../../common/constants"
+import { areaConflicts, toGeoZones } from "../../../common/utils/geo-zone-areas"
 
 const CreateServiceZoneSchema = z.object({
   name: z.string().min(1),
   countries: z
-    .array(z.object({ iso_2: z.string().min(2), display_name: z.string() }))
+    .array(
+      z.object({
+        iso_2: z.string().min(2),
+        display_name: z.string(),
+        // Pagly: the provinces it covers; none is the whole country.
+        provinces: z.array(z.string()).optional(),
+      })
+    )
     .min(1),
 })
 
@@ -52,14 +60,20 @@ export function CreateServiceZoneForm({
     fulfillmentSet.id
   )
 
+  // Pagly: an area sits in one zone of a set; the field says which.
+  const otherZones = fulfillmentSet.service_zones ?? []
+  const overlaps = areaConflicts(form.watch("countries") ?? [], otherZones).length > 0
+
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (areaConflicts(data.countries, otherZones).length) {
+      return
+    }
+
     await mutateAsync(
       {
         name: data.name,
-        geo_zones: data.countries.map(({ iso_2 }) => ({
-          country_code: iso_2,
-          type: "country",
-        })),
+        // Pagly: a country covered by some of its provinces saves them.
+        geo_zones: toGeoZones(data.countries),
       },
       {
         onSuccess: () => {
@@ -121,10 +135,10 @@ export function CreateServiceZoneForm({
                   {t("stockLocations.serviceZones.fields.tip")}
                 </InlineTip>
 
-                <GeoZoneForm form={form} />
+                <GeoZoneForm form={form} otherZones={otherZones} />
               </div>
             </div>
-            <GeoZoneForm.AreaDrawer form={form} />
+            <GeoZoneForm.AreaDrawer form={form} otherZones={otherZones} />
           </StackedFocusModal>
         </RouteFocusModal.Body>
 
@@ -135,7 +149,7 @@ export function CreateServiceZoneForm({
                 {t("actions.cancel")}
               </Button>
             </RouteFocusModal.Close>
-            <Button type="submit" size="small" isLoading={isPending}>
+            <Button type="submit" size="small" isLoading={isPending} disabled={overlaps}>
               {t("actions.save")}
             </Button>
           </div>

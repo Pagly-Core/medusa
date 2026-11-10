@@ -11,7 +11,9 @@ export function LocationCreateServiceZone() {
 
   const { stock_location, isPending, isFetching, isError, error } =
     useStockLocation(location_id!, {
-      fields: "*fulfillment_sets",
+      // Pagly: the set's zones and their areas, which a new zone can't take.
+      fields:
+        "*fulfillment_sets,+fulfillment_sets.service_zones.name,*fulfillment_sets.service_zones.geo_zones",
     })
 
   const fulfillmentSet = stock_location?.fulfillment_sets?.find(

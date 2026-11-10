@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest"
-import { formatProvider } from "../format-provider"
+import { afterEach, describe, expect, it } from "vitest"
+import { formatProvider, providerLogo } from "../format-provider"
 
 describe("formatProvider", () => {
   it("formats the provider name and its type", () => {
@@ -19,5 +19,29 @@ describe("formatProvider", () => {
 
   it("returns IDs that don't follow the provider format as they are", () => {
     expect(formatProvider("custom")).toBe("custom")
+  })
+})
+
+// Pagly: a plugin registers how its providers read (a carrier's brand) on
+// globalThis.__paglyProviderLooks, as it registers the media picker.
+describe("a provider a plugin names", () => {
+  const looks = () => globalThis as Record<string, unknown>
+
+  afterEach(() => {
+    delete looks().__paglyProviderLooks
+  })
+
+  it("reads by the name and logo the plugin gives it", () => {
+    looks().__paglyProviderLooks = { ues_ues: { name: "UES", logo: "/assets/ues.png" } }
+    expect(formatProvider("ues_ues")).toBe("UES")
+    expect(providerLogo("ues_ues")).toBe("/assets/ues.png")
+  })
+
+  it("reads as before without one", () => {
+    expect(formatProvider("ues_ues")).toBe("Ues")
+    expect(providerLogo("ues_ues")).toBeNull()
+    looks().__paglyProviderLooks = { ues_ues: { name: "UES" } }
+    expect(formatProvider("manual_manual")).toBe("Manual")
+    expect(providerLogo("ues_ues")).toBeNull()
   })
 })

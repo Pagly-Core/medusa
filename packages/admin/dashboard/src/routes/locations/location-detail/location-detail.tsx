@@ -3,12 +3,10 @@ import { useLoaderData, useParams } from "react-router-dom"
 
 import { useStockLocation } from "../../../hooks/api/stock-locations"
 import { LocationGeneralSection } from "./components/location-general-section"
-import LocationsSalesChannelsSection from "./components/location-sales-channels-section/locations-sales-channels-section"
 import { locationLoader } from "./loader"
 
-import { TwoColumnPageSkeleton } from "../../../components/common/skeleton"
-import { LayoutComposer, detailPageDefaultEntries } from "../../../components/layout-composer"
-import LocationsFulfillmentProvidersSection from "./components/location-fulfillment-providers-section/location-fulfillment-providers-section"
+import { SingleColumnPageSkeleton } from "../../../components/common/skeleton"
+import { LayoutComposer } from "../../../components/layout-composer"
 import { LOCATION_DETAILS_FIELD } from "./constants"
 
 export const LocationDetail = () => {
@@ -30,7 +28,7 @@ export const LocationDetail = () => {
 
   if (isLoading || !location) {
     return (
-      <TwoColumnPageSkeleton mainSections={3} sidebarSections={2} showJSON />
+      <SingleColumnPageSkeleton sections={3} />
     )
   }
 
@@ -38,29 +36,18 @@ export const LocationDetail = () => {
     throw error
   }
 
+  // Pagly: one column, the location and its shipping. Sales channels and
+  // fulfillment providers are in the location's menu; metadata is hidden.
   return (
     <LayoutComposer
       widgetsZonePrefix="location.details"
-      preferredLayoutId={CORE_LAYOUT_IDS.TWO_COLUMN}
+      preferredLayoutId={CORE_LAYOUT_IDS.SINGLE_COLUMN}
       data={location}
       sections={{
         main: (
-          <>
-            <LayoutComposer.Entry id="LocationGeneralSection">
-              <LocationGeneralSection location={location} />
-            </LayoutComposer.Entry>
-            {detailPageDefaultEntries(location)}
-          </>
-        ),
-        side: (
-          <>
-            <LayoutComposer.Entry id="LocationsSalesChannelsSection">
-              <LocationsSalesChannelsSection location={location} />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="LocationsFulfillmentProvidersSection">
-              <LocationsFulfillmentProvidersSection location={location} />
-            </LayoutComposer.Entry>
-          </>
+          <LayoutComposer.Entry id="LocationGeneralSection">
+            <LocationGeneralSection location={location} />
+          </LayoutComposer.Entry>
         ),
       }}
     />
