@@ -17,12 +17,16 @@ export const getDecimalDigits = (currency: string) => {
 export const getLocaleAmount = (
   amount: number,
   currencyCode: string,
-  // Pagly: "$ 290" rather than "$ 290.00" where cents add nothing.
-  { wholeWithoutCents = false }: { wholeWithoutCents?: boolean } = {}
+  // Pagly: "$ 290" rather than "$ 290.00" where cents add nothing, and
+  // "USD 10" where a bare "$" could be another currency.
+  {
+    wholeWithoutCents = false,
+    currencyDisplay = "narrowSymbol",
+  }: { wholeWithoutCents?: boolean; currencyDisplay?: "narrowSymbol" | "code" } = {}
 ) => {
   const formatter = new Intl.NumberFormat([], {
     style: "currency",
-    currencyDisplay: "narrowSymbol",
+    currencyDisplay,
     currency: currencyCode,
     ...(wholeWithoutCents && Number.isInteger(amount)
       ? { minimumFractionDigits: 0, maximumFractionDigits: 0 }

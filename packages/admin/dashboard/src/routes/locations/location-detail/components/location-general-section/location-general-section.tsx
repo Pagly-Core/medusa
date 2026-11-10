@@ -38,7 +38,7 @@ import { countries as staticCountries } from "../../../../../lib/data/countries"
 import { formatProvider } from "../../../../../lib/format-provider"
 import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
 import {
-  isOptionEnabledInStore,
+  isOptionShownInStore,
   isReturnOption,
 } from "../../../../../lib/shipping-options"
 import {
@@ -93,14 +93,22 @@ export const LocationGeneralSection = ({
   )
 }
 
+type PriceRuleLike = { attribute: string; value?: unknown }
+
+const priceRules = (price: HttpTypes.AdminShippingOptionPrice) =>
+  ((price as { price_rules?: PriceRuleLike[] }).price_rules ?? [])
+
 /**
- * What a rate charges: the carrier's rate, free, or its own price in the
- * store's default currency. A price with rules (free over an amount, a
- * region's) is a variation, never the rate's own.
+ * What a rate charges: the carrier's rate, free, or the price checkout
+ * charges in the store's default currency. Checkout prefers a region's price
+ * to the plain one, so the store's default region's price comes first, then
+ * the plain price, then another region's. A price with other rules (free
+ * over an amount) is a variation, never the rate's own. A rate priced only in
+ * other currencies names the currency. Nothing shows until the store loads.
  */
 const rateLabel = (
   option: HttpTypes.AdminShippingOption,
-  defaultCurrency: string | undefined,
+  store: { defaultCurrency?: string; defaultRegion?: string | null } | null,
   t: TFunction
 ) => {
   if (option.price_type === ShippingOptionPriceType.Calculated) {
@@ -109,10 +117,28 @@ const rateLabel = (
     })
   }
 
-  const own = (option.prices ?? []).filter(
-    (price) => !(price as { price_rules?: unknown[] }).price_rules?.length
-  )
-  const base = own.find((price) => price.currency_code === defaultCurrency) ?? own[0]
+  if (!store?.defaultCurrency) {
+    return ""
+  }
+
+  const prices = option.prices ?? []
+  const plain = prices.filter((price) => !priceRules(price).length)
+  const regional = prices.filter((price) => {
+    const rules = priceRules(price)
+    return rules.length > 0 && rules.every((rule) => rule.attribute === "region_id")
+  })
+  const inDefault = (price: HttpTypes.AdminShippingOptionPrice) =>
+    price.currency_code?.toLowerCase() === store.defaultCurrency
+
+  const base =
+    regional.find(
+      (price) =>
+        inDefault(price) &&
+        priceRules(price).some((rule) => rule.value === store.defaultRegion)
+    ) ??
+    plain.find(inDefault) ??
+    regional.find(inDefault) ??
+    plain[0]
 
   if (!base) {
     return ""
@@ -121,7 +147,10 @@ const rateLabel = (
   const amount = Number(base.amount)
   return amount === 0
     ? t("stockLocations.shippingOptions.fields.free")
-    : getLocaleAmount(amount, base.currency_code, { wholeWithoutCents: true })
+    : getLocaleAmount(amount, base.currency_code, {
+        wholeWithoutCents: true,
+        currencyDisplay: inDefault(base) ? "narrowSymbol" : "code",
+      })
 }
 
 type RateRowProps = {
@@ -136,7 +165,14 @@ function RateRow({ option, fulfillmentSetId, locationId }: RateRowProps) {
 
   const { mutateAsync } = useDeleteShippingOption(option.id)
   const { store } = useStore()
-  const defaultCurrency = store?.supported_currencies?.find((c) => c.is_default)?.currency_code
+  const storePricing = store
+    ? {
+        defaultCurrency: store.supported_currencies
+          ?.find((c) => c.is_default)
+          ?.currency_code?.toLowerCase(),
+        defaultRegion: store.default_region_id,
+      }
+    : null
 
   const handleDelete = async () => {
     const res = await prompt({
@@ -176,7 +212,7 @@ function RateRow({ option, fulfillmentSetId, locationId }: RateRowProps) {
       <Text size="small" leading="compact" className="flex-1 truncate">
         {option.name}
       </Text>
-      {!isOptionEnabledInStore(option) && (
+      {!isOptionShownInStore(option) && (
         <Text size="small" leading="compact" className="text-ui-fg-muted">
           {t("stockLocations.shippingOptions.fields.hiddenInStore")}
         </Text>
@@ -186,7 +222,7 @@ function RateRow({ option, fulfillmentSetId, locationId }: RateRowProps) {
         leading="compact"
         className={calculated ? "text-ui-fg-subtle" : undefined}
       >
-        {rateLabel(option, defaultCurrency, t)}
+        {rateLabel(option, storePricing, t)}
       </Text>
       <ActionMenu
         groups={[
@@ -294,7 +330,12 @@ function ServiceZone({ zone, locationId, fulfillmentSetId }: ServiceZoneProps) {
               <span aria-hidden className="text-ui-fg-muted txt-compact-small">
                 ·
               </span>
-              <Text size="small" leading="compact" className="text-ui-fg-subtle truncate">
+              <Text
+                size="small"
+                leading="compact"
+                className="text-ui-fg-subtle truncate"
+                title={areas}
+              >
                 {areas}
               </Text>
             </>

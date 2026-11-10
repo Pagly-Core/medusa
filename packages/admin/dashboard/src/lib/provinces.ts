@@ -1,28 +1,20 @@
-// Pagly: the provinces a plugin registers on globalThis.__paglyProvinces
-// (Uruguay's departamentos), by lower-case ISO 3166-2 code: zones can cover
-// some of a country's, and addresses saved by code read by name. See
-// PAGLY-CORE-DIVERGENCE.md.
+// Pagly: a country's provinces (Uruguay's departamentos) from the dashboard's
+// own table (lib/data/country-states), by lower-case ISO 3166-2 code, the way
+// checkout saves them: zones can cover some of a country's, and addresses
+// saved by code read by name. See PAGLY-CORE-DIVERGENCE.md.
+import {
+  getCountryProvinceObjectByIso2,
+  getProvinceByIso2,
+} from "./data/country-states"
 
 export type ProvinceOption = { code: string; name: string }
 
-const registry = () =>
-  ((globalThis as Record<string, unknown>).__paglyProvinces ?? {}) as Record<
-    string,
-    ProvinceOption[] | undefined
-  >
-
-/** The provinces a plugin registered for a country, none when it registered none. */
+/** A country's provinces, none when the table lists none for it. */
 export const registeredProvinces = (iso2: string): ProvinceOption[] =>
-  registry()[iso2.toLowerCase()] ?? []
+  Object.entries(getCountryProvinceObjectByIso2(iso2)?.options ?? {}).map(
+    ([code, name]) => ({ code: code.toLowerCase(), name })
+  )
 
-/** A province's name, or the value as it is when no plugin registered it. */
-export const provinceName = (code: string): string => {
-  const key = code.trim().toLowerCase()
-  for (const provinces of Object.values(registry())) {
-    const found = provinces?.find((one) => one.code === key)
-    if (found) {
-      return found.name
-    }
-  }
-  return code
-}
+/** A province's name, or the value as it is when it isn't a known code. */
+export const provinceName = (code: string): string =>
+  getProvinceByIso2(code.trim()) ?? code

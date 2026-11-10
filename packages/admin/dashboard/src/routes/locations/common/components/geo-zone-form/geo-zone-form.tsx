@@ -32,8 +32,11 @@ import {
   areaChip,
   areaConflicts,
   countryCheck,
+  coversProvince,
+  provinceCount,
   provinceName,
   registeredProvinces,
+  retickedCountry,
   takenIn,
   toggleCountry,
   toggleProvince,
@@ -123,14 +126,14 @@ const GeoZoneFormImpl = <TForm extends UseFormReturn<any>>({
             </Form.Control>
             {/* Pagly: what another zone of the set already covers. */}
             {(castForm.watch("countries") ?? []).flatMap((country) =>
-              areaConflicts([country], otherZones).map((conflict) => (
-                <Hint key={`${conflict.iso_2}-${conflict.zone}`} variant="error">
+              areaConflicts([country], otherZones).map((conflict, index) => (
+                <Hint key={`${conflict.iso_2}-${index}`} variant="error">
                   {t("stockLocations.serviceZones.manageAreas.inOtherZone", {
                     count: conflict.areas.length,
                     areas: conflict.areas
                       .map((area) => (area === country.iso_2 ? country.display_name : provinceName(area)))
                       .join(", "),
-                    zone: conflict.zone,
+                    zone: conflict.zone.name,
                   })}
                 </Hint>
               ))
@@ -179,10 +182,10 @@ const ZoneAreaList = ({
         {countries.map((country) => {
           const taken = takenIn(otherZones, country.iso_2)
           const provinces = registeredProvinces(country.iso_2)
-          const area = areas.find((one) => one.iso_2 === country.iso_2)
+          const area = areas.find((one) => one.iso_2.toLowerCase() === country.iso_2.toLowerCase())
           const check = countryCheck(areas, country.iso_2, taken)
           const expanded = !!open[country.iso_2]
-          const picked = area ? (area.provinces?.length ? area.provinces.length : provinces.length) : 0
+          const picked = area ? provinceCount(area).count : 0
 
           return (
             <div key={country.iso_2}>
@@ -191,7 +194,8 @@ const ZoneAreaList = ({
                   id={`zone-area-${country.iso_2}`}
                   aria-label={country.display_name}
                   checked={check}
-                  disabled={!!taken.whole}
+                  // A country another zone holds whole can still be given up.
+                  disabled={!!taken.whole && !area}
                   onCheckedChange={() => onChange(toggleCountry(areas, country, taken))}
                 />
                 <button
@@ -206,7 +210,7 @@ const ZoneAreaList = ({
                   </Text>
                   {taken.whole ? (
                     <Text size="small" leading="compact" className="text-ui-fg-muted">
-                      {taken.whole}
+                      {taken.whole.name}
                     </Text>
                   ) : picked > 0 && picked < provinces.length ? (
                     <Text size="small" leading="compact" className="text-ui-fg-subtle">
@@ -227,26 +231,27 @@ const ZoneAreaList = ({
                 <div className="bg-ui-bg-subtle divide-y">
                   {provinces.map((province) => {
                     const holder = taken.whole ?? taken.provinces[province.code]
-                    const on = !!area && (!area.provinces?.length || area.provinces.includes(province.code))
+                    const on = coversProvince(area, province.code)
                     const id = `zone-area-${province.code}`
                     return (
                       <div key={province.code} className="flex items-center gap-x-3 py-2.5 pl-11 pr-4">
                         <Checkbox
                           id={id}
-                          checked={on && !holder}
-                          disabled={!!holder}
+                          checked={on}
+                          // One another zone holds can be given up, never taken.
+                          disabled={!!holder && !on}
                           onCheckedChange={() => onChange(toggleProvince(areas, country, province.code, taken))}
                         />
                         <Label
                           htmlFor={id}
                           size="small"
-                          className={clx("flex-1", holder && "text-ui-fg-disabled")}
+                          className={clx("flex-1", holder && !on && "text-ui-fg-disabled")}
                         >
                           {province.name}
                         </Label>
                         {holder && (
                           <Text size="small" leading="compact" className="text-ui-fg-muted">
-                            {holder}
+                            {holder.name}
                           </Text>
                         )}
                       </div>
@@ -340,17 +345,21 @@ const AreaStackedModal = <TForm extends UseFormReturn<any>>({
 
     const addedIdsSet = new Set(ids.filter((id) => value[id] && !selection[id]))
 
-    const addedCountries: { iso_2: string; display_name: string }[] = []
+    const addedCountries: AreaCountry[] = []
 
     if (addedIdsSet.size > 0) {
       const countriesToAdd =
         countries?.filter((country) => addedIdsSet.has(country.iso_2!)) ?? []
 
+      // Pagly: a country unticked and ticked again keeps the zone's provinces.
+      const saved = getValues("countries") ?? []
       for (const country of countriesToAdd) {
-        addedCountries.push({
-          iso_2: country.iso_2!,
-          display_name: country.display_name!,
-        })
+        addedCountries.push(
+          retickedCountry(
+            { iso_2: country.iso_2!, display_name: country.display_name! },
+            saved
+          )
+        )
       }
     }
 

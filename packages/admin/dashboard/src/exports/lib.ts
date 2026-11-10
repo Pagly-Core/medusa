@@ -58,3 +58,6 @@ export {
   getFormattedCountry,
   isSameAddress,
 } from "../lib/addresses"
+
+// Pagly: a province's name by its ISO 3166-2 code, for plugins' addresses.
+export { provinceName } from "../lib/provinces"

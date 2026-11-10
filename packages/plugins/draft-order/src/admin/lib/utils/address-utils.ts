@@ -1,3 +1,4 @@
+import { provinceName } from "@medusajs/dashboard/lib"
 import { HttpTypes } from "@medusajs/types"
 import { getCountryByIso2 } from "../data/countries"
 
@@ -93,7 +94,8 @@ export function getFormattedAddress(
     formattedAddress.push(address_2)
   }
 
-  const cityProvincePostal = [city, province, postal_code]
+  // Pagly: a province saved by its code reads by its name, like the order page.
+  const cityProvincePostal = [city, province && provinceName(province), postal_code]
     .filter(Boolean)
     .join(" ")
 

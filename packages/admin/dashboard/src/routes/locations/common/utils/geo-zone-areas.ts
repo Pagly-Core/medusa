@@ -1,6 +1,5 @@
 // Pagly: a zone can cover some provinces of a country (Uruguay's
-// departamentos), which a plugin registers (lib/provinces). See
-// PAGLY-CORE-DIVERGENCE.md.
+// departamentos), listed in lib/provinces. See PAGLY-CORE-DIVERGENCE.md.
 import { provinceName, registeredProvinces } from "../../../../lib/provinces"
 
 export {
@@ -17,12 +16,23 @@ type GeoZoneLike = {
   type: string
   country_code: string
   province_code?: string | null
+  city?: string | null
+  postal_expression?: Record<string, unknown> | null
 }
 
 /** The geo zones a zone's form saves. */
 export type AreaGeoZone =
   | { type: "country"; country_code: string }
   | { type: "province"; country_code: string; province_code: string }
+
+/** Codes match whatever their case: the API stores them as sent. */
+const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+
+const sameIso = (iso2: string) => (area: AreaCountry) => same(area.iso_2, iso2)
+
+/** Each code once, the first spelling kept. */
+const distinct = (codes: string[]) =>
+  codes.filter((code, index) => codes.findIndex((one) => same(one, code)) === index)
 
 export const toGeoZones = (countries: AreaCountry[]): AreaGeoZone[] =>
   countries.flatMap((country): AreaGeoZone[] =>
@@ -35,52 +45,76 @@ export const toGeoZones = (countries: AreaCountry[]): AreaGeoZone[] =>
       : [{ type: "country" as const, country_code: country.iso_2 }]
   )
 
-/** A zone's countries for its form, each with the provinces it covers. */
+/**
+ * A zone's countries for its form, each with the provinces it covers. City
+ * and zip areas aren't the form's (see keptGeoZones).
+ */
 export const fromGeoZones = (
   geoZones: GeoZoneLike[],
   displayName: (iso2: string) => string
 ): AreaCountry[] => {
   const countries = new Map<string, AreaCountry>()
+  const whole = new Set<string>()
+
   for (const zone of geoZones) {
-    const country = countries.get(zone.country_code) ?? {
+    const isProvince = zone.type === "province" && !!zone.province_code
+    if (zone.type !== "country" && !isProvince) continue
+
+    const key = zone.country_code.toLowerCase()
+    const country = countries.get(key) ?? {
       iso_2: zone.country_code,
       display_name: displayName(zone.country_code),
       provinces: [],
     }
-    if (zone.type === "province" && zone.province_code) {
-      country.provinces!.push(zone.province_code)
+    if (isProvince) {
+      country.provinces = distinct([...country.provinces!, zone.province_code!])
+    } else {
+      whole.add(key)
     }
-    countries.set(zone.country_code, country)
+    countries.set(key, country)
   }
+
   // A country the zone also covers whole is covered whole.
-  for (const zone of geoZones) {
-    if (zone.type === "country") {
-      countries.get(zone.country_code)!.provinces = []
-    }
+  for (const key of whole) {
+    countries.get(key)!.provinces = []
   }
   return [...countries.values()]
 }
 
+/**
+ * A zone's city and zip areas, by id, which its form resends as they are:
+ * the service zone update deletes any geo zone it isn't sent.
+ */
+export const keptGeoZones = (geoZones: GeoZoneLike[]) =>
+  geoZones
+    .filter((zone) => zone.type !== "country" && zone.type !== "province")
+    .map((zone) =>
+      Object.fromEntries(
+        (["id", "type", "country_code", "province_code", "city", "postal_expression"] as const).flatMap((key) =>
+          zone[key] === undefined || zone[key] === null ? [] : [[key, zone[key]]]
+        )
+      )
+    )
+
 /** Another zone of the same fulfillment set. */
 export type OtherZone = { id?: string; name: string; geo_zones?: GeoZoneLike[] | null }
 
-/** Of a country, what the set's other zones hold: all of it, or provinces by code. */
-export type TakenAreas = { whole: string | null; provinces: Record<string, string> }
+/** Of a country, the other zones holding it: all of it, or provinces by lower-case code. */
+export type TakenAreas = { whole: OtherZone | null; provinces: Record<string, OtherZone> }
 
-/** An overlap with another zone: its name and the areas (province codes, or the country) both would cover. */
-export type AreaConflict = { iso_2: string; zone: string; areas: string[] }
+/** An overlap with another zone: the zone, and the areas (province codes, or the country) both would cover. */
+export type AreaConflict = { iso_2: string; zone: OtherZone; areas: string[] }
 
 export const takenIn = (otherZones: OtherZone[], iso2: string): TakenAreas => {
-  const country = iso2.toLowerCase()
   const taken: TakenAreas = { whole: null, provinces: {} }
 
   for (const zone of otherZones) {
     for (const geo of zone.geo_zones ?? []) {
-      if (geo.country_code?.toLowerCase() !== country) continue
+      if (!geo.country_code || !same(geo.country_code, iso2)) continue
       if (geo.type === "country") {
-        taken.whole = taken.whole ?? zone.name
+        taken.whole = taken.whole ?? zone
       } else if (geo.type === "province" && geo.province_code) {
-        taken.provinces[geo.province_code.toLowerCase()] = zone.name
+        taken.provinces[geo.province_code.toLowerCase()] = zone
       }
     }
   }
@@ -99,12 +133,13 @@ export const areaConflicts = (countries: AreaCountry[], otherZones: OtherZone[])
   for (const country of countries) {
     const taken = takenIn(otherZones, country.iso_2)
     if (taken.whole) {
-      conflicts.push({ iso_2: country.iso_2, zone: taken.whole, areas: [country.iso_2] })
+      const areas = country.provinces?.length ? distinct(country.provinces) : [country.iso_2]
+      conflicts.push({ iso_2: country.iso_2, zone: taken.whole, areas })
       continue
     }
 
-    const wanted = country.provinces?.length ? country.provinces : Object.keys(taken.provinces)
-    const byZone = new Map<string, string[]>()
+    const wanted = country.provinces?.length ? distinct(country.provinces) : Object.keys(taken.provinces)
+    const byZone = new Map<OtherZone, string[]>()
     for (const province of wanted) {
       const zone = taken.provinces[province.toLowerCase()]
       if (zone) byZone.set(zone, [...(byZone.get(zone) ?? []), province])
@@ -116,6 +151,22 @@ export const areaConflicts = (countries: AreaCountry[], otherZones: OtherZone[])
 
   return conflicts
 }
+
+const sameZone = (a: OtherZone, b: OtherZone) => a === b || (!!a.id && a.id === b.id)
+
+/**
+ * The overlaps an edit adds to the ones the zone already had, so a zone that
+ * already overlapped can keep or shrink its overlap: an area overlapped
+ * before, or in a country that overlapped whole before, isn't added.
+ */
+export const addedConflicts = (now: AreaConflict[], before: AreaConflict[]): AreaConflict[] =>
+  now.flatMap((conflict) => {
+    const had = before.filter((one) => same(one.iso_2, conflict.iso_2) && sameZone(one.zone, conflict.zone))
+    const areas = conflict.areas.filter(
+      (area) => !had.some((one) => one.areas.some((old) => same(old, area) || same(old, conflict.iso_2)))
+    )
+    return areas.length ? [{ ...conflict, areas }] : []
+  })
 
 /**
  * What a zone covers, one line per country: "Uruguay", "Uruguay · Maldonado,
@@ -130,7 +181,8 @@ export const areaLabels = (
     const chip = areaChip(country)
     if (chip.kind === "whole") return country.display_name
     if (chip.kind === "count" && someOfAll) return `${country.display_name} · ${someOfAll(chip.count, chip.total)}`
-    return `${country.display_name} · ${country.provinces!.map(provinceName).join(", ")}`
+    const names = chip.kind === "names" ? chip.names : distinct(country.provinces!).map(provinceName)
+    return `${country.display_name} · ${names.join(", ")}`
   })
 
 /**
@@ -153,7 +205,9 @@ type PickedCountry = { iso_2: string; display_name: string }
 const freeProvinces = (iso2: string, taken: TakenAreas): string[] =>
   taken.whole ? [] : registeredProvinces(iso2).flatMap((province) => (taken.provinces[province.code] ? [] : [province.code]))
 
-const sameIso = (iso2: string) => (area: AreaCountry) => area.iso_2.toLowerCase() === iso2.toLowerCase()
+/** Whether a country's area covers a province: whole, or listing it. */
+export const coversProvince = (area: AreaCountry | undefined, code: string) =>
+  !!area && (!area.provinces?.length || area.provinces.some((one) => same(one, code)))
 
 /** Ticked when the zone covers the country whole, or every province no other zone holds. */
 export const countryCheck = (areas: AreaCountry[], iso2: string, taken: TakenAreas): boolean | "indeterminate" => {
@@ -161,48 +215,83 @@ export const countryCheck = (areas: AreaCountry[], iso2: string, taken: TakenAre
   if (!area) return false
   if (!area.provinces?.length) return true
   const free = freeProvinces(iso2, taken)
-  return free.length > 0 && free.every((code) => area.provinces!.includes(code)) ? true : "indeterminate"
+  return free.length > 0 && free.every((code) => coversProvince(area, code)) ? true : "indeterminate"
 }
 
-/** Sets a country's provinces: none drops it, all of them (none held elsewhere) covers it whole. */
-const withProvinces = (areas: AreaCountry[], country: PickedCountry, provinces: string[], taken: TakenAreas) => {
-  const all = registeredProvinces(country.iso_2).map((province) => province.code)
-  const whole = !taken.whole && !Object.keys(taken.provinces).length && all.length > 0 && all.every((code) => provinces.includes(code))
-  const next: AreaCountry | null = provinces.length
-    ? { ...country, provinces: whole ? [] : all.filter((code) => provinces.includes(code)) }
-    : null
-  const index = areas.findIndex(sameIso(country.iso_2))
+/** A country's area as the zone saved it, or as picked. */
+const areaOf = (areas: AreaCountry[], country: PickedCountry, provinces: string[]): AreaCountry => {
+  const saved = areas.find(sameIso(country.iso_2))
+  return { iso_2: saved?.iso_2 ?? country.iso_2, display_name: saved?.display_name ?? country.display_name, provinces }
+}
+
+const replaceArea = (areas: AreaCountry[], iso2: string, next: AreaCountry | null) => {
+  const index = areas.findIndex(sameIso(iso2))
   if (index < 0) return next ? [...areas, next] : areas
   return next ? areas.map((area, i) => (i === index ? next : area)) : areas.filter((_, i) => i !== index)
 }
 
+/**
+ * Sets a country's provinces: none drops it, and all of the listed ones
+ * (none held elsewhere) cover it whole. Listed ones keep the list's order
+ * and their saved spelling; codes off the list are kept after them.
+ */
+const withProvinces = (areas: AreaCountry[], country: PickedCountry, provinces: string[], taken: TakenAreas) => {
+  const all = registeredProvinces(country.iso_2).map((province) => province.code)
+  const picked = distinct(provinces)
+  const listed = all.flatMap((code) => picked.filter((one) => same(one, code)))
+  const unlisted = picked.filter((one) => !all.some((code) => same(code, one)))
+  const whole =
+    !taken.whole && !Object.keys(taken.provinces).length && all.length > 0 && listed.length === all.length
+  const next = picked.length ? areaOf(areas, country, whole ? [] : [...listed, ...unlisted]) : null
+  return replaceArea(areas, country.iso_2, next)
+}
+
 /** Ticks or unticks a country: all of it that is free, or none of it. */
 export const toggleCountry = (areas: AreaCountry[], country: PickedCountry, taken: TakenAreas): AreaCountry[] => {
-  if (countryCheck(areas, country.iso_2, taken) === true) {
-    return areas.filter((area) => !sameIso(country.iso_2)(area))
+  const area = areas.find(sameIso(country.iso_2))
+  // A country another zone holds whole can only be given up.
+  if (countryCheck(areas, country.iso_2, taken) === true || (taken.whole && area)) {
+    return areas.filter((one) => !sameIso(country.iso_2)(one))
   }
   if (taken.whole) return areas
   if (!Object.keys(taken.provinces).length) {
     // Nothing of it is held: the whole country, provinces listed or not.
-    const whole: AreaCountry = { ...country, provinces: [] }
-    const index = areas.findIndex(sameIso(country.iso_2))
-    return index < 0 ? [...areas, whole] : areas.map((area, i) => (i === index ? whole : area))
+    return replaceArea(areas, country.iso_2, areaOf(areas, country, []))
   }
   return withProvinces(areas, country, freeProvinces(country.iso_2, taken), taken)
 }
 
-/** Ticks or unticks one province of a country; one another zone holds stays out. */
+/**
+ * Ticks or unticks one province of a country. One another zone holds is
+ * never added, though a zone already covering it can give it up.
+ */
 export const toggleProvince = (
   areas: AreaCountry[],
   country: PickedCountry,
   code: string,
   taken: TakenAreas
 ): AreaCountry[] => {
-  if (taken.whole || taken.provinces[code]) return areas
   const area = areas.find(sameIso(country.iso_2))
-  const current = !area ? [] : area.provinces?.length ? area.provinces : registeredProvinces(country.iso_2).map((p) => p.code)
-  const next = current.includes(code) ? current.filter((one) => one !== code) : [...current, code]
+  const on = coversProvince(area, code)
+  if (!on && (taken.whole || taken.provinces[code.toLowerCase()])) return areas
+
+  // A whole country splits into what this zone can keep: the free provinces,
+  // or all of them where another zone holds it whole too.
+  const current = !area
+    ? []
+    : area.provinces?.length
+      ? area.provinces
+      : taken.whole
+        ? registeredProvinces(country.iso_2).map((province) => province.code)
+        : freeProvinces(country.iso_2, taken)
+  const next = on ? current.filter((one) => !same(one, code)) : [...current, code]
   return withProvinces(areas, country, next, taken)
+}
+
+/** A country ticked again in the every-country table keeps the provinces the zone had. */
+export const retickedCountry = (country: PickedCountry, saved: AreaCountry[]): AreaCountry => {
+  const before = saved.find(sameIso(country.iso_2))
+  return before?.provinces?.length ? { ...country, provinces: before.provinces } : country
 }
 
 /** How a country reads on the zone's form: whole, a few provinces by name, or how many of all. */
@@ -210,18 +299,20 @@ export type AreaChip = { kind: "whole" } | { kind: "names"; names: string[] } | 
 
 const NAMED_PROVINCES = 3
 
-export const areaChip = (country: AreaCountry): AreaChip => {
-  const provinces = country.provinces ?? []
-  if (!provinces.length) return { kind: "whole" }
-  if (provinces.length <= NAMED_PROVINCES) return { kind: "names", names: provinces.map(provinceName) }
-  return { kind: "count", count: provinces.length, total: registeredProvinces(country.iso_2).length }
+/** How many of a country's listed provinces an area covers, and of how many. */
+export const provinceCount = (country: AreaCountry) => {
+  const all = registeredProvinces(country.iso_2)
+  const picked = distinct(country.provinces ?? [])
+  const count = picked.length ? all.filter((one) => picked.some((code) => same(code, one.code))).length : all.length
+  return { count, total: all.length, unlisted: picked.length - count }
 }
 
-/** The overlaps a zone's edit adds to the ones it already had. */
-export const addedConflicts = (_now: AreaConflict[], _before: AreaConflict[]): AreaConflict[] => []
-
-/** A zone's city and zip areas, which its form keeps as they are. */
-export const keptGeoZones = (_geoZones: GeoZoneLike[]): Record<string, unknown>[] => []
-
-/** A country ticked again in the every-country table. */
-export const retickedCountry = (country: PickedCountry, _saved: AreaCountry[]): AreaCountry => country
+export const areaChip = (country: AreaCountry): AreaChip => {
+  const provinces = distinct(country.provinces ?? [])
+  if (!provinces.length) return { kind: "whole" }
+  const { count, total, unlisted } = provinceCount(country)
+  if (provinces.length <= NAMED_PROVINCES || unlisted > 0 || !total) {
+    return { kind: "names", names: provinces.map(provinceName) }
+  }
+  return { kind: "count", count, total }
+}
