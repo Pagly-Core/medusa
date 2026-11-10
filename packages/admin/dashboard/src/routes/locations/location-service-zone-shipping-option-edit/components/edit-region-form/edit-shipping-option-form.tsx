@@ -14,7 +14,7 @@ import { useUpdateShippingOptions } from "../../../../../hooks/api/shipping-opti
 import { useComboboxData } from "../../../../../hooks/use-combobox-data"
 import { sdk } from "../../../../../lib/client"
 import { pick } from "../../../../../lib/common"
-import { isOptionEnabledInStore } from "../../../../../lib/shipping-options"
+import { isOptionShownInStore } from "../../../../../lib/shipping-options"
 import {
   FulfillmentSetType,
   ShippingOptionPriceType,
@@ -72,7 +72,8 @@ export const EditShippingOptionForm = ({
     defaultValues: {
       name: shippingOption.name,
       price_type: shippingOption.price_type as ShippingOptionPriceType,
-      enabled_in_store: isOptionEnabledInStore(shippingOption),
+      // Pagly: on when checkout offers it, as it does one with no rules.
+      enabled_in_store: isOptionShownInStore(shippingOption),
       shipping_profile_id: shippingOption.shipping_profile_id,
       shipping_option_type_id: shippingOption.type.id,
       provider_id: shippingOption.provider_id,
@@ -102,6 +103,8 @@ export const EditShippingOptionForm = ({
       })
     } else {
       storeRule.value = values.enabled_in_store ? "true" : "false"
+      // Pagly: the switch means "eq", whatever operator the rule had.
+      storeRule.operator = "eq"
     }
 
     await mutateAsync(

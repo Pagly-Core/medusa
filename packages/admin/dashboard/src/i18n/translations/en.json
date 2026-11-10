@@ -1882,7 +1882,9 @@
           "details": "Details",
           "prices": "Prices"
         },
-        "action": "Create option"
+        "action": "Create option",
+        "addRate": "Add rate",
+        "addReturn": "Add return option"
       },
       "delete": {
         "confirmation": "You are about to delete the shipping option \"{{name}}\". This action cannot be undone.",
@@ -1960,14 +1962,17 @@
         "provider": "Fulfillment provider",
         "profile": "Shipping profile",
         "type": "Shipping option type",
-        "fulfillmentOption": "Fulfillment option"
+        "fulfillmentOption": "Fulfillment option",
+        "free": "Free",
+        "carrierRate": "{{name}} rate",
+        "hiddenInStore": "Hidden in store"
       }
     },
     "serviceZones": {
       "create": {
         "headerPickup": "Create Service Zone for Pickup from {{location}}",
         "headerShipping": "Create Service Zone for Shipping from {{location}}",
-        "action": "Create service zone",
+        "action": "Add zone",
         "successToast": "Service zone {{name}} was successfully created."
       },
       "edit": {
@@ -1983,6 +1988,9 @@
         "action": "Manage areas",
         "label": "Areas",
         "hint": "Select the geographical areas that the service zone covers.",
+        "someOfAll": "{{count}} of {{total}}",
+        "inOtherZone_one": "{{areas}} is already in the zone {{zone}}.",
+        "inOtherZone_other": "{{areas}} are already in the zone {{zone}}.",
         "successToast": "Areas for {{name}} were successfully updated."
       },
       "fields": {

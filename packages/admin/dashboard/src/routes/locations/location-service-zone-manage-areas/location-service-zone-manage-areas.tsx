@@ -14,9 +14,10 @@ export const LocationServiceZoneManageAreas = () => {
         "*fulfillment_sets.service_zones.geo_zones,fulfillment_sets.service_zones.name",
     })
 
-  const zone = stock_location?.fulfillment_sets
-    ?.find((f) => f.id === fset_id)
-    ?.service_zones.find((z) => z.id === zone_id)
+  const set = stock_location?.fulfillment_sets?.find((f) => f.id === fset_id)
+  const zone = set?.service_zones.find((z) => z.id === zone_id)
+  // Pagly: an area sits in one zone of a set.
+  const otherZones = set?.service_zones.filter((z) => z.id !== zone_id) ?? []
 
   if (!isPending && !isFetching && !zone) {
     throw jsonResponse(
@@ -34,6 +35,7 @@ export const LocationServiceZoneManageAreas = () => {
       {zone && (
         <EditServiceZoneAreasForm
           zone={zone}
+          otherZones={otherZones}
           fulfillmentSetId={fset_id!}
           locationId={location_id!}
         />

@@ -19,6 +19,7 @@ import {
 } from "../order-helpers"
 import { DataTableStatusIndicator } from "../../components/data-table/components/data-table-status-cell/data-table-status-cell"
 import { TruncatedText } from "../../components/common/truncated-text"
+import { provinceName } from "../provinces"
 import { isEmpty } from "../is-empty"
 import { getUnitOfMeasurePath } from "./field-utils"
 
@@ -388,7 +389,12 @@ const AddressRenderer: CellRenderer = (_, row, column, _t) => {
     parts.push(address.address_2)
   }
 
-  const locality = [address.city, address.province, address.postal_code]
+  // Pagly: a province saved by its code reads by its name.
+  const locality = [
+    address.city,
+    address.province && provinceName(address.province),
+    address.postal_code,
+  ]
     .filter(Boolean)
     .join(", ")
   if (locality) {

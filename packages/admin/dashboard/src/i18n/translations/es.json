@@ -1865,7 +1865,7 @@
     },
     "fulfillmentSets": {
       "pickup": {
-        "header": "Recogida"
+        "header": "Pickup"
       },
       "shipping": {
         "header": "Envío"
@@ -1929,7 +1929,9 @@
           "details": "Detalles",
           "prices": "Precios"
         },
-        "action": "Crear opción"
+        "action": "Crear opción",
+        "addRate": "Agregar tarifa",
+        "addReturn": "Agregar devolución"
       },
       "delete": {
         "confirmation": "Estás a punto de eliminar la opción de envío {{name}}. Esta acción no puede deshacerse.",
@@ -2007,14 +2009,17 @@
         "provider": "Proveedor de cumplimiento",
         "profile": "Perfil de envío",
         "type": "Tipo de opción de envío",
-        "fulfillmentOption": "Opción de cumplimiento"
+        "fulfillmentOption": "Opción de cumplimiento",
+        "free": "Gratis",
+        "carrierRate": "Tarifa {{name}}",
+        "hiddenInStore": "Oculta en la tienda"
       }
     },
     "serviceZones": {
       "create": {
         "headerPickup": "Crear zona de servicio para recogida desde {{location}}",
         "headerShipping": "Crear zona de servicio para envío desde {{location}}",
-        "action": "Crear zona de servicio",
+        "action": "Agregar zona",
         "successToast": "Zona de servicio {{name}} creada correctamente."
       },
       "edit": {
@@ -2030,6 +2035,9 @@
         "action": "Gestionar áreas",
         "label": "Áreas",
         "hint": "Seleccioná las áreas geográficas que cubre la zona de servicio.",
+        "someOfAll": "{{count}} de {{total}}",
+        "inOtherZone_one": "{{areas}} ya está en la zona {{zone}}.",
+        "inOtherZone_other": "{{areas}} ya están en la zona {{zone}}.",
         "successToast": "Áreas para {{name}} actualizadas correctamente."
       },
       "fields": {

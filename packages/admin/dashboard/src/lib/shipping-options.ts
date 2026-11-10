@@ -60,3 +60,31 @@ export function getFormattedShippingOptionLocationName(
 
   return name || "N/A"
 }
+
+/**
+ * Pagly: whether checkout offers a shipping option. The fulfillment module
+ * offers one with no rules, and otherwise checks its rules against
+ * `enabled_in_store: "true"`, so only a rule that fails it hides the option.
+ */
+export function isOptionShownInStore(
+  shippingOption: Pick<HttpTypes.AdminShippingOption, "rules">
+) {
+  return (shippingOption.rules ?? []).every((rule) => {
+    if (rule.attribute !== "enabled_in_store") {
+      return true
+    }
+    const values = ([] as unknown[]).concat(rule.value).map(String)
+    switch (rule.operator) {
+      case "eq":
+        return values[0] === "true"
+      case "ne":
+        return values[0] !== "true"
+      case "in":
+        return values.includes("true")
+      case "nin":
+        return !values.includes("true")
+      default:
+        return true
+    }
+  })
+}
