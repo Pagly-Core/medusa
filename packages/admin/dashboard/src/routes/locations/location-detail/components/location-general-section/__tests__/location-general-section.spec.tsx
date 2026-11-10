@@ -23,15 +23,16 @@ vi.mock("../../../../../../hooks/api/fulfillment-sets", () => ({
 vi.mock("../../../../../../hooks/api/shipping-options", () => ({
   useDeleteShippingOption: mutation,
 }))
+const STORE = {
+  default_region_id: "reg_uy",
+  supported_currencies: [
+    { currency_code: "usd", is_default: false },
+    { currency_code: "uyu", is_default: true },
+  ],
+}
+const { storeState } = vi.hoisted(() => ({ storeState: { store: undefined as unknown } }))
 vi.mock("../../../../../../hooks/api/store", () => ({
-  useStore: () => ({
-    store: {
-      supported_currencies: [
-        { currency_code: "usd", is_default: false },
-        { currency_code: "uyu", is_default: true },
-      ],
-    },
-  }),
+  useStore: () => storeState,
 }))
 vi.mock("../../../../../../hooks/api/stock-locations", () => ({
   useCreateStockLocationFulfillmentSet: mutation,
@@ -91,8 +92,23 @@ const LOCATION = {
             option("so_ruled", "Express", {
               prices: [
                 { amount: 0, currency_code: "uyu", price_rules: [{ attribute: "item_total", value: 2000 }] },
-                { amount: 400, currency_code: "uyu", price_rules: [{ attribute: "region_id", value: "reg_1" }] },
               ],
+            }),
+            option("so_region", "Región", {
+              prices: [
+                { amount: 290, currency_code: "uyu", price_rules: [] },
+                { amount: 320, currency_code: "uyu", price_rules: [{ attribute: "region_id", operator: "eq", value: "reg_uy" }] },
+              ],
+            }),
+            option("so_region_only", "Solo región", {
+              prices: [
+                { amount: 380, currency_code: "uyu", price_rules: [{ attribute: "region_id", operator: "eq", value: "reg_uy" }] },
+              ],
+            }),
+            option("so_dollars", "Dólares", { prices: [{ amount: 10, currency_code: "usd", price_rules: [] }] }),
+            option("so_off", "Apagada", {
+              rules: [{ attribute: "enabled_in_store", value: "false", operator: "eq" }],
+              prices: [{ amount: 50, currency_code: "uyu" }],
             }),
             option("so_two", "Courier", {
               prices: [
@@ -125,14 +141,13 @@ const renderSection = (location = LOCATION) =>
   )
 
 beforeEach(() => {
+  storeState.store = STORE
   ;(globalThis as Record<string, unknown>).__paglyProviderLooks = { ues_ues: { name: "UES", logo: null } }
-  ;(globalThis as Record<string, unknown>).__paglyProvinces = { uy: [{ code: "uy-ma", name: "Maldonado" }] }
 })
 
 afterEach(() => {
   cleanup()
   delete (globalThis as Record<string, unknown>).__paglyProviderLooks
-  delete (globalThis as Record<string, unknown>).__paglyProvinces
 })
 
 const card = (heading: string) => screen.getByRole("heading", { name: heading }).closest("[data-fulfillment-set]") as HTMLElement
@@ -176,8 +191,44 @@ describe("a location's shipping", () => {
     expect(standard.textContent).not.toMatch(/290[.,]00/)
     const moto = screen.getByText("Moto").closest("[data-rate]") as HTMLElement
     expect(moto.textContent).toMatch(/12[.,]50/)
-    expect(moto.textContent).toMatch(/stockLocations\.shippingOptions\.fields\.hiddenInStore/)
+    const off = screen.getByText("Apagada").closest("[data-rate]") as HTMLElement
+    expect(off.textContent).toMatch(/stockLocations\.shippingOptions\.fields\.hiddenInStore/)
     expect(standard.textContent).not.toMatch(/hiddenInStore/)
+  })
+
+  it("says a rate is hidden only when a rule hides it, as checkout offers one with no rules", () => {
+    renderSection()
+    const moto = screen.getByText("Moto").closest("[data-rate]") as HTMLElement
+    expect(moto.textContent).not.toMatch(/hiddenInStore/)
+  })
+
+  it("reads the store's region price, which checkout charges before the plain one", () => {
+    renderSection()
+    const region = screen.getByText("Región").closest("[data-rate]") as HTMLElement
+    expect(region.textContent).toMatch(/320/)
+    expect(region.textContent).not.toMatch(/290/)
+    const regionOnly = screen.getByText("Solo región").closest("[data-rate]") as HTMLElement
+    expect(regionOnly.textContent).toMatch(/380/)
+  })
+
+  it("names the currency of a rate priced only in another one", () => {
+    renderSection()
+    const dollars = screen.getByText("Dólares").closest("[data-rate]") as HTMLElement
+    expect(dollars.textContent).toMatch(/USD/)
+    expect(dollars.textContent).toMatch(/10/)
+  })
+
+  it("shows no price until the store's currency is known", () => {
+    storeState.store = undefined
+    renderSection()
+    const courier = screen.getByText("Courier").closest("[data-rate]") as HTMLElement
+    expect(courier.textContent).not.toMatch(/\d/)
+  })
+
+  it("shows a zone's whole coverage on hover when the line is cut short", () => {
+    renderSection()
+    const shipping = card("stockLocations.fulfillmentSets.shipping.header")
+    expect(within(shipping).getByText("Uruguay · Maldonado").getAttribute("title")).toBe("Uruguay · Maldonado")
   })
 
   it("never reads a rule's price, like free over an amount, as the rate's own", () => {

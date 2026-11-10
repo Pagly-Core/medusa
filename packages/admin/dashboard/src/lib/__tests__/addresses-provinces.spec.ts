@@ -1,30 +1,32 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { getFormattedAddress } from "../addresses"
+import { getCellRenderer } from "../table/cell-renderers"
 
-beforeEach(() => {
-  ;(globalThis as Record<string, unknown>).__paglyProvinces = {
-    uy: [{ code: "uy-mo", name: "Montevideo" }],
-  }
-})
+const POCITOS = { city: "Pocitos", province: "uy-mo", postal_code: "11300", country_code: "uy" }
 
-afterEach(() => {
-  delete (globalThis as Record<string, unknown>).__paglyProvinces
-})
-
-// Pagly: checkout saves a province by the code a plugin registers.
+// Pagly: checkout saves a province by its lower-case ISO 3166-2 code.
 describe("an address's province", () => {
-  it("reads by the name a plugin registered for its code", () => {
-    const lines = getFormattedAddress({
-      address: { city: "Pocitos", province: "uy-mo", postal_code: "11300", country_code: "uy" } as never,
-    })
+  it("reads by its name", () => {
+    const lines = getFormattedAddress({ address: POCITOS as never })
     expect(lines).toContain("Pocitos Montevideo 11300")
   })
 
-  it("reads as it is when nobody registered it", () => {
+  it("reads as it is when it isn't a known code", () => {
     const lines = getFormattedAddress({
       address: { city: "La Plata", province: "Buenos Aires", country_code: "ar" } as never,
     })
     expect(lines).toContain("La Plata Buenos Aires")
+  })
+
+  it("reads by its name in a table's address column too", () => {
+    const { render } = getCellRenderer("address")
+    const cell = render(
+      null,
+      { shipping_address: POCITOS },
+      { metadata: { address_field: "shipping_address" } } as never,
+      ((key: string) => key) as never
+    ) as { props: { text: string } }
+    expect(cell.props.text).toBe("Pocitos, Montevideo, 11300 • UY")
   })
 })

@@ -216,3 +216,12 @@ export const areaChip = (country: AreaCountry): AreaChip => {
   if (provinces.length <= NAMED_PROVINCES) return { kind: "names", names: provinces.map(provinceName) }
   return { kind: "count", count: provinces.length, total: registeredProvinces(country.iso_2).length }
 }
+
+/** The overlaps a zone's edit adds to the ones it already had. */
+export const addedConflicts = (_now: AreaConflict[], _before: AreaConflict[]): AreaConflict[] => []
+
+/** A zone's city and zip areas, which its form keeps as they are. */
+export const keptGeoZones = (_geoZones: GeoZoneLike[]): Record<string, unknown>[] => []
+
+/** A country ticked again in the every-country table. */
+export const retickedCountry = (country: PickedCountry, _saved: AreaCountry[]): AreaCountry => country

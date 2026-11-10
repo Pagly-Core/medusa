@@ -60,3 +60,10 @@ export function getFormattedShippingOptionLocationName(
 
   return name || "N/A"
 }
+
+/** Whether checkout offers a shipping option. */
+export function isOptionShownInStore(
+  shippingOption: HttpTypes.AdminShippingOption
+) {
+  return isOptionEnabledInStore(shippingOption)
+}
