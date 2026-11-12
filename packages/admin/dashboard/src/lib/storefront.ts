@@ -7,3 +7,21 @@ export const MEDUSA_STOREFRONT_URL =
  */
 export const storefrontUrl = (path: string) =>
   `${MEDUSA_STOREFRONT_URL.replace(/\/$/, "")}${path}`
+
+type StorefrontAnswer = {
+  storefront: {
+    url: string | null
+    live_url?: string | null
+    status: "ready" | "pending"
+  }
+}
+
+export const storefrontHref = (_base: string, _path: string): string => ""
+
+export const storefrontLinkBase = (
+  _answer: StorefrontAnswer
+): string | undefined => undefined
+
+export const useStorefrontHref =
+  (): ((path: string) => string | undefined) => () =>
+    undefined
