@@ -18,11 +18,16 @@ export const giftCardFields = [
 
 export const giftCardScalarFields = [...giftCardFields];
 
+// Pagly: of the card's account, what its holder needs: the balance. Who owns
+// it (`customer_id`), its own code (the one a saldo claim takes) and its
+// metadata stay in the admin.
+const STORE_HIDDEN_ACCOUNT_FIELDS = ["customer_id", "code", "metadata"];
+
 const storeCreditAccountRelationFields = [
   "store_credit_account",
-  ...storeCreditAccountScalarFields.map(
-    (field) => `store_credit_account.${field}`
-  ),
+  ...storeCreditAccountScalarFields
+    .filter((field) => !STORE_HIDDEN_ACCOUNT_FIELDS.includes(field))
+    .map((field) => `store_credit_account.${field}`),
 ];
 
 export const giftCardAllowedFields = buildAllowedFields(
