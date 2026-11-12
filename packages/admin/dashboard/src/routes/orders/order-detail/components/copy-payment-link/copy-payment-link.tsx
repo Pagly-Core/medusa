@@ -63,6 +63,8 @@ const CopyPaymentLink = React.forwardRef<any, CopyPaymentLinkProps>(
           variant="secondary"
           size="small"
           aria-label="CopyPaymentLink code snippet"
+          // Pagly: nothing to copy while the store has no address.
+          disabled={!link}
           onClick={copyToClipboard}
         >
           {done ? (
