@@ -63,10 +63,14 @@ const onlineStore: MenuItem = {
 const agents: MenuItem = {
   label: "Agentes",
   to: "/agents",
-  items: [{ label: "Base de conocimiento", to: "/agents/knowledge-base" }],
+  items: [
+    { label: "Mis agentes", to: "/agents/team" },
+    { label: "Base de conocimiento", to: "/agents/knowledge-base" },
+  ],
 }
 const finances: MenuItem = { label: "Finanzas", to: "/finances" }
 const content: MenuItem = { label: "Contenido", to: "/content" }
+const reports: MenuItem = { label: "Reportes", to: "/ui-views" }
 
 const renderSidebar = (items: MenuItem[], pathname = "/orders") => {
   menu = items
@@ -100,48 +104,61 @@ afterEach(() => {
 })
 
 /**
- * Pagly: the plugin's sales channels (Online store, Agents) render last in the
- * main sidebar, under a "Sales channels" heading.
+ * Pagly: the plugin's Online store renders last in the main sidebar, under a
+ * "Sales channels" heading. Agents is a page of the flat list, like Reports.
  */
 describe("the sales channels group in the main sidebar", () => {
-  it("lists the online store, then agents", () => {
-    expect(SALES_CHANNEL_PATHS).toEqual(["/online-store", "/agents"])
+  it("holds the online store only", () => {
+    expect(SALES_CHANNEL_PATHS).toEqual(["/online-store"])
   })
 
-  it("renders the heading after the other extensions, with both channels under it in list order", () => {
-    // Plugin order differs from the list's on purpose.
-    const { container } = renderSidebar([agents, finances, onlineStore, content])
+  it("renders the heading after the other extensions, with the online store under it", () => {
+    // Plugin order, as the dashboard sorts it by rank.
+    const { container } = renderSidebar([finances, content, onlineStore, agents, reports])
 
     expect(screen.getByText(HEADING)).toBeTruthy()
 
     const ids = entryIds(container)
     const heading = ids.indexOf("SalesChannels")
     expect(heading).toBeGreaterThan(-1)
-    expect(ids.slice(heading)).toEqual([
-      "SalesChannels",
-      "nav:/online-store",
-      "nav:/agents",
-    ])
+    expect(ids.slice(heading)).toEqual(["SalesChannels", "nav:/online-store"])
     expect(ids.indexOf("nav:/finances")).toBeLessThan(heading)
     expect(ids.indexOf("nav:/content")).toBeLessThan(heading)
     expect(ids.indexOf("nav:/price-lists")).toBeLessThan(heading)
   })
 
-  it("renders the heading when only one channel is installed", () => {
-    const { container } = renderSidebar([finances, agents])
+  it("keeps agents in the flat list, right above reports", () => {
+    const { container } = renderSidebar([finances, content, onlineStore, agents, reports])
 
-    expect(screen.getByText(HEADING)).toBeTruthy()
-    expect(entryIds(container).slice(-2)).toEqual(["SalesChannels", "nav:/agents"])
+    const ids = entryIds(container)
+    expect(ids.slice(ids.indexOf("nav:/price-lists") + 1)).toEqual([
+      "nav:/finances",
+      "nav:/content",
+      "nav:/agents",
+      "nav:/ui-views",
+      "SalesChannels",
+      "nav:/online-store",
+    ])
   })
 
-  it("renders no heading when no channel is installed", () => {
-    const { container } = renderSidebar([finances, content])
+  it("renders the heading when only the online store is installed", () => {
+    const { container } = renderSidebar([finances, onlineStore])
+
+    expect(screen.getByText(HEADING)).toBeTruthy()
+    expect(entryIds(container).slice(-2)).toEqual([
+      "SalesChannels",
+      "nav:/online-store",
+    ])
+  })
+
+  it("renders no heading when the online store is not installed", () => {
+    const { container } = renderSidebar([finances, agents])
 
     expect(screen.queryByText(HEADING)).toBeNull()
     expect(entryIds(container)).not.toContain("SalesChannels")
     expect(entryIds(container).slice(-2)).toEqual([
       "nav:/finances",
-      "nav:/content",
+      "nav:/agents",
     ])
   })
 
@@ -156,6 +173,7 @@ describe("the sales channels group in the main sidebar", () => {
   })
 
   it.each([
+    ["/agents", "/agents/team", "Mis agentes"],
     ["/agents", "/agents/knowledge-base", "Base de conocimiento"],
     ["/online-store", "/online-store/preferences", "Preferencias"],
   ])("still renders %s's nested page under it", (to, pathname, label) => {
