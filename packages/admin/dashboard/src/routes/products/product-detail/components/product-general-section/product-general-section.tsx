@@ -13,7 +13,7 @@ import { ActionMenu } from "../../../../../components/common/action-menu"
 import { SectionRow } from "../../../../../components/common/section"
 import { richTextToPlain } from "../../../../../components/inputs/rich-text-input"
 import { useDeleteProduct } from "../../../../../hooks/api/products"
-import { storefrontUrl } from "../../../../../lib/storefront"
+import { useStorefrontHref } from "../../../../../lib/storefront"
 import { useExtension } from "../../../../../providers/extension-provider"
 import { useFeatureFlag } from "../../../../../providers/feature-flag-provider"
 
@@ -58,6 +58,9 @@ export const ProductGeneralSection = ({
   const isTranslationsEnabled = useFeatureFlag("translation")
 
   const displays = getDisplays("product", "general")
+  const viewHref = useStorefrontHref()(
+    `/products/${encodeURIComponent(product.handle)}`
+  )
 
   const { mutateAsync } = useDeleteProduct(product.id)
 
@@ -105,18 +108,20 @@ export const ProductGeneralSection = ({
                     icon: <PencilSquare />,
                   },
                   // Pagly: open the product's page in the online store.
-                  {
-                    label: t("onlineStore.view"),
-                    href: storefrontUrl(
-                      `/products/${encodeURIComponent(product.handle)}`
-                    ),
-                    icon: <ArrowUpRightOnBox />,
-                    disabled: !isInStore(product),
-                    disabledTooltip:
-                      product.status === "published"
-                        ? t("onlineStore.unavailable.noSalesChannel")
-                        : t("onlineStore.unavailable.product"),
-                  },
+                  ...(viewHref
+                    ? [
+                        {
+                          label: t("onlineStore.view"),
+                          href: viewHref,
+                          icon: <ArrowUpRightOnBox />,
+                          disabled: !isInStore(product),
+                          disabledTooltip:
+                            product.status === "published"
+                              ? t("onlineStore.unavailable.noSalesChannel")
+                              : t("onlineStore.unavailable.product"),
+                        },
+                      ]
+                    : []),
                 ],
               },
               ...(isTranslationsEnabled

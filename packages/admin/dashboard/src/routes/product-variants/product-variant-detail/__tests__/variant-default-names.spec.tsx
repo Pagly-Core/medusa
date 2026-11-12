@@ -3,11 +3,6 @@ import { cleanup, render, screen } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-vi.hoisted(() => {
-  const g = global as any
-  g.__STOREFRONT_URL__ = "http://localhost:8000"
-})
-
 import { ProductVariantDetailBreadcrumb, seo } from "../breadcrumb"
 import { VariantGeneralSection } from "../components/variant-general-section"
 import { VARIANT_DETAIL_FIELDS } from "../constants"
@@ -25,6 +20,10 @@ vi.mock("../../../../hooks/api", () => ({
     _query: unknown,
     options: { initialData: { variant: unknown } }
   ) => ({ variant: options.initialData.variant }),
+}))
+
+vi.mock("../../../../lib/storefront", () => ({
+  useStorefrontHref: () => (path: string) => `http://localhost:8000${path}`,
 }))
 
 vi.mock("../../../../hooks/api/products", () => ({
