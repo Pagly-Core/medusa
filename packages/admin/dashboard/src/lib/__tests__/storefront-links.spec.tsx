@@ -1,42 +1,35 @@
 // @vitest-environment jsdom
-import { FetchError } from "@medusajs/js-sdk"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { TooltipProvider } from "@medusajs/ui"
 import {
   cleanup,
   fireEvent,
   render,
   renderHook,
   screen,
-  waitFor,
 } from "@testing-library/react"
 import { PropsWithChildren, ReactNode } from "react"
-import { TooltipProvider } from "@medusajs/ui"
 import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
   MEDUSA_STOREFRONT_URL,
+  STOREFRONT_HREF_HOOK_KEY,
   storefrontHref,
-  storefrontLinkBase,
   useStorefrontHref,
 } from "../storefront"
 
 /**
  * Pagly: "Ver en tienda online" (products, variants, categories,
  * collections) and the order's payment link open the store's own public
- * address. On a host serving many stores that address is per store, so the
- * admin asks @pagly/storefront's GET /admin/storefront for it at runtime:
- * its `live_url` (the address visitors reach), else its `url` (the preview
- * only the merchant opens, while the store has no public address yet). The
- * build-time storefront URL is only for a backend without that route.
+ * address. One admin build serves every store on a multi-store host, so the
+ * address can't come from the build: @pagly/storefront registers a hook on
+ * globalThis (STOREFRONT_HREF_HOOK_KEY) that answers each store's links,
+ * and the dashboard only falls back to the build's storefront without it.
  */
 
-const fetchMock = vi.hoisted(() => vi.fn())
 const copyMock = vi.hoisted(() => vi.fn())
 
 vi.mock("copy-to-clipboard", () => ({ default: copyMock }))
-
-vi.mock("../client", () => ({ sdk: { client: { fetch: fetchMock } } }))
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -56,8 +49,6 @@ vi.mock("../../components/common/action-menu", () => ({
       actions: {
         label: string
         href?: string
-        onClick?: () => void
-        to?: string
       }[]
     }[]
   }) => (
@@ -103,34 +94,31 @@ const LIVE = "https://oxo-2026.pagly.app"
 const PREVIEW =
   "https://tplpreview-b2c-1.pagly.app/?tenant=oxo-2026&draft=tok_123"
 
-const answer = (storefront: {
-  url: string | null
-  live_url?: string | null
-  status?: "ready" | "pending"
-}) => ({ storefront: { status: "ready" as const, ...storefront } })
+const hooks = globalThis as Record<string, unknown>
 
-const notFound = () => new FetchError("Not Found", "Not Found", 404)
-
-let client: QueryClient
+/** What the plugin registers: links on `base`, or none while there is none. */
+const register = (base: string | undefined) => {
+  hooks[STOREFRONT_HREF_HOOK_KEY] = () => (path: string) =>
+    base ? storefrontHref(base, path) : undefined
+}
 
 const Providers = ({ children }: PropsWithChildren) => (
-  <QueryClientProvider client={client}>
-    <MemoryRouter>{children}</MemoryRouter>
-  </QueryClientProvider>
+  <MemoryRouter>
+    <TooltipProvider>{children}</TooltipProvider>
+  </MemoryRouter>
 )
 
 const renderWithProviders = (ui: ReactNode) =>
   render(ui, { wrapper: Providers })
 
 beforeEach(() => {
-  client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  fetchMock.mockReset()
   copyMock.mockReset()
+  register(LIVE)
 })
 
 afterEach(() => {
   cleanup()
-  client.clear()
+  delete hooks[STOREFRONT_HREF_HOOK_KEY]
 })
 
 describe("storefrontHref", () => {
@@ -165,6 +153,12 @@ describe("storefrontHref", () => {
     expect(href.searchParams.get("tenant")).toBe("oxo-2026")
   })
 
+  it("keeps the path's anchor", () => {
+    expect(storefrontHref(LIVE, "/pages/preguntas#envios")).toBe(
+      `${LIVE}/pages/preguntas#envios`
+    )
+  })
+
   it("keeps an encoded handle as it is", () => {
     expect(storefrontHref(LIVE, "/products/sart%C3%A9n")).toBe(
       `${LIVE}/products/sart%C3%A9n`
@@ -172,125 +166,42 @@ describe("storefrontHref", () => {
   })
 })
 
-describe("storefrontLinkBase", () => {
-  it("opens the store's public address over the editor's preview", () => {
-    expect(storefrontLinkBase(answer({ url: PREVIEW, live_url: LIVE }))).toBe(
-      LIVE
-    )
-  })
-
-  it("opens the preview while the store has no public address yet", () => {
-    expect(storefrontLinkBase(answer({ url: PREVIEW, live_url: null }))).toBe(
-      PREVIEW
-    )
-  })
-
-  it("opens the url when the backend names no live one", () => {
-    expect(storefrontLinkBase(answer({ url: LIVE }))).toBe(LIVE)
-  })
-
-  it("has nothing to open while the storefront is being prepared", () => {
-    expect(
-      storefrontLinkBase(answer({ url: null, live_url: null, status: "pending" }))
-    ).toBeUndefined()
-  })
-})
-
 describe("useStorefrontHref", () => {
-  const hrefFor = async (path: string) => {
-    const { result } = renderHook(() => useStorefrontHref(), {
-      wrapper: Providers,
-    })
+  it("links where the plugin says the store is", () => {
+    const { result } = renderHook(() => useStorefrontHref())
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled())
-    await waitFor(() => expect(client.isFetching()).toBe(0))
-
-    return result.current(path)
-  }
-
-  it("asks the backend for the store's storefront", async () => {
-    fetchMock.mockResolvedValue(answer({ url: PREVIEW, live_url: LIVE }))
-
-    await hrefFor("/products/batidor")
-
-    expect(fetchMock).toHaveBeenCalledWith("/admin/storefront")
-  })
-
-  it("links to the store's public address", async () => {
-    fetchMock.mockResolvedValue(answer({ url: PREVIEW, live_url: LIVE }))
-
-    expect(await hrefFor("/products/batidor")).toBe(`${LIVE}/products/batidor`)
-  })
-
-  it("links to the preview while the store has no public address", async () => {
-    fetchMock.mockResolvedValue(answer({ url: PREVIEW, live_url: null }))
-
-    const href = new URL((await hrefFor("/products/batidor"))!)
-
-    expect(href.origin).toBe("https://tplpreview-b2c-1.pagly.app")
-    expect(href.searchParams.get("tenant")).toBe("oxo-2026")
-  })
-
-  it("has no link while the storefront is being prepared", async () => {
-    fetchMock.mockResolvedValue(
-      answer({ url: null, live_url: null, status: "pending" })
+    expect(result.current("/products/batidor")).toBe(
+      `${LIVE}/products/batidor`
     )
-
-    expect(await hrefFor("/products/batidor")).toBeUndefined()
   })
 
-  it("has no link before the answer comes", () => {
-    fetchMock.mockReturnValue(new Promise(() => {}))
+  it("has no link while the plugin has no address for the store", () => {
+    register(undefined)
 
-    const { result } = renderHook(() => useStorefrontHref(), {
-      wrapper: Providers,
-    })
+    const { result } = renderHook(() => useStorefrontHref())
 
     expect(result.current("/products/batidor")).toBeUndefined()
   })
 
-  it("uses the build's storefront on a backend without the route", async () => {
-    fetchMock.mockRejectedValue(notFound())
+  it("uses the build's storefront without the plugin", () => {
+    delete hooks[STOREFRONT_HREF_HOOK_KEY]
 
-    expect(await hrefFor("/products/batidor")).toBe(
-      storefrontHref(MEDUSA_STOREFRONT_URL, "/products/batidor")
-    )
-  })
-
-  it("never stands the build's storefront in for a failed answer", async () => {
-    fetchMock.mockRejectedValue(
-      new FetchError("Internal Server Error", "Internal Server Error", 500)
-    )
-
-    expect(await hrefFor("/products/batidor")).toBeUndefined()
-  })
-
-  it("shares the answer the online store screens already have", async () => {
-    client.setQueryData(["pagly-storefront"], answer({ url: PREVIEW, live_url: LIVE }))
-    fetchMock.mockReturnValue(new Promise(() => {}))
-
-    const { result } = renderHook(() => useStorefrontHref(), {
-      wrapper: Providers,
-    })
+    const { result } = renderHook(() => useStorefrontHref())
 
     expect(result.current("/products/batidor")).toBe(
-      `${LIVE}/products/batidor`
+      storefrontHref(MEDUSA_STOREFRONT_URL, "/products/batidor")
     )
   })
 })
 
 // The sections load the whole dashboard's modules on first import.
 describe("Ver en tienda online", { timeout: 60_000 }, () => {
-  beforeEach(() => {
-    fetchMock.mockResolvedValue(answer({ url: PREVIEW, live_url: LIVE }))
-  })
-
   const viewLink = async () =>
     (await screen.findByRole("link", { name: "onlineStore.view" })).getAttribute(
       "href"
     )
 
-  it("opens the product on the store's public address", async () => {
+  const renderProduct = async () => {
     const { ProductGeneralSection } = await import(
       "../../routes/products/product-detail/components/product-general-section"
     )
@@ -308,8 +219,22 @@ describe("Ver en tienda online", { timeout: 60_000 }, () => {
         }
       />
     )
+  }
 
-    expect(await viewLink()).toBe(`${LIVE}/products/set-de-gadgets-de-cocina-4-en-1`)
+  it("opens the product on the store's public address", async () => {
+    await renderProduct()
+
+    expect(await viewLink()).toBe(
+      `${LIVE}/products/set-de-gadgets-de-cocina-4-en-1`
+    )
+  })
+
+  it("offers no link while the store has no address", async () => {
+    register(undefined)
+    await renderProduct()
+
+    await screen.findByText("actions.edit")
+    expect(screen.queryByText("onlineStore.view")).toBeNull()
   })
 
   it("opens the variant on the store's public address", async () => {
@@ -372,29 +297,40 @@ describe("Ver en tienda online", { timeout: 60_000 }, () => {
 })
 
 describe("the order's payment link", { timeout: 60_000 }, () => {
-  it("is on the store's public address", async () => {
-    fetchMock.mockResolvedValue(answer({ url: PREVIEW, live_url: LIVE }))
-
+  const renderLink = async () => {
     const { CopyPaymentLink } = await import(
       "../../routes/orders/order-detail/components/copy-payment-link"
     )
 
     renderWithProviders(
-      <TooltipProvider>
-        <CopyPaymentLink
-          paymentCollection={
-            { id: "paycol_1", amount: 100, currency_code: "uyu" } as any
-          }
-          order={{ id: "order_1", currency_code: "uyu" } as any}
-        />
-      </TooltipProvider>
+      <CopyPaymentLink
+        paymentCollection={
+          { id: "paycol_1", amount: 100, currency_code: "uyu" } as any
+        }
+        order={{ id: "order_1", currency_code: "uyu" } as any}
+      />
     )
 
-    await waitFor(() => expect(client.isFetching()).toBe(0))
-    fireEvent.click(screen.getByRole("button"))
+    return screen.getByRole("button")
+  }
+
+  it("is on the store's public address", async () => {
+    fireEvent.click(await renderLink())
 
     expect(copyMock).toHaveBeenCalledWith(
       `${LIVE}/payment-collection/paycol_1?order_id=order_1`
     )
+  })
+
+  // Copying nothing without a word would leave the merchant pasting
+  // whatever was on their clipboard.
+  it("can't be copied while the store has no address", async () => {
+    register(undefined)
+
+    const button = await renderLink()
+
+    expect(button.hasAttribute("disabled")).toBe(true)
+    fireEvent.click(button)
+    expect(copyMock).not.toHaveBeenCalled()
   })
 })
