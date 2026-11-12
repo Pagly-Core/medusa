@@ -9,7 +9,7 @@ import { Container, Heading, Text, usePrompt } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useDeleteCollection } from "../../../../../hooks/api/collections"
-import { storefrontUrl } from "../../../../../lib/storefront"
+import { useStorefrontHref } from "../../../../../lib/storefront"
 import { useNavigate } from "react-router-dom"
 import { useFeatureFlag } from "../../../../../providers/feature-flag-provider"
 
@@ -24,6 +24,9 @@ export const CollectionGeneralSection = ({
   const prompt = usePrompt()
   const navigate = useNavigate()
   const isTranslationsEnabled = useFeatureFlag("translation")
+  const viewHref = useStorefrontHref()(
+    `/collections/${encodeURIComponent(collection.handle ?? "")}`
+  )
 
   const { mutateAsync } = useDeleteCollection(collection.id!)
 
@@ -59,14 +62,16 @@ export const CollectionGeneralSection = ({
                   disabled: !collection.id,
                 },
                 // Pagly: open the collection's page in the online store.
-                {
-                  icon: <ArrowUpRightOnBox />,
-                  label: t("onlineStore.view"),
-                  href: storefrontUrl(
-                    `/collections/${encodeURIComponent(collection.handle ?? "")}`
-                  ),
-                  disabled: !collection.handle,
-                },
+                ...(viewHref
+                  ? [
+                      {
+                        icon: <ArrowUpRightOnBox />,
+                        label: t("onlineStore.view"),
+                        href: viewHref,
+                        disabled: !collection.handle,
+                      },
+                    ]
+                  : []),
               ],
             },
             ...(isTranslationsEnabled

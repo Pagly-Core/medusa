@@ -16,7 +16,7 @@ import {
   getVariantTitle,
   isDefaultOptionValue,
 } from "../../../../../lib/default-names"
-import { storefrontUrl } from "../../../../../lib/storefront"
+import { useStorefrontHref } from "../../../../../lib/storefront"
 import { useFeatureFlag } from "../../../../../providers/feature-flag-provider"
 import { ExtendedVariant } from "../../constants"
 
@@ -29,6 +29,14 @@ export function VariantGeneralSection({ variant }: VariantGeneralSectionProps) {
   const prompt = usePrompt()
   const navigate = useNavigate()
   const isTranslationsEnabled = useFeatureFlag("translation")
+  const storefrontHref = useStorefrontHref()
+  const viewHref = variant.product?.handle
+    ? storefrontHref(
+        `/products/${encodeURIComponent(variant.product.handle)}?v_id=${
+          variant.id
+        }`
+      )
+    : undefined
 
   const hasInventoryKit = (variant.inventory?.length ?? 0) > 1
   // Pagly: a product's one version is headed with the product's title.
@@ -84,17 +92,13 @@ export function VariantGeneralSection({ variant }: VariantGeneralSectionProps) {
                     icon: <PencilSquare />,
                   },
                   // Pagly: open the product page with this variant selected.
-                  ...(variant.product?.handle
+                  ...(viewHref
                     ? [
                         {
                           label: t("onlineStore.view"),
-                          href: storefrontUrl(
-                            `/products/${encodeURIComponent(
-                              variant.product.handle
-                            )}?v_id=${variant.id}`
-                          ),
+                          href: viewHref,
                           icon: <ArrowUpRightOnBox />,
-                          disabled: variant.product.status !== "published",
+                          disabled: variant.product?.status !== "published",
                           disabledTooltip: t("onlineStore.unavailable.product"),
                         },
                       ]

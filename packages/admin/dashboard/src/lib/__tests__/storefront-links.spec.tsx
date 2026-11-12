@@ -107,7 +107,7 @@ const answer = (storefront: {
   url: string | null
   live_url?: string | null
   status?: "ready" | "pending"
-}) => ({ storefront: { status: "ready", ...storefront } })
+}) => ({ storefront: { status: "ready" as const, ...storefront } })
 
 const notFound = () => new FetchError("Not Found", "Not Found", 404)
 

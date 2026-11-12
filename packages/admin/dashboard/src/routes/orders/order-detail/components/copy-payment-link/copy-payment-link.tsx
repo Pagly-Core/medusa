@@ -5,7 +5,7 @@ import copy from "copy-to-clipboard"
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { getStylizedAmount } from "../../../../../lib/money-amount-helpers"
-import { MEDUSA_STOREFRONT_URL } from "../../../../../lib/storefront"
+import { useStorefrontHref } from "../../../../../lib/storefront"
 
 type CopyPaymentLinkProps = {
   paymentCollection: AdminPaymentCollection
@@ -21,6 +21,10 @@ const CopyPaymentLink = React.forwardRef<any, CopyPaymentLinkProps>(
     const [open, setOpen] = useState(false)
     const [text, setText] = useState("CopyPaymentLink")
     const { t } = useTranslation()
+    // Pagly: on the store's own address, as the backend names it.
+    const link = useStorefrontHref()(
+      `/payment-collection/${paymentCollection.id}?order_id=${order.id}`
+    )
 
     const copyToClipboard = async (
       e:
@@ -29,10 +33,12 @@ const CopyPaymentLink = React.forwardRef<any, CopyPaymentLinkProps>(
     ) => {
       e.stopPropagation()
 
+      if (!link) {
+        return
+      }
+
       setDone(true)
-      copy(
-        `${MEDUSA_STOREFRONT_URL}/payment-collection/${paymentCollection.id}?order_id=${order.id}`
-      )
+      copy(link)
 
       setTimeout(() => {
         setDone(false)
