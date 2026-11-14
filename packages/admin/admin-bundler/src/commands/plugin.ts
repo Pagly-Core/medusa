@@ -33,6 +33,10 @@ export async function plugin(options: PluginOptions) {
     // Pagly: the dashboard already provides these. Bundling a second copy makes Tooltip and other UI context throw.
     "@medusajs/ui",
     "@medusajs/icons",
+    // Pagly: and these, which hold state. A plugin with its own React DOM ships 1.2 MB twice; one with its own
+    // i18next translates against an instance the dashboard never initialized, so `i18next.t` answers the key.
+    "react-dom",
+    "i18next",
   ])
 
   const outDir = path.resolve(options.root, options.outDir, "src/admin")
