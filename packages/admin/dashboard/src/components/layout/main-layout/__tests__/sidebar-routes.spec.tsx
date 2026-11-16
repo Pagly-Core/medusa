@@ -222,3 +222,44 @@ describe("the products entry in the main sidebar", () => {
     ).toBeGreaterThan(0)
   })
 })
+
+/**
+ * Pagly: a plugin entry the plugin's hidden-nav hook names is left out, top
+ * level or nested under a core route; without the hook every entry shows.
+ */
+describe("entries the plugin hides", () => {
+  const bankPromotions: MenuItem = {
+    label: "Promociones bancarias",
+    to: "/bank-promotions",
+    nested: "/promotions",
+  }
+  const hide = (paths: string[] | undefined) => {
+    ;(globalThis as Record<string, unknown>).__paglyUseHiddenNav = paths
+      ? () => new Set(paths)
+      : undefined
+  }
+
+  afterEach(() => hide(undefined))
+
+  it("leaves out a hidden top-level entry", () => {
+    hide(["/finances"])
+    const { container } = renderSidebar([finances, content])
+
+    expect(entryIds(container)).not.toContain("nav:/finances")
+    expect(entryIds(container)).toContain("nav:/content")
+  })
+
+  it("leaves out a hidden entry nested under a core route", () => {
+    hide(["/bank-promotions"])
+    renderSidebar([bankPromotions], "/promotions")
+
+    expect(screen.queryByRole("link", { name: "Promociones bancarias" })).toBeNull()
+  })
+
+  it("shows every entry without the hook", () => {
+    const { container } = renderSidebar([finances, bankPromotions], "/promotions")
+
+    expect(entryIds(container)).toContain("nav:/finances")
+    expect(screen.getByRole("link", { name: "Promociones bancarias" })).toBeTruthy()
+  })
+})

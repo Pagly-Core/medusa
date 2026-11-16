@@ -180,3 +180,35 @@ describe("the settings sidebar", () => {
     expect(screen.getByText("app.nav.settings.store")).toBeTruthy()
   })
 })
+
+/**
+ * Pagly: a plugin settings page the plugin's hidden-nav hook names is left
+ * out of the groups and of the search; without the hook every page shows.
+ */
+describe("settings pages the plugin hides", () => {
+  afterEach(() => {
+    cleanup()
+    delete (globalThis as Record<string, unknown>).__paglyUseHiddenNav
+  })
+
+  it("leaves a hidden page out of its group and of the search", () => {
+    ;(globalThis as Record<string, unknown>).__paglyUseHiddenNav = () =>
+      new Set(["/settings/domains"])
+    renderSidebar()
+
+    expect(screen.queryByRole("link", { name: "Dominios" })).toBeNull()
+    expect(screen.getByRole("link", { name: "Notificaciones" })).toBeTruthy()
+
+    fireEvent.change(
+      screen.getByRole("searchbox", { name: "app.nav.settings.search" }),
+      { target: { value: "domin" } }
+    )
+    expect(screen.queryByRole("link", { name: "Dominios" })).toBeNull()
+  })
+
+  it("shows every page without the hook", () => {
+    renderSidebar()
+
+    expect(screen.getByRole("link", { name: "Dominios" })).toBeTruthy()
+  })
+})
