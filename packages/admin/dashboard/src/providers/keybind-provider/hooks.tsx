@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
 
-import { useLogout } from "../../hooks/api/auth"
-import { queryClient } from "../../lib/query-client"
+import { useSignOut } from "../../hooks/use-sign-out"
 import {
   getSearchEntityShortcuts,
   resolveSearchEntityShortcutLabel,
@@ -11,18 +9,7 @@ import { Shortcut } from "./types"
 
 export const useGlobalShortcuts = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-
-  const { mutateAsync } = useLogout()
-
-  const handleLogout = async () => {
-    await mutateAsync(undefined, {
-      onSuccess: () => {
-        queryClient.clear()
-        navigate("/login")
-      },
-    })
-  }
+  const handleLogout = useSignOut()
 
   const globalShortcuts: Shortcut[] = [
     // "Jump to" entries come from the search entity registry, so apps and

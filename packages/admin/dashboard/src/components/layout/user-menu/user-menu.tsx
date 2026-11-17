@@ -15,9 +15,9 @@ import { useTranslation } from "react-i18next"
 import { Skeleton } from "../../common/skeleton"
 
 import { useState } from "react"
-import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useLogout, useMe } from "../../../hooks/api"
-import { queryClient } from "../../../lib/query-client"
+import { Link, useLocation } from "react-router-dom"
+import { useMe } from "../../../hooks/api"
+import { useSignOut } from "../../../hooks/use-sign-out"
 import { useTheme } from "../../../providers/theme-provider"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
 
@@ -163,21 +163,7 @@ const ThemeToggle = () => {
 
 const Logout = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-
-  const { mutateAsync: logoutMutation } = useLogout()
-
-  const handleLogout = async () => {
-    await logoutMutation(undefined, {
-      onSuccess: () => {
-        /**
-         * When the user logs out, we want to clear the query cache
-         */
-        queryClient.clear()
-        navigate("/login")
-      },
-    })
-  }
+  const handleLogout = useSignOut()
 
   return (
     <DropdownMenu.Item onClick={handleLogout}>
