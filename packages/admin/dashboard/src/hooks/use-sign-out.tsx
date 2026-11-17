@@ -1,3 +1,5 @@
+import { FetchError } from "@medusajs/js-sdk"
+import { toast } from "@medusajs/ui"
 import { useNavigate } from "react-router-dom"
 
 import { queryClient } from "../lib/query-client"
@@ -11,13 +13,23 @@ import { useLogout } from "./api"
  * mutation unmounts, and a menu item unmounts as its menu closes. On any
  * connection slower than the menu's closing, the session ended and the page
  * stayed where it was until a reload.
+ *
+ * A session that had already ended (401) is signed out all the same. Any
+ * other failure leaves the session as it was, so the page stays and says why.
  */
 export const useSignOut = () => {
   const navigate = useNavigate()
   const { mutateAsync } = useLogout()
 
   return async () => {
-    await mutateAsync()
+    try {
+      await mutateAsync()
+    } catch (error) {
+      if (!(error instanceof FetchError) || error.status !== 401) {
+        toast.error((error as Error).message)
+        return
+      }
+    }
     // Nothing read as the user who left is kept for the next one.
     queryClient.clear()
     navigate("/login")
