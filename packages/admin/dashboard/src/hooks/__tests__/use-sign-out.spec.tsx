@@ -121,6 +121,7 @@ describe("every way out of the admin", () => {
       .map((file) => path.relative(SRC, file).split(path.sep).join("/"))
       .sort()
 
-    expect(own).toEqual(["hooks/api/auth.tsx", "hooks/use-sign-out.tsx"])
-  })
+    expect(own).toEqual(["hooks/use-sign-out.tsx"])
+    // Reads every source file of the dashboard.
+  }, 60_000)
 })

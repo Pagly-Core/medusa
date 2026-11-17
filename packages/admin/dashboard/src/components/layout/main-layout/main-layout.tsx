@@ -24,9 +24,8 @@ import { Skeleton } from "../../common/skeleton"
 import { INavItem, NavItem } from "../../layout/nav-item"
 import { Shell } from "../../layout/shell"
 
-import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useLogout } from "../../../hooks/api"
-import { queryClient } from "../../../lib/query-client"
+import { Link, useLocation } from "react-router-dom"
+import { useSignOut } from "../../../hooks/use-sign-out"
 import { useExtension } from "../../../providers/extension-provider"
 import { useSearch } from "../../../providers/search-provider"
 import { UserMenu } from "../user-menu"
@@ -70,21 +69,7 @@ const MainSidebar = () => {
 
 const Logout = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-
-  const { mutateAsync: logoutMutation } = useLogout()
-
-  const handleLogout = async () => {
-    await logoutMutation(undefined, {
-      onSuccess: () => {
-        /**
-         * When the user logs out, we want to clear the query cache
-         */
-        queryClient.clear()
-        navigate("/login")
-      },
-    })
-  }
+  const handleLogout = useSignOut()
 
   return (
     <DropdownMenu.Item onClick={handleLogout}>
