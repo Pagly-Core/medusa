@@ -16,4 +16,10 @@ const NONE: ReadonlySet<string> = new Set()
  * registered hook. The plugin registers it as its admin loads, before the
  * dashboard renders, so every render calls the same hook.
  */
-export const useHiddenNav = (): ReadonlySet<string> => NONE
+export const useHiddenNav = (): ReadonlySet<string> => {
+  const registered = (globalThis as Record<string, unknown>)[
+    HIDDEN_NAV_HOOK_KEY
+  ] as UseHiddenNav | undefined
+
+  return registered?.() ?? NONE
+}

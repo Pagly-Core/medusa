@@ -32,6 +32,7 @@ import { useSearch } from "../../../providers/search-provider"
 import { UserMenu } from "../user-menu"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
 import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
+import { useHiddenNav } from "../../../lib/hidden-nav"
 import { SALES_CHANNEL_PATHS } from "./sales-channel-paths"
 
 export const MainLayout = () => {
@@ -317,7 +318,11 @@ export const SidebarRoutes = () => {
 
   const { getMenu } = useExtension()
 
-  const menuItems = getMenu("coreExtensions")
+  // Pagly: the plugin leaves out the entries the store cannot use.
+  const hidden = useHiddenNav()
+  const menuItems = getMenu("coreExtensions").filter(
+    (item) => !hidden.has(item.to)
+  )
 
   menuItems.forEach((item) => {
     if (item.nested) {
