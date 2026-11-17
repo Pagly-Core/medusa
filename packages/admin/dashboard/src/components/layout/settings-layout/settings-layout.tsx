@@ -12,6 +12,7 @@ import { useExtension } from "../../../providers/extension-provider"
 import { LayoutComposer } from "../../layout-composer"
 import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
 import { INavItem, NavItem } from "../nav-item"
+import { useHiddenNav } from "../../../lib/hidden-nav"
 import { Shell } from "../shell"
 import { UserMenu } from "../user-menu"
 import {
@@ -129,7 +130,13 @@ export const SettingsSidebar = () => {
   }, [pathname])
 
   const coreRoutes = useCoreSettingRoutes()
-  const extensionRoutes = getMenu("settingsExtensions")
+  // Pagly: the plugin leaves out the pages the store cannot use.
+  const hidden = useHiddenNav()
+  const allExtensionRoutes = getMenu("settingsExtensions")
+  const extensionRoutes = useMemo(
+    () => allExtensionRoutes.filter((item) => !hidden.has(item.to)),
+    [allExtensionRoutes, hidden]
+  )
 
   const sections = useMemo(
     () =>
