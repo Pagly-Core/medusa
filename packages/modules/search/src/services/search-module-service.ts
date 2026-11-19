@@ -47,6 +47,7 @@ import {
   activateVersion,
   resolveVersionDefinition,
   retrievePendingVersion,
+  routesWithActiveVersion,
 } from "../utils/host-fill"
 import { buildEventRoutes, ingestEvent } from "../utils/ingestion"
 import {
@@ -454,10 +455,17 @@ export default class SearchModuleService
 
   // Waits for its writes, so awaiting this acknowledges the event.
   async ingest(event: Event<any>): Promise<SearchTypes.SearchTask[]> {
-    return await ingestEvent(this.context_, {
-      event,
-      routes: this.eventRoutes_,
-    })
+    // Pagly: a host that fills versions itself skips indexes not active yet.
+    const routes =
+      this.moduleOptions_.seed_on_start === false
+        ? await routesWithActiveVersion(
+            this.context_,
+            this.eventRoutes_,
+            event.name
+          )
+        : this.eventRoutes_
+
+    return await ingestEvent(this.context_, { event, routes })
   }
 
   async listIndexes(): Promise<SearchTypes.SearchIndexDetails[]> {

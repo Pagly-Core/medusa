@@ -8,6 +8,7 @@
 import { SearchTypes } from "@medusajs/framework/types"
 import { MedusaError } from "@medusajs/framework/utils"
 import {
+  SearchEventRoutes,
   SearchIndexContext,
   SearchIndexRecord,
   SearchIndexVersionRecord,
@@ -61,6 +62,14 @@ const isPending = (
   version: SearchIndexVersionRecord
 ) => record.active_version == null || version.version > record.active_version
 
+// Built for the definition this process loaded. During a rollout, a task
+// still on the previous image must not fill or activate a version a newer
+// image's migration built.
+const builtForThisDefinition = (
+  definition: SearchTypes.ResolvedSearchIndexDefinition,
+  version: SearchIndexVersionRecord
+) => version.definition_hash === definition.definition_hash
+
 const toInfo = (
   version: SearchIndexVersionRecord
 ): SearchTypes.SearchIndexVersionInfo => ({
@@ -74,14 +83,16 @@ export async function retrievePendingVersion(
   context: HostFillContext,
   name: string
 ): Promise<SearchTypes.SearchIndexVersionInfo | null> {
-  retrieveIndexDefinition(context.indexes, name)
+  const definition = retrieveIndexDefinition(context.indexes, name)
 
   const { record, versions } = await versionsOf(context, name)
   const pending = versions
     .filter((version) => isPending(record, version))
     .sort((a, b) => b.version - a.version)[0]
 
-  return pending ? toInfo(pending) : null
+  return pending && builtForThisDefinition(definition, pending)
+    ? toInfo(pending)
+    : null
 }
 
 /**
@@ -100,7 +111,8 @@ export async function resolveVersionDefinition(
 
   if (
     !target ||
-    (record.active_version != null && version < record.active_version)
+    (record.active_version != null && version < record.active_version) ||
+    (isPending(record, target) && !builtForThisDefinition(definition, target))
   ) {
     throw new MedusaError(
       MedusaError.Types.NOT_ALLOWED,
@@ -126,13 +138,17 @@ export async function activateVersion(
   name: string,
   version: number
 ): Promise<void> {
-  retrieveIndexDefinition(context.indexes, name)
+  const definition = retrieveIndexDefinition(context.indexes, name)
 
   const run = async () => {
     const { record, versions } = await versionsOf(context, name)
     const target = versions.find((candidate) => candidate.version === version)
 
-    if (!target || !isPending(record, target)) {
+    if (
+      !target ||
+      !isPending(record, target) ||
+      !builtForThisDefinition(definition, target)
+    ) {
       throw new MedusaError(
         MedusaError.Types.NOT_ALLOWED,
         `Search index "${name}" has no pending version ${version} to activate`
@@ -170,4 +186,55 @@ export async function activateVersion(
   }
 
   await run()
+}
+
+/**
+ * The event's routes, less the indexes with no active version yet. The host
+ * catches up on what changed during a fill once it activates, so an event
+ * that arrives before then has nowhere to go; throwing would have the event
+ * bus retry every store's events until activation. A cached "none" is
+ * checked against the database, so an activation by another process is seen
+ * at once.
+ */
+export async function routesWithActiveVersion(
+  context: Pick<SearchIndexContext, "activeVersionCache">,
+  routes: SearchEventRoutes,
+  eventName: string
+): Promise<SearchEventRoutes> {
+  const names = routes.get(eventName)
+
+  if (!names?.length || !context.activeVersionCache) {
+    return routes
+  }
+
+  const active: string[] = []
+
+  for (const name of names) {
+    if (await hasActiveVersion(context.activeVersionCache, name)) {
+      active.push(name)
+    }
+  }
+
+  return new Map([[eventName, active]])
+}
+
+async function hasActiveVersion(
+  cache: NonNullable<SearchIndexContext["activeVersionCache"]>,
+  name: string
+): Promise<boolean> {
+  for (const fresh of [false, true]) {
+    try {
+      await cache.get(name, { fresh })
+      return true
+    } catch (error) {
+      if (
+        !(error instanceof MedusaError) ||
+        error.type !== MedusaError.Types.NOT_FOUND
+      ) {
+        throw error
+      }
+    }
+  }
+
+  return false
 }
