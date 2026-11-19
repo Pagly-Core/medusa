@@ -101,6 +101,23 @@ export async function retrieveActiveVersion(
 ): Promise<SearchTypes.SearchIndexVersionInfo | null> {
   retrieveIndexDefinition(context.indexes, name)
 
+  // The cache every live read and write goes through already knows it; an
+  // active version is ready by definition.
+  if (context.activeVersionCache) {
+    try {
+      const active = await context.activeVersionCache.get(name)
+      return { ...active, status: "ready" }
+    } catch (error) {
+      if (
+        error instanceof MedusaError &&
+        error.type === MedusaError.Types.NOT_FOUND
+      ) {
+        return null
+      }
+      throw error
+    }
+  }
+
   const { record, versions } = await versionsOf(context, name)
   const active = versions.find(
     (version) => version.version === record.active_version
