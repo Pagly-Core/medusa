@@ -46,6 +46,7 @@ import { deleteIndexEntirely } from "../utils/deletion"
 import {
   activateVersion,
   resolveVersionDefinition,
+  retrieveActiveVersion,
   retrievePendingVersion,
   routesWithActiveVersion,
 } from "../utils/host-fill"
@@ -532,9 +533,9 @@ export default class SearchModuleService
   }
 
   async retrieveActiveVersion(
-    _index: string
+    index: string
   ): Promise<SearchTypes.SearchIndexVersionInfo | null> {
-    return null
+    return await retrieveActiveVersion(this.context_, index)
   }
 
   async activateVersion(index: string, version: number): Promise<void> {

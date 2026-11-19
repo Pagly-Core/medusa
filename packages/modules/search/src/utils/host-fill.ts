@@ -95,6 +95,20 @@ export async function retrievePendingVersion(
     : null
 }
 
+export async function retrieveActiveVersion(
+  context: HostFillContext,
+  name: string
+): Promise<SearchTypes.SearchIndexVersionInfo | null> {
+  retrieveIndexDefinition(context.indexes, name)
+
+  const { record, versions } = await versionsOf(context, name)
+  const active = versions.find(
+    (version) => version.version === record.active_version
+  )
+
+  return active ? toInfo(active) : null
+}
+
 /**
  * The definition merged with one named version's physical index and provider,
  * for writes aimed at it. Only the active version and pending ones take
