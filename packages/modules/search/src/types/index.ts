@@ -65,6 +65,13 @@ export type SearchModuleOptions = Partial<ModuleServiceInitializeOptions> & {
     // @default 100
     batch_size?: number
   }
+
+  // Pagly: `false` when the host fills versions itself (`upsertDocuments`
+  // with a `version`, then `activateVersion`), so a booting worker seeds
+  // nothing. A shared multi-store index can't be seeded from one process
+  // that sees every store.
+  // @default true
+  seed_on_start?: boolean
 }
 
 declare module "@medusajs/types" {

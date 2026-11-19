@@ -43,6 +43,13 @@ import {
   ActiveIndexVersionCache,
 } from "../utils/active-version-cache"
 import { deleteIndexEntirely } from "../utils/deletion"
+import {
+  activateVersion,
+  resolveVersionDefinition,
+  retrieveActiveVersion,
+  retrievePendingVersion,
+  routesWithActiveVersion,
+} from "../utils/host-fill"
 import { buildEventRoutes, ingestEvent } from "../utils/ingestion"
 import {
   createIndexMigrationPlan,
@@ -357,12 +364,31 @@ export default class SearchModuleService
   async upsertDocuments({
     index,
     documents,
+    version,
   }: {
     index: string
     documents: SearchTypes.SearchDocument[]
+    version?: number
   }): Promise<SearchTypes.SearchTask> {
     if (!documents.length) {
       return { index, status: "succeeded" }
+    }
+
+    // Pagly: a named version, filled by its host.
+    if (version != null) {
+      const definition = await resolveVersionDefinition(
+        this.context_,
+        index,
+        version
+      )
+      const provider = this.searchProviderService_.retrieve(definition.provider)
+      const task = await provider.upsertDocuments({
+        index: definition.physical_name,
+        definition,
+        documents,
+      })
+
+      return assertTaskAccepted(task, index)
     }
 
     return await withActiveIndexRetry(this.context_, async () => {
@@ -384,15 +410,33 @@ export default class SearchModuleService
   async deleteDocuments({
     index,
     filters,
+    version,
   }: {
     index: string
     filters: SearchTypes.SearchFilters
+    version?: number
   }): Promise<SearchTypes.SearchTask> {
     if (!filters || !Object.keys(filters).length) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
         `Deleting from search index "${index}" requires filters; pass { id: [...] } to delete by id, or clear the index through a reindex`
       )
+    }
+
+    // Pagly: a named version, filled by its host.
+    if (version != null) {
+      const definition = await resolveVersionDefinition(
+        this.context_,
+        index,
+        version
+      )
+      const provider = this.searchProviderService_.retrieve(definition.provider)
+      const task = await provider.deleteDocuments({
+        index: definition.physical_name,
+        filters,
+      })
+
+      return assertTaskAccepted(task, index)
     }
 
     return await withActiveIndexRetry(this.context_, async () => {
@@ -412,10 +456,17 @@ export default class SearchModuleService
 
   // Waits for its writes, so awaiting this acknowledges the event.
   async ingest(event: Event<any>): Promise<SearchTypes.SearchTask[]> {
-    return await ingestEvent(this.context_, {
-      event,
-      routes: this.eventRoutes_,
-    })
+    // Pagly: a host that fills versions itself skips indexes not active yet.
+    const routes =
+      this.moduleOptions_.seed_on_start === false
+        ? await routesWithActiveVersion(
+            this.context_,
+            this.eventRoutes_,
+            event.name
+          )
+        : this.eventRoutes_
+
+    return await ingestEvent(this.context_, { event, routes })
   }
 
   async listIndexes(): Promise<SearchTypes.SearchIndexDetails[]> {
@@ -474,6 +525,23 @@ export default class SearchModuleService
     return await reindexIndexes(this.context_, input)
   }
 
+  // Pagly: for a host that fills versions itself (`seed_on_start: false`).
+  async retrievePendingVersion(
+    index: string
+  ): Promise<SearchTypes.SearchIndexVersionInfo | null> {
+    return await retrievePendingVersion(this.context_, index)
+  }
+
+  async retrieveActiveVersion(
+    index: string
+  ): Promise<SearchTypes.SearchIndexVersionInfo | null> {
+    return await retrieveActiveVersion(this.context_, index)
+  }
+
+  async activateVersion(index: string, version: number): Promise<void> {
+    await activateVersion(this.context_, index, version)
+  }
+
   async deleteIndex(
     index: string
   ): Promise<SearchTypes.SearchIndexDeleteResult> {
@@ -486,7 +554,12 @@ export default class SearchModuleService
    * (e.g. `db:migrate`), not something a booting worker invents.
    */
   protected async onApplicationStart_(): Promise<void> {
-    if (!this.indexes_.size || !this.isWorkerMode) {
+    // Pagly: `seed_on_start: false` leaves filling to the host.
+    if (
+      !this.indexes_.size ||
+      !this.isWorkerMode ||
+      this.moduleOptions_.seed_on_start === false
+    ) {
       return
     }
 
