@@ -3,7 +3,7 @@ import { IModuleService } from "../modules-sdk"
 import { SearchDocument, SearchTask } from "./common"
 import { SearchFilters } from "./filters"
 import { ResolvedSearchIndexDefinition } from "./index-definition"
-import { SearchIndexDetails } from "./index-info"
+import { SearchIndexDetails, SearchIndexVersionInfo } from "./index-info"
 import { SearchIndexMigrationAction } from "./migration"
 import { SearchQuery } from "./query"
 import { SearchResult } from "./result"
@@ -174,6 +174,10 @@ export interface ISearchModuleService extends IModuleService {
    * @param {string} input.index - The name of the index to write to.
    * @param {SearchDocument[]} input.documents - The documents to write. Each
    * document must have an `id` property holding the index's primary key.
+   * @param {number} input.version - The version to write to. Defaults to the
+   * active one. Pass a pending version to fill it before
+   * {@link activateVersion} makes it active. Versions older than the active
+   * one are refused.
    * @returns {Promise<SearchTask>} The write's task.
    *
    * @example
@@ -190,6 +194,8 @@ export interface ISearchModuleService extends IModuleService {
   upsertDocuments(input: {
     index: string
     documents: SearchDocument[]
+    // Pagly: a host fills a pending version itself, one slice at a time.
+    version?: number
   }): Promise<SearchTask>
 
   /**
@@ -202,6 +208,8 @@ export interface ISearchModuleService extends IModuleService {
    * @param {string} input.index - The name of the index to delete from.
    * @param {SearchFilters} input.filters - The filters selecting the documents to
    * remove. At least one filter is required.
+   * @param {number} input.version - The version to delete from. Defaults to the
+   * active one. Versions older than the active one are refused.
    * @returns {Promise<SearchTask>} The write's task.
    *
    * @example
@@ -230,7 +238,40 @@ export interface ISearchModuleService extends IModuleService {
   deleteDocuments(input: {
     index: string
     filters: SearchFilters
+    // Pagly: see `upsertDocuments`.
+    version?: number
   }): Promise<SearchTask>
+
+  // Pagly: a host that fills versions itself (no startup seed) needs to find
+  // the version a migration built, and to make it active once it is full.
+  /**
+   * This method retrieves the newest version of an index that a migration
+   * built and that isn't active yet.
+   *
+   * @param {string} index - The name of the index.
+   * @returns {Promise<SearchIndexVersionInfo | null>} The pending version, or
+   * `null` when there is none.
+   *
+   * @example
+   * const pending = await searchModuleService.retrievePendingVersion("product")
+   */
+  retrievePendingVersion(index: string): Promise<SearchIndexVersionInfo | null>
+
+  /**
+   * This method makes a pending version of an index serve reads, as a swap
+   * does at the end of a seed. The version it replaces is kept, and the next
+   * migration cleans it up.
+   *
+   * Use it after filling the version with `upsertDocuments` and its `version`.
+   *
+   * @param {string} index - The name of the index.
+   * @param {number} version - The pending version to activate.
+   * @returns {Promise<void>} Resolves once the version is active.
+   *
+   * @example
+   * await searchModuleService.activateVersion("product", 2)
+   */
+  activateVersion(index: string, version: number): Promise<void>
 
   /**
    * This method applies an event to every index that declared it in its

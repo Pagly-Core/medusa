@@ -39,6 +39,29 @@ export interface SearchIndexFieldInfo {
  */
 export type SearchIndexStatus = "pending" | "building" | "ready" | "error"
 
+// Pagly: what a host that fills versions itself needs to know about one.
+/**
+ * One physical version of a search index.
+ */
+export interface SearchIndexVersionInfo {
+  /**
+   * The version number, counted per index.
+   */
+  version: number
+  /**
+   * The physical index, table or namespace this version was built under.
+   */
+  physical_name: string
+  /**
+   * Identifier of the provider backing this version.
+   */
+  provider: string
+  /**
+   * Lifecycle status of this version.
+   */
+  status: SearchIndexStatus
+}
+
 /**
  * A registered search index and the fields it stores.
  */

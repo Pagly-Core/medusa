@@ -474,6 +474,15 @@ export default class SearchModuleService
     return await reindexIndexes(this.context_, input)
   }
 
+  // Pagly: stubs, filled in by the next commit.
+  async retrievePendingVersion(
+    _index: string
+  ): Promise<SearchTypes.SearchIndexVersionInfo | null> {
+    return null
+  }
+
+  async activateVersion(_index: string, _version: number): Promise<void> {}
+
   async deleteIndex(
     index: string
   ): Promise<SearchTypes.SearchIndexDeleteResult> {
