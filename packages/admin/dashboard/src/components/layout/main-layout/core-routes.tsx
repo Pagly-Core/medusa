@@ -1,6 +1,5 @@
 import {
   Buildings,
-  CurrencyDollar,
   House,
   ReceiptPercent,
   ShoppingCart,
@@ -49,6 +48,10 @@ export const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           label: t("app.nav.tabs.organization"),
           to: "/categories",
         },
+        {
+          label: t("priceLists.domain"),
+          to: "/price-lists",
+        },
         // TODO: Enable when domin is introduced
         // {
         //   label: t("giftCards.domain"),
@@ -88,11 +91,6 @@ export const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
           to: "/campaigns",
         },
       ],
-    },
-    {
-      icon: <CurrencyDollar />,
-      label: t("priceLists.domain"),
-      to: "/price-lists",
     },
   ]
 }
