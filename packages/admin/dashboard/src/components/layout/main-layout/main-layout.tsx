@@ -1,17 +1,10 @@
 import {
-  Buildings,
   BuildingStorefront,
   CogSixTooth,
-  CurrencyDollar,
   EllipsisHorizontal,
-  House,
   MagnifyingGlass,
   OpenRectArrowOut,
-  ReceiptPercent,
-  ShoppingCart,
   SquaresPlus,
-  Tag,
-  Users,
 } from "@medusajs/icons"
 import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
 import { Avatar, clx, Divider, DropdownMenu, Text } from "@medusajs/ui"
@@ -21,7 +14,7 @@ import { useStore } from "../../../hooks/api/store"
 import { LayoutComposer } from "../../layout-composer"
 import { PermissionGuard } from "../../common/permission-guard"
 import { Skeleton } from "../../common/skeleton"
-import { INavItem, NavItem } from "../../layout/nav-item"
+import { NavItem } from "../../layout/nav-item"
 import { Shell } from "../../layout/shell"
 
 import { Link, useLocation } from "react-router-dom"
@@ -31,6 +24,7 @@ import { useSearch } from "../../../providers/search-provider"
 import { UserMenu } from "../user-menu"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
 import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
+import { useCoreRoutes } from "./core-routes"
 import { SALES_CHANNEL_PATHS } from "./sales-channel-paths"
 
 export const MainLayout = () => {
@@ -165,92 +159,6 @@ const Header = () => {
   )
 }
 
-const useCoreRoutes = (): Omit<INavItem, "pathname">[] => {
-  const { t } = useTranslation()
-
-  return [
-    // Pagly: Home, where the merchant starts a conversation with the
-    // assistant. Rendered by the plugin's home page; see `routes/home`.
-    {
-      icon: <House />,
-      label: t("home.domain"),
-      to: "/",
-    },
-    {
-      icon: <ShoppingCart />,
-      label: t("orders.domain"),
-      to: "/orders",
-      items: [
-        // TODO: Enable when domin is introduced
-        // {
-        //   label: t("draftOrders.domain"),
-        //   to: "/draft-orders",
-        // },
-      ],
-    },
-    {
-      icon: <Tag />,
-      label: t("products.domain"),
-      to: "/products",
-      items: [
-        {
-          label: t("collections.domain"),
-          to: "/collections",
-        },
-        // Pagly: categories, options, types and tags are the tabs of one
-        // Organization page (see TAB_GROUPS); its entry is the first tab.
-        {
-          label: t("app.nav.tabs.organization"),
-          to: "/categories",
-        },
-        // TODO: Enable when domin is introduced
-        // {
-        //   label: t("giftCards.domain"),
-        //   to: "/gift-cards",
-        // },
-      ],
-    },
-    {
-      icon: <Buildings />,
-      label: t("inventory.domain"),
-      to: "/inventory",
-      items: [
-        {
-          label: t("reservations.domain"),
-          to: "/reservations",
-        },
-      ],
-    },
-    {
-      icon: <Users />,
-      label: t("customers.domain"),
-      to: "/customers",
-      items: [
-        {
-          label: t("customerGroups.domain"),
-          to: "/customer-groups",
-        },
-      ],
-    },
-    {
-      icon: <ReceiptPercent />,
-      label: t("promotions.domain"),
-      to: "/promotions",
-      items: [
-        {
-          label: t("campaigns.domain"),
-          to: "/campaigns",
-        },
-      ],
-    },
-    {
-      icon: <CurrencyDollar />,
-      label: t("priceLists.domain"),
-      to: "/price-lists",
-    },
-  ]
-}
-
 const Searchbar = () => {
   const { t } = useTranslation()
   const { toggleSearch } = useSearch()
@@ -272,7 +180,7 @@ const Searchbar = () => {
           </Text>
         </div>
         <Text size="small" leading="compact" className="text-ui-fg-muted">
-          ⌘K
+          âŒ˜K
         </Text>
       </button>
     </div>
