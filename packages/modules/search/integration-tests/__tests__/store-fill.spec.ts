@@ -253,5 +253,70 @@ moduleIntegrationTestRunner<SearchService>({
           expect(ids(await searchAll(service))).toEqual([hat.id])
         })
       })
+
+      // During a rollout, a task still on the previous image may run the
+      // host's fill. It must not fill or activate a version built for a
+      // definition it doesn't have.
+      describe("a pending version built for another definition", () => {
+        const builtElsewhere = async () => {
+          const [pending] = await versionRecords(service)
+          await (service as any).context_.versionService.update({
+            selector: { id: pending.id },
+            data: { definition_hash: "built-by-a-newer-image" },
+          })
+        }
+
+        it("is not offered as pending", async () => {
+          await builtElsewhere()
+
+          await expect(
+            service.retrievePendingVersion("product")
+          ).resolves.toBeNull()
+        })
+
+        it("refuses writes and activation", async () => {
+          await builtElsewhere()
+
+          await expect(
+            service.upsertDocuments({
+              index: "product",
+              version: 1,
+              documents: [shoe],
+            })
+          ).rejects.toThrow(/version 1/)
+          await expect(service.activateVersion("product", 1)).rejects.toThrow(
+            /version 1/
+          )
+        })
+      })
+
+      // The host catches up on what changed during a fill once it activates,
+      // so an event that arrives while nothing is active has nowhere to go.
+      // Throwing would retry every store's product events until then.
+      describe("live events", () => {
+        it("are skipped while no version is active", async () => {
+          await expect(
+            service.ingest({
+              name: "product.updated",
+              data: { id: shoe.id },
+            } as any)
+          ).resolves.toEqual([])
+
+          await service.activateVersion("product", 1)
+
+          expect(ids(await searchAll(service))).toEqual([])
+        })
+
+        it("reach the active version once there is one", async () => {
+          await service.activateVersion("product", 1)
+
+          await service.ingest({
+            name: "product.updated",
+            data: { id: shoe.id },
+          } as any)
+
+          expect(ids(await searchAll(service))).toEqual([shoe.id])
+        })
+      })
     }),
 })
