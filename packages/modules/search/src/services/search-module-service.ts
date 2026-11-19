@@ -531,6 +531,12 @@ export default class SearchModuleService
     return await retrievePendingVersion(this.context_, index)
   }
 
+  async retrieveActiveVersion(
+    _index: string
+  ): Promise<SearchTypes.SearchIndexVersionInfo | null> {
+    return null
+  }
+
   async activateVersion(index: string, version: number): Promise<void> {
     await activateVersion(this.context_, index, version)
   }

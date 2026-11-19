@@ -258,6 +258,18 @@ export interface ISearchModuleService extends IModuleService {
   retrievePendingVersion(index: string): Promise<SearchIndexVersionInfo | null>
 
   /**
+   * This method retrieves the version of an index that serves reads.
+   *
+   * @param {string} index - The name of the index.
+   * @returns {Promise<SearchIndexVersionInfo | null>} The active version, or
+   * `null` when no version is active yet.
+   *
+   * @example
+   * const active = await searchModuleService.retrieveActiveVersion("product")
+   */
+  retrieveActiveVersion(index: string): Promise<SearchIndexVersionInfo | null>
+
+  /**
    * This method makes a pending version of an index serve reads, as a swap
    * does at the end of a seed. The version it replaces is kept, and the next
    * migration cleans it up.

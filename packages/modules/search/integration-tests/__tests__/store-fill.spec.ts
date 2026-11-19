@@ -118,6 +118,27 @@ moduleIntegrationTestRunner<SearchService>({
         })
       })
 
+      describe("retrieveActiveVersion", () => {
+        it("answers null while nothing is active", async () => {
+          await expect(
+            service.retrieveActiveVersion("product")
+          ).resolves.toBeNull()
+        })
+
+        it("names the version that serves reads", async () => {
+          await service.activateVersion("product", 1)
+
+          await expect(
+            service.retrieveActiveVersion("product")
+          ).resolves.toEqual({
+            version: 1,
+            physical_name: "product_v1",
+            provider: "search-postgres",
+            status: "ready",
+          })
+        })
+      })
+
       describe("writes to a named version", () => {
         it("fills the pending version without touching the registry", async () => {
           await service.upsertDocuments({
