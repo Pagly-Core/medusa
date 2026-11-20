@@ -124,14 +124,14 @@ describe("the sales channels group in the main sidebar", () => {
     expect(ids.slice(heading)).toEqual(["SalesChannels", "nav:/online-store"])
     expect(ids.indexOf("nav:/finances")).toBeLessThan(heading)
     expect(ids.indexOf("nav:/content")).toBeLessThan(heading)
-    expect(ids.indexOf("nav:/price-lists")).toBeLessThan(heading)
+    expect(ids.indexOf("nav:/promotions")).toBeLessThan(heading)
   })
 
   it("keeps agents in the flat list, right above reports", () => {
     const { container } = renderSidebar([finances, content, onlineStore, agents, reports])
 
     const ids = entryIds(container)
-    expect(ids.slice(ids.indexOf("nav:/price-lists") + 1)).toEqual([
+    expect(ids.slice(ids.indexOf("nav:/promotions") + 1)).toEqual([
       "nav:/finances",
       "nav:/content",
       "nav:/agents",
@@ -166,7 +166,7 @@ describe("the sales channels group in the main sidebar", () => {
     const { container } = renderSidebar([content, onlineStore, finances])
 
     const ids = entryIds(container)
-    expect(ids.indexOf("nav:/content")).toBe(ids.indexOf("nav:/price-lists") + 1)
+    expect(ids.indexOf("nav:/content")).toBe(ids.indexOf("nav:/promotions") + 1)
     expect(ids.indexOf("nav:/finances")).toBe(ids.indexOf("nav:/content") + 1)
     expect(screen.getByRole("link", { name: "Finanzas" })).toBeTruthy()
     expect(screen.getByRole("link", { name: "Contenido" })).toBeTruthy()
