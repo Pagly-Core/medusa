@@ -1,5 +1,8 @@
 import { describe, expect, test } from "vitest"
 
+import enCatalog from "../../../../i18n/translations/en.json"
+import esCatalog from "../../../../i18n/translations/es.json"
+
 import type { INavItem } from "../../nav-item"
 import {
   filterSettingsSections,
@@ -35,6 +38,7 @@ const ALL_ROUTES: INavItem[] = [
   plugin("/settings/checkout", "Checkout"),
   plugin("/settings/customer-accounts", "Cuentas de clientes"),
   plugin("/settings/notifications", "Notificaciones"),
+  plugin("/settings/order-self-service", "Devoluciones y cambios"),
   plugin("/settings/domains", "Dominios"),
   plugin("/settings/asistente", "Asistente IA"),
 ]
@@ -81,6 +85,7 @@ describe("the settings sidebar's groups", () => {
         items: [
           ["Cuentas de clientes", "/settings/customer-accounts"],
           ["Notificaciones", "/settings/notifications"],
+          ["Devoluciones y cambios", "/settings/order-self-service"],
           ["app.nav.tabs.returns", "/settings/return-reasons"],
         ],
       },
@@ -183,7 +188,7 @@ describe("searching the settings", () => {
     "regions.domain": "Regiones",
     "taxRegions.domain": "Impuestos",
     "salesChannels.domain": "Canales de venta",
-    "app.nav.tabs.returns": "Devoluciones",
+    "app.nav.tabs.returns": esCatalog.app.nav.tabs.returns,
     "app.nav.tabs.returnReasons": "Motivos de devolución",
     "app.nav.tabs.refundReasons": "Motivos de reembolso",
     "app.nav.tabs.apiKeys": "Claves API",
@@ -221,9 +226,17 @@ describe("searching the settings", () => {
     expect(search("de")).toEqual([
       "/settings/sales-channels",
       "/settings/customer-accounts",
+      "/settings/order-self-service",
       "/settings/return-reasons",
       "/settings/workflows",
     ])
+  })
+
+  // Pagly: the shoppers' returns and exchanges page sits beside core's reasons, which no longer read as "Returns".
+  test("calls core's return and refund reasons Reasons, beside the returns and exchanges page", () => {
+    expect(esCatalog.app.nav.tabs.returns).toBe("Motivos")
+    expect(enCatalog.app.nav.tabs.returns).toBe("Reasons")
+    expect(search("devolucion")).toEqual(["/settings/order-self-service", "/settings/return-reasons"])
   })
 
   test("returns nothing for a blank query", () => {

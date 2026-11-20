@@ -291,7 +291,7 @@
         "organization": "Organization",
         "types": "Types",
         "tags": "Tags",
-        "returns": "Returns",
+        "returns": "Reasons",
         "returnReasons": "Return reasons",
         "refundReasons": "Refund reasons",
         "apiKeys": "API keys",

@@ -338,7 +338,7 @@
         "organization": "Organización",
         "types": "Tipos",
         "tags": "Etiquetas",
-        "returns": "Devoluciones",
+        "returns": "Motivos",
         "returnReasons": "Motivos de devolución",
         "refundReasons": "Motivos de reembolso",
         "apiKeys": "Claves API",
