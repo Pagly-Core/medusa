@@ -56,8 +56,6 @@ const useCoreSettingRoutes = (): INavItem[] => {
         : []),
       { label: t("regions.domain"), to: "/settings/regions" },
       { label: t("taxRegions.domain"), to: "/settings/tax-regions" },
-      { label: t("returnReasons.domain"), to: "/settings/return-reasons" },
-      { label: t("refundReasons.domain"), to: "/settings/refund-reasons" },
       { label: t("salesChannels.domain"), to: "/settings/sales-channels" },
       { label: t("stockLocations.domain"), to: "/settings/locations" },
       ...(isViewConfigEnabled

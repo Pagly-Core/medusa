@@ -48,13 +48,13 @@ describe("the section tabs", () => {
   })
 
   test("render the page under them", () => {
-    renderAt("/settings/refund-reasons")
+    renderAt("/settings/secret-api-keys")
     expect(screen.getByTestId("where").textContent).toBe(
-      "/settings/refund-reasons"
+      "/settings/secret-api-keys"
     )
     expect(tabLabels()).toEqual([
-      "app.nav.tabs.returnReasons",
-      "app.nav.tabs.refundReasons",
+      "app.nav.tabs.publishable",
+      "app.nav.tabs.secret",
     ])
   })
 

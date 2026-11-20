@@ -118,7 +118,6 @@ describe("the settings sidebar", () => {
       "salesChannels.domain",
       "Cuentas de clientes",
       "Notificaciones",
-      "app.nav.tabs.returns",
     ])
   })
 

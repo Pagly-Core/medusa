@@ -17,10 +17,8 @@ import { Illustration as productTags } from "./kinds/product-tags"
 import { Illustration as productTypes } from "./kinds/product-types"
 import { Illustration as products } from "./kinds/products"
 import { Illustration as promotions } from "./kinds/promotions"
-import { Illustration as refundReasons } from "./kinds/refund-reasons"
 import { Illustration as regions } from "./kinds/regions"
 import { Illustration as reservations } from "./kinds/reservations"
-import { Illustration as returnReasons } from "./kinds/return-reasons"
 import { Illustration as salesChannels } from "./kinds/sales-channels"
 import { Illustration as shippingOptionTypes } from "./kinds/shipping-option-types"
 import { Illustration as shippingProfiles } from "./kinds/shipping-profiles"
@@ -61,8 +59,6 @@ export const EMPTY_STATES = {
   regions: { Illustration: regions },
   taxRegions: { Illustration: taxRegions },
   salesChannels: { Illustration: salesChannels },
-  returnReasons: { Illustration: returnReasons },
-  refundReasons: { Illustration: refundReasons },
   apiKeys: { Illustration: apiKeys },
   workflows: { Illustration: workflows },
 } satisfies Record<string, EmptyStateDefinition>

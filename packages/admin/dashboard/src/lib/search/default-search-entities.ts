@@ -213,21 +213,6 @@ export const DEFAULT_SEARCH_ENTITIES: Record<string, SearchEntityDefinition> = {
       value: `taxRegion:${taxRegion.id}`,
     }),
   },
-  return_reason: {
-    shortcut: {
-      keys: { Mac: ["G", ",", "M"] },
-      label: (t) => t("app.keyboardShortcuts.settings.goToReturnReasons"),
-      type: "settingShortcut",
-      to: "/settings/return-reasons",
-    },
-    transform: (returnReason: HttpTypes.AdminReturnReason) => ({
-      id: returnReason.id,
-      title: returnReason.label,
-      subtitle: returnReason.value,
-      to: `/settings/return-reasons/${returnReason.id}/edit`,
-      value: `returnReason:${returnReason.id}`,
-    }),
-  },
   sales_channel: {
     shortcut: {
       keys: { Mac: ["G", ",", "A"] },

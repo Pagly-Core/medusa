@@ -31,14 +31,6 @@ export const TAB_GROUPS: TabGroup[] = [
     ],
   },
   {
-    id: "returns",
-    label: "app.nav.tabs.returns",
-    tabs: [
-      { label: "app.nav.tabs.returnReasons", to: "/settings/return-reasons" },
-      { label: "app.nav.tabs.refundReasons", to: "/settings/refund-reasons" },
-    ],
-  },
-  {
     id: "apiKeys",
     label: "app.nav.tabs.apiKeys",
     tabs: [

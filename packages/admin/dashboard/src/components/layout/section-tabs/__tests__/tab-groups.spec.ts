@@ -16,7 +16,7 @@ const shape = () =>
   }))
 
 describe("the tab groups", () => {
-  test("are Organization, Returns and API keys, each with its tabs in order", () => {
+  test("are Organization and API keys, each with its tabs in order", () => {
     expect(shape()).toEqual([
       {
         id: "organization",
@@ -26,14 +26,6 @@ describe("the tab groups", () => {
           ["productOptions.domain", "/product-options"],
           ["app.nav.tabs.types", "/product-types"],
           ["app.nav.tabs.tags", "/product-tags"],
-        ],
-      },
-      {
-        id: "returns",
-        label: "app.nav.tabs.returns",
-        tabs: [
-          ["app.nav.tabs.returnReasons", "/settings/return-reasons"],
-          ["app.nav.tabs.refundReasons", "/settings/refund-reasons"],
         ],
       },
       {
@@ -56,7 +48,7 @@ describe("the tab groups", () => {
 describe("findTabGroup", () => {
   test("finds the group of a tab's list", () => {
     expect(findTabGroup("/product-tags")?.id).toBe("organization")
-    expect(findTabGroup("/settings/refund-reasons")?.id).toBe("returns")
+    expect(findTabGroup("/settings/secret-api-keys")?.id).toBe("apiKeys")
   })
 
   test("finds the group of a page under a tab", () => {
@@ -74,7 +66,7 @@ describe("findTabGroup", () => {
 describe("the group's nav entry", () => {
   test("is its first tab", () => {
     expect(findTabGroupByLeader("/categories")?.id).toBe("organization")
-    expect(findTabGroupByLeader("/settings/return-reasons")?.id).toBe("returns")
+    expect(findTabGroupByLeader("/settings/publishable-api-keys")?.id).toBe("apiKeys")
     expect(findTabGroupByLeader("/product-tags")).toBeUndefined()
   })
 
@@ -96,10 +88,9 @@ describe("the group's nav entry", () => {
   })
 
   test("is the only one: the other tabs have none", () => {
-    expect(isFollowerTab("/settings/refund-reasons")).toBe(true)
     expect(isFollowerTab("/settings/secret-api-keys")).toBe(true)
     expect(isFollowerTab("/product-options")).toBe(true)
-    expect(isFollowerTab("/settings/return-reasons")).toBe(false)
+    expect(isFollowerTab("/settings/publishable-api-keys")).toBe(false)
     expect(isFollowerTab("/settings/store")).toBe(false)
   })
 })

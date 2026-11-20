@@ -46,8 +46,6 @@ const PAGES: Record<string, string> = {
   regions: "routes/regions/region-list/components/region-list-table/region-list-table.tsx",
   taxRegions: "routes/tax-regions/tax-region-list/components/tax-region-list-view/tax-region-list-view.tsx",
   salesChannels: "routes/sales-channels/sales-channel-list/components/sales-channel-list-table.tsx",
-  returnReasons: "routes/return-reasons/return-reason-list/components/return-reason-list-table/return-reason-list-table.tsx",
-  refundReasons: "routes/refund-reasons/refund-reason-list/components/refund-reason-list-table/refund-reason-list-table.tsx",
   apiKeys: "routes/api-key-management/api-key-management-list/components/api-key-management-list-table/api-key-management-list-table.tsx",
   workflows: "routes/workflow-executions/workflow-execution-list/components/workflow-execution-list-table/workflow-execution-list-table.tsx",
 }

@@ -17,11 +17,11 @@ const pick = (json: any) => ({
     storeGeneral: json.app.nav.settings.storeGeneral,
     shipping: json.app.nav.settings.shipping,
   },
-  tabs: json.app.nav.tabs,
+  // Core's return and refund reasons have no page or tab: the store's reasons are in Returns and exchanges.
+  tabs: (({ returns, returnReasons, refundReasons, ...tabs }) => tabs)(json.app.nav.tabs),
   regions: json.regions.domain,
   stockLocations: json.stockLocations.domain,
   taxRegions: json.taxRegions.domain,
-  returnReasons: json.returnReasons.domain,
 })
 
 describe("the settings navigation copy", () => {
@@ -40,9 +40,6 @@ describe("the settings navigation copy", () => {
         organization: "Organización",
         types: "Tipos",
         tags: "Etiquetas",
-        returns: "Devoluciones",
-        returnReasons: "Motivos de devolución",
-        refundReasons: "Motivos de reembolso",
         apiKeys: "Claves API",
         publishable: "Publicables",
         secret: "Secretas",
@@ -50,7 +47,6 @@ describe("the settings navigation copy", () => {
       regions: "Regiones",
       stockLocations: "Envíos",
       taxRegions: "Impuestos",
-      returnReasons: "Motivos de devolución",
     })
   })
 
@@ -69,9 +65,6 @@ describe("the settings navigation copy", () => {
         organization: "Organization",
         types: "Types",
         tags: "Tags",
-        returns: "Returns",
-        returnReasons: "Return reasons",
-        refundReasons: "Refund reasons",
         apiKeys: "API keys",
         publishable: "Publishable",
         secret: "Secret",
@@ -79,7 +72,6 @@ describe("the settings navigation copy", () => {
       regions: "Regions",
       stockLocations: "Shipping",
       taxRegions: "Taxes",
-      returnReasons: "Return reasons",
     })
   })
 })
