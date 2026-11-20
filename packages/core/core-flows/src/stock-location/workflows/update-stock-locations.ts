@@ -15,6 +15,7 @@ import {
 import { useQueryGraphStep } from "../../common"
 import { updateStockLocationsStep } from "../steps"
 import { upsertStockLocationAddressesStep } from "../steps/upsert-stock-location-addresses"
+import { linkStockLocationAddressesStep } from "../steps/link-stock-location-addresses"
 
 /**
  * The data to update the stock locations.
@@ -75,6 +76,9 @@ export const updateStockLocationsWorkflow = createWorkflow(
       ({ input, stockLocations }) => {
         const { address, address_id, ...stockLocationInput } = input.update
         const addressesInput: UpsertStockLocationAddressInput[] = []
+        // Pagly: a location with no address gets a new one, linked to it below.
+        const newAddressesInput: UpsertStockLocationAddressInput[] = []
+        const addresslessLocationIds: string[] = []
 
         if (address) {
           for (const stockLocation of stockLocations) {
@@ -84,7 +88,8 @@ export const updateStockLocationsWorkflow = createWorkflow(
                 ...address,
               })
             } else {
-              addressesInput.push(address)
+              newAddressesInput.push({ ...address })
+              addresslessLocationIds.push(stockLocation.id)
             }
           }
         }
@@ -95,11 +100,30 @@ export const updateStockLocationsWorkflow = createWorkflow(
             update: stockLocationInput,
           },
           addressesInput,
+          newAddressesInput,
+          addresslessLocationIds,
         }
       }
     )
 
     upsertStockLocationAddressesStep(normalizedData.addressesInput)
+
+    // Pagly: upstream created these addresses without ever setting the
+    // location's address_id, so the location kept no address.
+    const newAddresses = upsertStockLocationAddressesStep(
+      normalizedData.newAddressesInput
+    ).config({ name: "create-stock-location-addresses" })
+
+    const addressLinks = transform(
+      { newAddresses, normalizedData },
+      ({ newAddresses, normalizedData }) =>
+        normalizedData.addresslessLocationIds.map((id, index) => ({
+          id,
+          address_id: newAddresses[index].id!,
+        }))
+    )
+
+    linkStockLocationAddressesStep(addressLinks)
 
     return new WorkflowResponse(
       updateStockLocationsStep(normalizedData.stockLocationInput)
