@@ -143,6 +143,15 @@ describe("EditProductMediaForm alt text", () => {
     )
   })
 
+  // A photo kept elsewhere (an imported address) has no library entry to
+  // hold words: it gets no field, so nothing typed is silently lost.
+  it("gives no alt field to a photo the library never recorded", async () => {
+    register({ [A]: "Taza roja de cerámica" })
+    render(<EditProductMediaForm product={product} />)
+
+    await waitFor(() => expect(altInputs().map((input) => input.value)).toEqual(["Taza roja de cerámica"]))
+  })
+
   it("describes each photo with its alt", async () => {
     register({ [A]: "Taza roja de cerámica" })
     render(<EditProductMediaForm product={product} />)

@@ -170,11 +170,40 @@ describe("useMediaAlts", () => {
     expect(hook.read).toHaveBeenCalledTimes(2)
   })
 
-  it("keeps the photos it could not read without words", async () => {
-    register({ read: vi.fn(async () => Promise.reject(new Error("down"))) })
+  it("leaves out the addresses the library never recorded, and a read that failed", async () => {
+    const hook = register({ read: vi.fn(async () => ({ [A]: null })) })
 
-    const { result } = renderHook(() => useMediaAlts([A]))
+    const { result } = renderHook(() => useMediaAlts([A, B]))
 
+    await waitFor(() => expect(hook.read).toHaveBeenCalled())
     await waitFor(() => expect(result.current.alts).toEqual({ [A]: null }))
+
+    register({ read: vi.fn(async () => Promise.reject(new Error("down"))) })
+    const failed = renderHook(() => useMediaAlts([A]))
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(failed.result.current.alts).toEqual({})
+  })
+
+  it("never asks again for an address whose read is still on its way", async () => {
+    let answer: (value: Record<string, string | null>) => void = () => {}
+    const hook = register({
+      read: vi.fn(
+        (urls: string[]) =>
+          new Promise<Record<string, string | null>>((resolve) => {
+            if (urls.includes(A)) answer = resolve
+            else resolve(Object.fromEntries(urls.map((url) => [url, null])))
+          })
+      ),
+    })
+
+    const { result, rerender } = renderHook(({ urls }) => useMediaAlts(urls), {
+      initialProps: { urls: [A] as string[] },
+    })
+
+    rerender({ urls: [A, B] })
+    answer({ [A]: "Taza" })
+
+    await waitFor(() => expect(result.current.alts).toEqual({ [A]: "Taza", [B]: null }))
+    expect((hook.read as ReturnType<typeof vi.fn>).mock.calls).toEqual([[[A]], [[B]]])
   })
 })

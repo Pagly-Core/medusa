@@ -77,6 +77,16 @@ describe("ProductCreateMediaSection", () => {
     expect(screen.getByText("1-picked.png")).toBeTruthy()
   })
 
+  it("names a picked photo whose address is not escaped, rather than failing", () => {
+    render(
+      <Harness
+        media={[{ id: "p1", url: "http://localhost:9000/static/50%-off.png", isThumbnail: false, file: null }]}
+      />
+    )
+
+    expect(screen.getByText("50%-off.png")).toBeTruthy()
+  })
+
   it("shows no alt field without a media library", () => {
     render(
       <Harness
