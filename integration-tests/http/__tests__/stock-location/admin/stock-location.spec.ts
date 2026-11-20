@@ -335,7 +335,7 @@ medusaIntegrationTestRunner({
           )
         ).data.stock_location
 
-        expect(read.address_id).toEqual(response.data.stock_location.address.id)
+        expect(read.address.id).toEqual(response.data.stock_location.address.id)
         expect(read.address).toEqual(
           expect.objectContaining({ address_1: "Francisco Ros 2490" })
         )
@@ -348,7 +348,7 @@ medusaIntegrationTestRunner({
 
         expect(again.data.stock_location.address).toEqual(
           expect.objectContaining({
-            id: read.address_id,
+            id: read.address.id,
             address_1: "Francisco Ros 2500",
           })
         )
@@ -391,7 +391,7 @@ medusaIntegrationTestRunner({
         expect(read[1].address).toEqual(
           expect.objectContaining({ address_1: "Shared street 1" })
         )
-        expect(read[0].address_id).not.toEqual(read[1].address_id)
+        expect(read[0].address.id).not.toEqual(read[1].address.id)
       })
 
       it("should update stock location address metadata", async () => {
