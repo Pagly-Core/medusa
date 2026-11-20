@@ -15,7 +15,7 @@ const tree = (): RouteObject[] => [
       {
         path: "/settings",
         children: [
-          { path: "refund-reasons", children: [{ ...list }] },
+          { path: "secret-api-keys", children: [{ ...list }] },
           { path: "regions", children: [{ ...list }] },
         ],
       },
@@ -42,8 +42,8 @@ describe("withSectionTabs", () => {
   })
 
   test("finds tabs nested under a parent path", () => {
-    const refunds = main[2].children![0].children!
-    expect(isTabsLayout(refunds[0])).toBe(true)
+    const secrets = main[2].children![0].children!
+    expect(isTabsLayout(secrets[0])).toBe(true)
   })
 
   test("leaves pages outside every group alone", () => {

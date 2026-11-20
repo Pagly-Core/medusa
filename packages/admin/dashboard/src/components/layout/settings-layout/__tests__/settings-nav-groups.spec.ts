@@ -1,8 +1,5 @@
 import { describe, expect, test } from "vitest"
 
-import enCatalog from "../../../../i18n/translations/en.json"
-import esCatalog from "../../../../i18n/translations/es.json"
-
 import type { INavItem } from "../../nav-item"
 import {
   filterSettingsSections,
@@ -26,8 +23,6 @@ const ALL_ROUTES: INavItem[] = [
   core("/settings/users", "users.domain"),
   core("/settings/regions", "regions.domain"),
   core("/settings/tax-regions", "taxRegions.domain"),
-  core("/settings/return-reasons", "returnReasons.domain"),
-  core("/settings/refund-reasons", "refundReasons.domain"),
   core("/settings/sales-channels", "salesChannels.domain"),
   core("/settings/locations", "stockLocations.domain"),
   core("/settings/publishable-api-keys", "apiKeyManagement.domain.publishable"),
@@ -86,7 +81,6 @@ describe("the settings sidebar's groups", () => {
           ["Cuentas de clientes", "/settings/customer-accounts"],
           ["Notificaciones", "/settings/notifications"],
           ["Devoluciones y cambios", "/settings/order-self-service"],
-          ["app.nav.tabs.returns", "/settings/return-reasons"],
         ],
       },
       {
@@ -102,12 +96,19 @@ describe("the settings sidebar's groups", () => {
     ])
   })
 
-  test("give refund reasons and secret keys no entry: they are tabs", () => {
+  test("give secret keys no entry: they are a tab", () => {
     const routes = groupSettingsRoutes(ALL_ROUTES, t).flatMap((s) =>
       s.items.map((i) => i.to)
     )
-    expect(routes).not.toContain("/settings/refund-reasons")
     expect(routes).not.toContain("/settings/secret-api-keys")
+  })
+
+  // Pagly: core's return and refund reasons are one platform list on the cloud, which a store only reads.
+  // The reasons a store keeps are its own, in Returns and exchanges.
+  test("list no core reasons page", () => {
+    const routes = SETTINGS_NAV_GROUPS.flatMap((g) => g.items.map((i) => i.to))
+    expect(routes).not.toContain("/settings/return-reasons")
+    expect(routes).not.toContain("/settings/refund-reasons")
   })
 
   test("keep each entry's type, so plugin pages still render as plugin links", () => {
@@ -170,7 +171,6 @@ describe("the settings sidebar's groups", () => {
 
   test("never list a page that is a tab of another entry", () => {
     const routes = SETTINGS_NAV_GROUPS.flatMap((g) => g.items.map((i) => i.to))
-    expect(routes).not.toContain("/settings/refund-reasons")
     expect(routes).not.toContain("/settings/secret-api-keys")
   })
 
@@ -188,9 +188,6 @@ describe("searching the settings", () => {
     "regions.domain": "Regiones",
     "taxRegions.domain": "Impuestos",
     "salesChannels.domain": "Canales de venta",
-    "app.nav.tabs.returns": esCatalog.app.nav.tabs.returns,
-    "app.nav.tabs.returnReasons": "Motivos de devolución",
-    "app.nav.tabs.refundReasons": "Motivos de reembolso",
     "app.nav.tabs.apiKeys": "Claves API",
     "app.nav.tabs.publishable": "Publicables",
     "app.nav.tabs.secret": "Secretas",
@@ -214,7 +211,6 @@ describe("searching the settings", () => {
   })
 
   test("finds an entry by one of its tabs", () => {
-    expect(search("reembolso")).toEqual(["/settings/return-reasons"])
     expect(search("secretas")).toEqual(["/settings/publishable-api-keys"])
   })
 
@@ -227,16 +223,14 @@ describe("searching the settings", () => {
       "/settings/sales-channels",
       "/settings/customer-accounts",
       "/settings/order-self-service",
-      "/settings/return-reasons",
       "/settings/workflows",
     ])
   })
 
-  // Pagly: the shoppers' returns and exchanges page sits beside core's reasons, which no longer read as "Returns".
-  test("calls core's return and refund reasons Reasons, beside the returns and exchanges page", () => {
-    expect(esCatalog.app.nav.tabs.returns).toBe("Motivos")
-    expect(enCatalog.app.nav.tabs.returns).toBe("Reasons")
-    expect(search("devolucion")).toEqual(["/settings/order-self-service", "/settings/return-reasons"])
+  // Pagly: the store's reasons live in Returns and exchanges, the one page a search for returns finds.
+  test("finds returns in Returns and exchanges only", () => {
+    expect(search("devolucion")).toEqual(["/settings/order-self-service"])
+    expect(search("motivos")).toEqual([])
   })
 
   test("returns nothing for a blank query", () => {
