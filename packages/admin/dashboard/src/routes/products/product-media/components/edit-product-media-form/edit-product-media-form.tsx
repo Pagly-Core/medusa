@@ -256,10 +256,15 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
                           media={m}
                           alt={media[index]?.alt ?? alts[m.url] ?? undefined}
                           altField={
-                            altEnabled ? (
+                            altEnabled && (!!m.file || m.url in alts) ? (
                               <Controller
                                 control={form.control}
                                 name={`media.${index}.alt`}
+                                // The library's words when the field mounts
+                                // after they are read.
+                                defaultValue={
+                                  m.file ? undefined : alts[m.url] ?? undefined
+                                }
                                 render={({
                                   field: { value, onChange, onBlur, ref, name },
                                 }) => (

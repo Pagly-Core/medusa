@@ -164,10 +164,15 @@ export const ProductCreateMediaSection = ({
                   onMakeThumbnail={onMakeThumbnail}
                   alt={media[index]?.alt}
                   altField={
-                    altEnabled ? (
+                    altEnabled && (!!field.file || field.url in alts) ? (
                       <Controller
                         control={form.control}
                         name={`media.${index}.alt`}
+                        // The library's words when the field mounts after
+                        // they are read.
+                        defaultValue={
+                          field.file ? undefined : alts[field.url] ?? undefined
+                        }
                         render={({
                           field: { value, onChange, onBlur, ref, name },
                         }) => (
@@ -214,9 +219,20 @@ type MediaItemProps = {
  * Pagly: a photo picked from the media library has no file, only its
  * address; it is named by the address's last part.
  */
-const mediaName = (field: MediaField) =>
-  field.file?.name ??
-  decodeURIComponent(field.url.split(/[?#]/)[0].split("/").pop() || field.url)
+const mediaName = (field: MediaField) => {
+  if (field.file?.name) {
+    return field.file.name
+  }
+
+  const last = field.url.split(/[?#]/)[0].split("/").pop() || field.url
+
+  try {
+    return decodeURIComponent(last)
+  } catch {
+    // A name with a bare "%" is not escaped: it reads as it is.
+    return last
+  }
+}
 
 const MediaItem = ({
   field,

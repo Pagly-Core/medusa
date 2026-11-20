@@ -93,7 +93,11 @@ export const saveChangedAlts = async (
   return changed
 }
 
-/** The library's alt for each stored address, read once per address. */
+/**
+ * The library's alt for each stored address, read once per address: null
+ * for a recorded photo without words, and nothing for one the library never
+ * recorded (or could not be read), which cannot hold words.
+ */
 export const useMediaAlts = (
   urls: (string | null | undefined)[]
 ): { enabled: boolean; alts: Record<string, string | null> } => {
@@ -115,26 +119,18 @@ export const useMediaAlts = (
       return
     }
 
+    // Each address is asked once: a read still on its way answers into the
+    // same state whenever it lands.
     missing.forEach((url) => asked.add(url))
-
-    let done = false
-    const none = Object.fromEntries(missing.map((url) => [url, null]))
 
     hook
       .read(missing)
       .catch(() => ({} as Record<string, string | null>))
       .then((read) => {
-        done = true
-        setAlts((prev) => ({ ...prev, ...none, ...read }))
+        // Only the addresses the library recorded: one it never did has no
+        // entry to hold words, and gets no field.
+        setAlts((prev) => ({ ...prev, ...read }))
       })
-
-    return () => {
-      // A read still on its way is asked again by the next render that
-      // wants it; one that answered is kept.
-      if (!done) {
-        missing.forEach((url) => asked.delete(url))
-      }
-    }
   }, [hook, wanted, asked])
 
   return { enabled: !!hook, alts: hook ? alts : {} }
