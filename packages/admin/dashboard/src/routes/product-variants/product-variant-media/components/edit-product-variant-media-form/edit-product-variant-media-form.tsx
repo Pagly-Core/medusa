@@ -16,6 +16,7 @@ import {
   useUpdateProductVariant,
 } from "../../../../../hooks/api/products"
 import { ExtendedVariant } from "../../../product-variant-detail/constants"
+import { keptThumbnail } from "./thumbnail"
 
 /**
  * Schema
@@ -87,19 +88,22 @@ export const EditProductVariantMediaForm = ({
       (id) => !newVariantImageIds.includes(id)
     )
 
-    if (data.thumbnail !== variant.thumbnail) {
-      let thumbnail = data.thumbnail
-      if (
-        thumbnail &&
-        ![...currentVariantImageIds, ...newVariantImageIds].includes(thumbnail)
-      ) {
-        thumbnail = null
+    // Pagly: the thumbnail is an address; a newly picked one stays only
+    // while it is one of the photos the variant keeps, and it is sent as
+    // checked. An untouched one is left to the images batch, which clears it
+    // when its photo leaves the variant.
+    const thumbnail =
+      data.thumbnail === (variant.thumbnail ?? null)
+        ? data.thumbnail
+        : keptThumbnail(data.thumbnail, newVariantImageIds, allProductImages)
+
+    if (thumbnail !== (variant.thumbnail ?? null)) {
+      try {
+        await updateVariant({ thumbnail })
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : String(error))
+        return
       }
-      updateVariant({
-        thumbnail: data.thumbnail,
-      }).catch((error) => {
-        toast.error(error.message)
-      })
     }
 
     // Update variant images

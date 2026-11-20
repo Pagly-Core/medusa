@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.hoisted(() => {
@@ -65,7 +71,10 @@ vi.mock("../../../../common/components/upload-media-form-item", () => ({
   UploadMediaFormItem: () => null,
 }))
 
-import { MEDIA_ALT_HOOK_KEY, type MediaAltHook } from "../../../../../../lib/media-alt"
+import {
+  MEDIA_ALT_HOOK_KEY,
+  type MediaAltHook,
+} from "../../../../../../lib/media-alt"
 import { EditProductMediaForm } from "../edit-product-media-form"
 
 const A = "http://localhost:9000/static/1-a.png"
@@ -83,7 +92,9 @@ const product = {
 const register = (alts: Record<string, string | null>) => {
   const hook: MediaAltHook = {
     read: vi.fn(async (urls: string[]) =>
-      Object.fromEntries(urls.filter((url) => url in alts).map((url) => [url, alts[url]]))
+      Object.fromEntries(
+        urls.filter((url) => url in alts).map((url) => [url, alts[url]])
+      )
     ),
     save: vi.fn(async () => {}),
   }
@@ -92,13 +103,18 @@ const register = (alts: Record<string, string | null>) => {
 }
 
 const altInputs = () =>
-  screen.queryAllByRole("textbox", { name: "products.media.altLabel" }) as HTMLInputElement[]
+  screen.queryAllByRole("textbox", {
+    name: "products.media.altLabel",
+  }) as HTMLInputElement[]
 
-const save = () => fireEvent.click(screen.getByRole("button", { name: "actions.save" }))
+const save = () =>
+  fireEvent.click(screen.getByRole("button", { name: "actions.save" }))
 
 beforeEach(() => {
   mutateAsync.mockReset()
-  mutateAsync.mockImplementation(async (_body, options) => options?.onSuccess?.())
+  mutateAsync.mockImplementation(async (_body, options) =>
+    options?.onSuccess?.()
+  )
   handleSuccess.mockReset()
   toastError.mockReset()
 })
@@ -119,10 +135,12 @@ describe("EditProductMediaForm alt text", () => {
     register({ [A]: "Taza roja de cerámica", [B]: null })
     render(<EditProductMediaForm product={product} />)
 
-    await waitFor(() => expect(altInputs().map((input) => input.value)).toEqual([
-      "Taza roja de cerámica",
-      "",
-    ]))
+    await waitFor(() =>
+      expect(altInputs().map((input) => input.value)).toEqual([
+        "Taza roja de cerámica",
+        "",
+      ])
+    )
   })
 
   it("describes each photo with its alt", async () => {
@@ -130,7 +148,9 @@ describe("EditProductMediaForm alt text", () => {
     render(<EditProductMediaForm product={product} />)
 
     await waitFor(() =>
-      expect(screen.getAllByRole("img", { name: "Taza roja de cerámica" }).length).toBeGreaterThan(0)
+      expect(
+        screen.getAllByRole("img", { name: "Taza roja de cerámica" }).length
+      ).toBeGreaterThan(0)
     )
   })
 
@@ -139,7 +159,9 @@ describe("EditProductMediaForm alt text", () => {
     render(<EditProductMediaForm product={product} />)
 
     await waitFor(() => expect(altInputs()[0]?.value).toBe("Taza roja"))
-    fireEvent.change(altInputs()[0], { target: { value: "Taza roja de cerámica, de frente" } })
+    fireEvent.change(altInputs()[0], {
+      target: { value: "Taza roja de cerámica, de frente" },
+    })
     save()
 
     await waitFor(() => expect(hook.save).toHaveBeenCalledTimes(1))
@@ -152,8 +174,7 @@ describe("EditProductMediaForm alt text", () => {
           { id: "img_a", url: A },
           { id: "img_b", url: B },
         ],
-      }),
-      expect.anything()
+      })
     )
     expect(handleSuccess).toHaveBeenCalled()
   })
@@ -171,14 +192,18 @@ describe("EditProductMediaForm alt text", () => {
 
   it("keeps the product saved and says so when the words fail to save", async () => {
     const hook = register({ [A]: null, [B]: null })
-    ;(hook.save as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("down"))
+    ;(hook.save as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error("down")
+    )
     render(<EditProductMediaForm product={product} />)
 
     await waitFor(() => expect(altInputs()).toHaveLength(2))
     fireEvent.change(altInputs()[1], { target: { value: "Taza azul" } })
     save()
 
-    await waitFor(() => expect(toastError).toHaveBeenCalledWith("products.media.altFailedToast"))
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith("products.media.altFailedToast")
+    )
     expect(mutateAsync).toHaveBeenCalled()
     expect(handleSuccess).toHaveBeenCalled()
   })

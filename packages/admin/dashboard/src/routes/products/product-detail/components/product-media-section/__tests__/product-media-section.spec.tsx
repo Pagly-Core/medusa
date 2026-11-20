@@ -7,7 +7,9 @@ vi.mock("react-i18next", () => ({
 }))
 
 vi.mock("react-router-dom", () => ({
-  Link: ({ children }: { children: React.ReactNode }) => <a href="#">{children}</a>,
+  Link: ({ children }: { children: React.ReactNode }) => (
+    <a href="#">{children}</a>
+  ),
   useNavigate: () => vi.fn(),
 }))
 
@@ -28,7 +30,10 @@ vi.mock("../../../../../../hooks/api/products", () => ({
   useUpdateProduct: () => ({ mutateAsync: vi.fn() }),
 }))
 
-import { MEDIA_ALT_HOOK_KEY, type MediaAltHook } from "../../../../../../lib/media-alt"
+import {
+  MEDIA_ALT_HOOK_KEY,
+  type MediaAltHook,
+} from "../../../../../../lib/media-alt"
 import { ProductMediaSection } from "../product-media-section"
 
 const A = "http://localhost:9000/static/1-a.png"
@@ -47,7 +52,9 @@ const product = {
 const register = (alts: Record<string, string | null>) => {
   const hook: MediaAltHook = {
     read: vi.fn(async (urls: string[]) =>
-      Object.fromEntries(urls.filter((url) => url in alts).map((url) => [url, alts[url]]))
+      Object.fromEntries(
+        urls.filter((url) => url in alts).map((url) => [url, alts[url]])
+      )
     ),
     save: vi.fn(async () => {}),
   }
@@ -65,7 +72,9 @@ describe("ProductMediaSection alt text", () => {
     render(<ProductMediaSection product={product} />)
 
     await waitFor(() =>
-      expect(screen.getByRole("img", { name: "Taza roja de cerámica" })).toBeTruthy()
+      expect(
+        screen.getByRole("img", { name: "Taza roja de cerámica" })
+      ).toBeTruthy()
     )
     expect(screen.getAllByText("products.media.altMissing")).toHaveLength(1)
   })

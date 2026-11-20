@@ -125,19 +125,26 @@ export const decorateVariantsWithDefaultValues = (
 // Pagly: entries picked from the media library are already stored and carry
 // only a URL; only entries with a file still need uploading.
 export const partitionMediaForUpload = <
-  T extends { url: string; isThumbnail: boolean; file?: File | null }
+  T extends {
+    url: string
+    isThumbnail: boolean
+    file?: File | null
+    alt?: string
+  }
 >(
   media: T[]
 ): {
   thumbnail: T | undefined
   others: T[]
-  stored: { url: string; isThumbnail: boolean }[]
+  stored: { url: string; isThumbnail: boolean; alt?: string }[]
 } => ({
   thumbnail: media.find((m) => m.isThumbnail && !!m.file),
   others: media.filter((m) => !m.isThumbnail && !!m.file),
   stored: media
     .filter((m) => !m.file)
-    .map(({ url, isThumbnail }) => ({ url, isThumbnail })),
+    .map(({ url, isThumbnail, alt }) =>
+      alt === undefined ? { url, isThumbnail } : { url, isThumbnail, alt }
+    ),
 })
 
 /**
@@ -146,5 +153,6 @@ export const partitionMediaForUpload = <
  */
 export const withRequestAlts = <T extends object>(
   files: T[],
-  _requests: { alt?: string | null }[]
-): (T & { alt?: string | null })[] => files
+  requests: { alt?: string }[]
+): (T & { alt?: string })[] =>
+  files.map((file, index) => ({ ...file, alt: requests[index]?.alt }))

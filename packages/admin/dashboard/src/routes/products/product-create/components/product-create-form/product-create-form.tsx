@@ -11,6 +11,7 @@ import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useExtendableForm } from "../../../../../dashboard-app/forms/hooks"
 import { useCreateProduct } from "../../../../../hooks/api/products"
 import { sdk } from "../../../../../lib/client"
+import { saveChangedAlts } from "../../../../../lib/media-alt"
 import { useExtension } from "../../../../../providers/extension-provider"
 import {
   PRODUCT_CREATE_FORM_DEFAULTS,
@@ -19,6 +20,7 @@ import {
 import {
   normalizeProductFormValues,
   partitionMediaForUpload,
+  withRequestAlts,
 } from "../../utils"
 import { ProductCreateDetailsForm } from "../product-create-details-form"
 import { ProductCreateInventoryKitForm } from "../product-create-inventory-kit-form"
@@ -117,6 +119,7 @@ export const ProductCreateForm = ({
       url: string
       isThumbnail: boolean
       file: File | null
+      alt?: string
     }[] = []
     try {
       if (media.length) {
@@ -135,9 +138,12 @@ export const ProductCreateForm = ({
         >[]
         if (thumbnailReq) {
           fileReqs.push(
-            sdk.admin.upload
-              .create({ files: [thumbnailReq.file] })
-              .then((r) => r.files.map((f) => ({ ...f, isThumbnail: true })))
+            sdk.admin.upload.create({ files: [thumbnailReq.file] }).then((r) =>
+              withRequestAlts(r.files, [thumbnailReq]).map((f) => ({
+                ...f,
+                isThumbnail: true,
+              }))
+            )
           )
         }
         if (otherMediaReq?.length) {
@@ -146,7 +152,12 @@ export const ProductCreateForm = ({
               .create({
                 files: otherMediaReq.map((m) => m.file),
               })
-              .then((r) => r.files.map((f) => ({ ...f, isThumbnail: false })))
+              .then((r) =>
+                withRequestAlts(r.files, otherMediaReq).map((f) => ({
+                  ...f,
+                  isThumbnail: false,
+                }))
+              )
           )
         }
 
@@ -157,6 +168,7 @@ export const ProductCreateForm = ({
             url: string
             isThumbnail: boolean
             file: File
+            alt?: string
           }[]),
         ]
       }
@@ -174,7 +186,13 @@ export const ProductCreateForm = ({
         regionsCurrencyMap,
       }),
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+          // Pagly: the photos' words go to the media library once the
+          // product holds the photos; the product stays made if they fail.
+          await saveChangedAlts(uploadedMedia).catch(() => {
+            toast.error(t("products.media.altFailedToast"))
+          })
+
           toast.success(
             t("products.create.successToast", {
               title: data.product.title,

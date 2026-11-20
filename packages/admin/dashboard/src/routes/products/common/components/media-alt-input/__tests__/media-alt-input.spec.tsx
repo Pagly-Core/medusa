@@ -17,7 +17,9 @@ describe("MediaAltInput", () => {
   it("is a labelled single line capped at 125 characters", () => {
     render(<MediaAltInput value="" onChange={() => {}} />)
 
-    const input = screen.getByRole("textbox", { name: "products.media.altLabel" })
+    const input = screen.getByRole("textbox", {
+      name: "products.media.altLabel",
+    })
 
     expect(input.getAttribute("placeholder")).toBe("products.media.altLabel")
     expect(input.getAttribute("maxlength")).toBe("125")

@@ -12,7 +12,6 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
@@ -26,11 +25,13 @@ import {
   XMark,
 } from "@medusajs/icons"
 import { IconButton, Text } from "@medusajs/ui"
-import { useState } from "react"
-import { useFieldArray, UseFormReturn } from "react-hook-form"
+import { ReactNode, useEffect, useState } from "react"
+import { Controller, useFieldArray, UseFormReturn } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { ActionMenu } from "../../../../../../../components/common/action-menu"
 import { formatFileSize } from "../../../../../../../lib/format-file-size"
+import { useMediaAlts } from "../../../../../../../lib/media-alt"
+import { MediaAltInput } from "../../../../../common/components/media-alt-input"
 import { UploadMediaFormItem } from "../../../../../common/components/upload-media-form-item"
 import { ProductCreateSchemaType } from "../../../../types"
 
@@ -51,11 +52,28 @@ const dropAnimationConfig: DropAnimation = {
 export const ProductCreateMediaSection = ({
   form,
 }: ProductCreateMediaSectionProps) => {
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     name: "media",
     control: form.control,
     keyName: "field_id",
   })
+
+  // Pagly: a photo picked from the media library starts with its words
+  // there; a dropped file starts empty.
+  const media = form.watch("media") ?? []
+  const { enabled: altEnabled, alts } = useMediaAlts(
+    media.map((m) => (m.file ? null : m.url))
+  )
+
+  useEffect(() => {
+    ;(form.getValues("media") ?? []).forEach((m, index) => {
+      const known = m.file ? undefined : alts[m.url]
+
+      if (m.alt === undefined && typeof known === "string") {
+        form.setValue(`media.${index}.alt`, known)
+      }
+    })
+  }, [alts, form])
 
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
 
@@ -78,10 +96,9 @@ export const ProductCreateMediaSection = ({
       const oldIndex = fields.findIndex((item) => item.field_id === active.id)
       const newIndex = fields.findIndex((item) => item.field_id === over?.id)
 
-      form.setValue("media", arrayMove(fields, oldIndex, newIndex), {
-        shouldDirty: true,
-        shouldTouch: true,
-      })
+      // Pagly: `move` keeps each photo's current values (its alt among
+      // them); the field list only holds them as they were added.
+      move(oldIndex, newIndex)
     }
   }
 
@@ -97,7 +114,7 @@ export const ProductCreateMediaSection = ({
 
   const getMakeThumbnail = (index: number) => {
     return () => {
-      const newFields = fields.map((field, i) => {
+      const newFields = (form.getValues("media") ?? []).map((field, i) => {
         return {
           ...field,
           isThumbnail: i === index,
@@ -145,6 +162,26 @@ export const ProductCreateMediaSection = ({
                   field={field}
                   onDelete={onDelete}
                   onMakeThumbnail={onMakeThumbnail}
+                  alt={media[index]?.alt}
+                  altField={
+                    altEnabled ? (
+                      <Controller
+                        control={form.control}
+                        name={`media.${index}.alt`}
+                        render={({
+                          field: { value, onChange, onBlur, ref, name },
+                        }) => (
+                          <MediaAltInput
+                            ref={ref}
+                            name={name}
+                            value={value}
+                            onBlur={onBlur}
+                            onChange={onChange}
+                          />
+                        )}
+                      />
+                    ) : null
+                  }
                 />
               )
             })}
@@ -159,7 +196,7 @@ type MediaField = {
   isThumbnail: boolean
   url: string
   id?: string | undefined
-  file?: File
+  file?: File | null
   field_id: string
 }
 
@@ -167,9 +204,27 @@ type MediaItemProps = {
   field: MediaField
   onDelete: () => void
   onMakeThumbnail: () => void
+  /** Pagly: the photo's words, read by screen readers. */
+  alt?: string
+  /** Pagly: the photo's alt field, under it, when the store keeps alt text. */
+  altField?: ReactNode
 }
 
-const MediaItem = ({ field, onDelete, onMakeThumbnail }: MediaItemProps) => {
+/**
+ * Pagly: a photo picked from the media library has no file, only its
+ * address; it is named by the address's last part.
+ */
+const mediaName = (field: MediaField) =>
+  field.file?.name ??
+  decodeURIComponent(field.url.split(/[?#]/)[0].split("/").pop() || field.url)
+
+const MediaItem = ({
+  field,
+  onDelete,
+  onMakeThumbnail,
+  alt,
+  altField,
+}: MediaItemProps) => {
   const { t } = useTranslation()
 
   const {
@@ -188,81 +243,86 @@ const MediaItem = ({ field, onDelete, onMakeThumbnail }: MediaItemProps) => {
     transition,
   }
 
-  if (!field.file) {
+  if (!field.file && !field.url) {
     return null
   }
 
   return (
     <li
-      className="bg-ui-bg-component shadow-elevation-card-rest flex items-center justify-between rounded-lg px-3 py-2"
+      className="bg-ui-bg-component shadow-elevation-card-rest flex flex-col gap-y-2 rounded-lg px-3 py-2"
       ref={setNodeRef}
       style={style}
     >
-      <div className="flex items-center gap-x-2">
-        <IconButton
-          variant="transparent"
-          type="button"
-          size="small"
-          {...attributes}
-          {...listeners}
-          ref={setActivatorNodeRef}
-          className="cursor-grab touch-none active:cursor-grabbing"
-        >
-          <DotsSix className="text-ui-fg-muted" />
-        </IconButton>
-        <div className="flex items-center gap-x-3">
-          <div className="bg-ui-bg-base h-10 w-[30px] overflow-hidden rounded-md">
-            <ThumbnailPreview url={field.url} />
-          </div>
-          <div className="flex flex-col">
-            <Text size="small" leading="compact">
-              {field.file.name}
-            </Text>
-            <div className="flex items-center gap-x-1">
-              {field.isThumbnail && <ThumbnailBadge />}
-              <Text
-                size="xsmall"
-                leading="compact"
-                className="text-ui-fg-subtle"
-              >
-                {formatFileSize(field.file.size)}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-x-2">
+          <IconButton
+            variant="transparent"
+            type="button"
+            size="small"
+            {...attributes}
+            {...listeners}
+            ref={setActivatorNodeRef}
+            className="cursor-grab touch-none active:cursor-grabbing"
+          >
+            <DotsSix className="text-ui-fg-muted" />
+          </IconButton>
+          <div className="flex items-center gap-x-3">
+            <div className="bg-ui-bg-base h-10 w-[30px] overflow-hidden rounded-md">
+              <ThumbnailPreview url={field.url} alt={alt} />
+            </div>
+            <div className="flex flex-col">
+              <Text size="small" leading="compact">
+                {mediaName(field)}
               </Text>
+              <div className="flex items-center gap-x-1">
+                {field.isThumbnail && <ThumbnailBadge />}
+                {field.file && (
+                  <Text
+                    size="xsmall"
+                    leading="compact"
+                    className="text-ui-fg-subtle"
+                  >
+                    {formatFileSize(field.file.size)}
+                  </Text>
+                )}
+              </div>
             </div>
           </div>
         </div>
+        <div className="flex items-center gap-x-1">
+          <ActionMenu
+            groups={[
+              {
+                actions: [
+                  {
+                    label: t("products.media.makeThumbnail"),
+                    icon: <StackPerspective />,
+                    onClick: onMakeThumbnail,
+                  },
+                ],
+              },
+              {
+                actions: [
+                  {
+                    icon: <Trash />,
+                    label: t("actions.delete"),
+                    onClick: onDelete,
+                  },
+                ],
+              },
+            ]}
+          />
+          <IconButton
+            type="button"
+            size="small"
+            variant="transparent"
+            onClick={onDelete}
+          >
+            <XMark />
+          </IconButton>
+        </div>
       </div>
-      <div className="flex items-center gap-x-1">
-        <ActionMenu
-          groups={[
-            {
-              actions: [
-                {
-                  label: t("products.media.makeThumbnail"),
-                  icon: <StackPerspective />,
-                  onClick: onMakeThumbnail,
-                },
-              ],
-            },
-            {
-              actions: [
-                {
-                  icon: <Trash />,
-                  label: t("actions.delete"),
-                  onClick: onDelete,
-                },
-              ],
-            },
-          ]}
-        />
-        <IconButton
-          type="button"
-          size="small"
-          variant="transparent"
-          onClick={onDelete}
-        >
-          <XMark />
-        </IconButton>
-      </div>
+      {altField}
     </li>
   )
 }
@@ -284,7 +344,7 @@ const MediaGridItemOverlay = ({ field }: { field: MediaField }) => {
           </div>
           <div className="flex flex-col">
             <Text size="small" leading="compact">
-              {field.file?.name}
+              {mediaName(field)}
             </Text>
             <div className="flex items-center gap-x-1">
               {field.isThumbnail && <ThumbnailBadge />}
@@ -314,12 +374,22 @@ const MediaGridItemOverlay = ({ field }: { field: MediaField }) => {
   )
 }
 
-const ThumbnailPreview = ({ url }: { url?: string | null }) => {
+const ThumbnailPreview = ({
+  url,
+  alt,
+}: {
+  url?: string | null
+  alt?: string
+}) => {
   if (!url) {
     return null
   }
 
   return (
-    <img src={url} alt="" className="size-full object-cover object-center" />
+    <img
+      src={url}
+      alt={alt?.trim() ?? ""}
+      className="size-full object-cover object-center"
+    />
   )
 }

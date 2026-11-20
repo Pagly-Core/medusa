@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react"
 import { useForm } from "react-hook-form"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -21,7 +27,10 @@ vi.mock("../../../../../../common/components/upload-media-form-item", () => ({
   UploadMediaFormItem: () => null,
 }))
 
-import { MEDIA_ALT_HOOK_KEY, type MediaAltHook } from "../../../../../../../../lib/media-alt"
+import {
+  MEDIA_ALT_HOOK_KEY,
+  type MediaAltHook,
+} from "../../../../../../../../lib/media-alt"
 import { ProductCreateMediaSection } from "../product-create-details-media-section"
 
 const PICKED = "http://localhost:9000/static/1-picked.png"
@@ -37,7 +46,9 @@ const Harness = ({ media }: { media: unknown[] }) => {
 const register = (alts: Record<string, string | null>) => {
   const hook: MediaAltHook = {
     read: vi.fn(async (urls: string[]) =>
-      Object.fromEntries(urls.filter((url) => url in alts).map((url) => [url, alts[url]]))
+      Object.fromEntries(
+        urls.filter((url) => url in alts).map((url) => [url, alts[url]])
+      )
     ),
     save: vi.fn(async () => {}),
   }
@@ -46,7 +57,9 @@ const register = (alts: Record<string, string | null>) => {
 }
 
 const altInputs = () =>
-  screen.queryAllByRole("textbox", { name: "products.media.altLabel" }) as HTMLInputElement[]
+  screen.queryAllByRole("textbox", {
+    name: "products.media.altLabel",
+  }) as HTMLInputElement[]
 
 afterEach(() => {
   cleanup()
@@ -56,7 +69,9 @@ afterEach(() => {
 describe("ProductCreateMediaSection", () => {
   it("lists a photo picked from the library, not only dropped files", () => {
     render(
-      <Harness media={[{ id: "p1", url: PICKED, isThumbnail: false, file: null }]} />
+      <Harness
+        media={[{ id: "p1", url: PICKED, isThumbnail: false, file: null }]}
+      />
     )
 
     expect(screen.getByText("1-picked.png")).toBeTruthy()
@@ -66,7 +81,12 @@ describe("ProductCreateMediaSection", () => {
     render(
       <Harness
         media={[
-          { id: "f1", url: "blob:1", isThumbnail: true, file: new File(["x"], "taza.png") },
+          {
+            id: "f1",
+            url: "blob:1",
+            isThumbnail: true,
+            file: new File(["x"], "taza.png"),
+          },
         ]}
       />
     )
@@ -80,13 +100,21 @@ describe("ProductCreateMediaSection", () => {
       <Harness
         media={[
           { id: "p1", url: PICKED, isThumbnail: false, file: null },
-          { id: "f1", url: "blob:1", isThumbnail: true, file: new File(["x"], "taza.png") },
+          {
+            id: "f1",
+            url: "blob:1",
+            isThumbnail: true,
+            file: new File(["x"], "taza.png"),
+          },
         ]}
       />
     )
 
     await waitFor(() =>
-      expect(altInputs().map((input) => input.value)).toEqual(["Taza roja de cerámica", ""])
+      expect(altInputs().map((input) => input.value)).toEqual([
+        "Taza roja de cerámica",
+        "",
+      ])
     )
   })
 
@@ -95,13 +123,20 @@ describe("ProductCreateMediaSection", () => {
     render(
       <Harness
         media={[
-          { id: "f1", url: "blob:1", isThumbnail: true, file: new File(["x"], "taza.png") },
+          {
+            id: "f1",
+            url: "blob:1",
+            isThumbnail: true,
+            file: new File(["x"], "taza.png"),
+          },
         ]}
       />
     )
 
     await waitFor(() => expect(altInputs()).toHaveLength(1))
-    fireEvent.change(altInputs()[0], { target: { value: "Taza azul, de costado" } })
+    fireEvent.change(altInputs()[0], {
+      target: { value: "Taza azul, de costado" },
+    })
 
     expect(values()).toEqual([
       expect.objectContaining({ id: "f1", alt: "Taza azul, de costado" }),

@@ -1,5 +1,6 @@
 import { PencilSquare, ThumbnailBadge } from "@medusajs/icons"
 import {
+  Badge,
   Button,
   Checkbox,
   CommandBar,
@@ -15,6 +16,7 @@ import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useUpdateProduct } from "../../../../../hooks/api/products"
+import { useMediaAlts } from "../../../../../lib/media-alt"
 import { HttpTypes } from "@medusajs/types"
 
 type ProductMedisaSectionProps = {
@@ -29,6 +31,9 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
   const [selection, setSelection] = useState<Record<string, boolean>>({})
 
   const media = getMedia(product)
+  // Pagly: each photo's words in the media library; a photo without any is
+  // marked so the merchant sees what is left to describe.
+  const { enabled: altEnabled, alts } = useMediaAlts(media.map((m) => m.url))
 
   const handleCheckedChange = (id: string) => {
     setSelection((prev) => {
@@ -134,10 +139,17 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
                 <Link to={`media`} state={{ curr: index }}>
                   <img
                     src={i.url}
-                    alt={`${product.title} image`}
+                    alt={alts[i.url]?.trim() || `${product.title} image`}
                     className="size-full object-cover"
                   />
                 </Link>
+                {altEnabled && i.url in alts && !alts[i.url]?.trim() && (
+                  <div className="pointer-events-none absolute bottom-2 left-2">
+                    <Badge size="2xsmall" color="grey">
+                      {t("products.media.altMissing")}
+                    </Badge>
+                  </div>
+                )}
               </div>
             )
           })}

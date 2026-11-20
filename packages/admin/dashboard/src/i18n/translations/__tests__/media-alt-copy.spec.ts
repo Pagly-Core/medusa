@@ -8,14 +8,15 @@ import es from "../es.json"
  * languages: a label, a short missing mark and the failure toast.
  */
 const media = (copy: unknown) =>
-  ((copy as { products: { media: Record<string, unknown> } }).products.media)
+  (copy as { products: { media: Record<string, unknown> } }).products.media
 
 describe("product photo alt copy", () => {
   test("Spanish names the field and its states in sentence case", () => {
     expect(media(es)).toMatchObject({
       altLabel: "Texto alternativo",
       altMissing: "Sin texto",
-      altFailedToast: "Los medios se guardaron, pero no el texto alternativo. Probá de nuevo.",
+      altFailedToast:
+        "Los medios se guardaron, pero no el texto alternativo. Probá de nuevo.",
     })
   })
 

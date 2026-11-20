@@ -69,7 +69,9 @@ describe("changedAlts", () => {
   })
 
   it("leaves a field nobody filled alone", () => {
-    expect(changedAlts([{ url: A }, { url: B, alt: undefined }], { [A]: "Taza" })).toEqual([])
+    expect(
+      changedAlts([{ url: A }, { url: B, alt: undefined }], { [A]: "Taza" })
+    ).toEqual([])
   })
 
   it("clears the alt of an emptied field", () => {
@@ -80,7 +82,13 @@ describe("changedAlts", () => {
 
   it("writes a new photo's alt, and nothing for an empty one", () => {
     expect(
-      changedAlts([{ url: A, alt: "Taza roja" }, { url: B, alt: "" }], {})
+      changedAlts(
+        [
+          { url: A, alt: "Taza roja" },
+          { url: B, alt: "" },
+        ],
+        {}
+      )
     ).toEqual([{ url: A, alt: "Taza roja" }])
   })
 
@@ -101,7 +109,9 @@ describe("changedAlts", () => {
 
 describe("saveChangedAlts", () => {
   it("does nothing without a hook", async () => {
-    await expect(saveChangedAlts([{ url: A, alt: "Taza" }])).resolves.toEqual([])
+    await expect(saveChangedAlts([{ url: A, alt: "Taza" }])).resolves.toEqual(
+      []
+    )
   })
 
   it("reads the library's words, then saves only what changed", async () => {
@@ -143,10 +153,9 @@ describe("useMediaAlts", () => {
       ),
     })
 
-    const { result, rerender } = renderHook(
-      ({ urls }) => useMediaAlts(urls),
-      { initialProps: { urls: [A, "blob:x"] as (string | null)[] } }
-    )
+    const { result, rerender } = renderHook(({ urls }) => useMediaAlts(urls), {
+      initialProps: { urls: [A, "blob:x"] as (string | null)[] },
+    })
 
     expect(result.current.enabled).toBe(true)
     await waitFor(() => expect(result.current.alts).toEqual({ [A]: "Taza" }))
