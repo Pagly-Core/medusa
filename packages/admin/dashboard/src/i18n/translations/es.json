@@ -638,7 +638,10 @@
       "showAvailableImages": "Mostrar imágenes disponibles",
       "availableImages": "Seleccionar imágenes",
       "selectToAdd": "Agregá imágenes del producto a la variante. Para agregar nuevas imágenes, agregalas primero al producto.",
-      "removeSelected": "Eliminar seleccionados"
+      "removeSelected": "Eliminar seleccionados",
+      "altLabel": "Texto alternativo",
+      "altMissing": "Sin texto",
+      "altFailedToast": "Los medios se guardaron, pero no el texto alternativo. Probá de nuevo."
     },
     "variantMedia": {
       "label": "Medios de variante",

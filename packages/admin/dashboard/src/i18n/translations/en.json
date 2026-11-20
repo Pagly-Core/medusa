@@ -591,7 +591,10 @@
       "showAvailableImages": "Show available images",
       "availableImages": "Select images",
       "selectToAdd": "Add product images to the variant. To add new images, add them to the product first.",
-      "removeSelected": "Remove Selected"
+      "removeSelected": "Remove Selected",
+      "altLabel": "Alt text",
+      "altMissing": "No alt text",
+      "altFailedToast": "Media saved, but not the alt text. Try again."
     },
     "variantMedia": {
       "label": "Variant Media",

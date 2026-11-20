@@ -12,7 +12,6 @@ import {
   useSensors,
 } from "@dnd-kit/core"
 import {
-  arrayMove,
   rectSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
@@ -23,8 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { ThumbnailBadge } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Button, Checkbox, clx, CommandBar, toast, Tooltip } from "@medusajs/ui"
-import { Fragment, useCallback, useState } from "react"
-import { useFieldArray, useForm } from "react-hook-form"
+import { Fragment, ReactNode, useCallback, useEffect, useState } from "react"
+import { Controller, useFieldArray, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 import { z } from "zod"
@@ -36,6 +35,8 @@ import {
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useUpdateProduct } from "../../../../../hooks/api/products"
 import { sdk } from "../../../../../lib/client"
+import { saveChangedAlts, useMediaAlts } from "../../../../../lib/media-alt"
+import { MediaAltInput } from "../../../common/components/media-alt-input"
 import { UploadMediaFormItem } from "../../../common/components/upload-media-form-item"
 import {
   EditProductMediaSchema,
@@ -61,11 +62,28 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
     resolver: zodResolver(EditProductMediaSchema),
   })
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove, update, move } = useFieldArray({
     name: "media",
     control: form.control,
     keyName: "field_id",
   })
+
+  // Pagly: each stored photo's words in the media library fill its alt
+  // field once; a field the merchant already touched is left as it is.
+  const media = form.watch("media")
+  const { enabled: altEnabled, alts } = useMediaAlts(
+    media.map((m) => (m.file ? null : m.url))
+  )
+
+  useEffect(() => {
+    form.getValues("media").forEach((m, index) => {
+      const known = m.file ? undefined : alts[m.url]
+
+      if (m.alt === undefined && typeof known === "string") {
+        form.setValue(`media.${index}.alt`, known)
+      }
+    })
+  }, [alts, form])
 
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
 
@@ -88,10 +106,9 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
       const oldIndex = fields.findIndex((item) => item.field_id === active.id)
       const newIndex = fields.findIndex((item) => item.field_id === over?.id)
 
-      form.setValue("media", arrayMove(fields, oldIndex, newIndex), {
-        shouldDirty: true,
-        shouldTouch: true,
-      })
+      // Pagly: `move` keeps each photo's current values (its alt among
+      // them); the field list only holds them as they were added.
+      move(oldIndex, newIndex)
     }
   }
 
@@ -131,21 +148,24 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
 
     const thumbnail = withUpdatedUrls.find((m) => m.isThumbnail)?.url
 
-    await mutateAsync(
-      {
+    try {
+      await mutateAsync({
         images: withUpdatedUrls.map((file) => ({ url: file.url, id: file.id })),
         thumbnail: thumbnail || null,
-      },
-      {
-        onSuccess: () => {
-          toast.success(t("products.media.successToast"))
-          handleSuccess()
-        },
-        onError: (error) => {
-          toast.error(error.message)
-        },
-      }
-    )
+      })
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : String(error))
+      return
+    }
+
+    // Pagly: the photos' words go to the media library once the product
+    // holds the photos; the product stays saved if they fail.
+    await saveChangedAlts(withUpdatedUrls).catch(() => {
+      toast.error(t("products.media.altFailedToast"))
+    })
+
+    toast.success(t("products.media.successToast"))
+    handleSuccess()
   })
 
   const handleCheckedChange = useCallback(
@@ -181,7 +201,7 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
 
     if (currentThumbnailIndex > -1) {
       update(currentThumbnailIndex, {
-        ...fields[currentThumbnailIndex],
+        ...form.getValues(`media.${currentThumbnailIndex}`),
         isThumbnail: false,
       })
     }
@@ -189,7 +209,7 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
     const index = fields.findIndex((m) => m.id === ids[0])
 
     update(index, {
-      ...fields[index],
+      ...form.getValues(`media.${index}`),
       isThumbnail: true,
     })
 
@@ -227,13 +247,38 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
                     items={fields.map((m) => m.field_id)}
                     strategy={rectSortingStrategy}
                   >
-                    {fields.map((m) => {
+                    {fields.map((m, index) => {
                       return (
                         <MediaGridItem
                           onCheckedChange={handleCheckedChange(m.id!)}
                           checked={!!selection[m.id!]}
                           key={m.field_id}
                           media={m}
+                          alt={media[index]?.alt ?? alts[m.url] ?? undefined}
+                          altField={
+                            altEnabled && (!!m.file || m.url in alts) ? (
+                              <Controller
+                                control={form.control}
+                                name={`media.${index}.alt`}
+                                // The library's words when the field mounts
+                                // after they are read.
+                                defaultValue={
+                                  m.file ? undefined : alts[m.url] ?? undefined
+                                }
+                                render={({
+                                  field: { value, onChange, onBlur, ref, name },
+                                }) => (
+                                  <MediaAltInput
+                                    ref={ref}
+                                    name={name}
+                                    value={value}
+                                    onBlur={onBlur}
+                                    onChange={onChange}
+                                  />
+                                )}
+                              />
+                            ) : null
+                          }
                         />
                       )
                     })}
@@ -242,6 +287,11 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
                     {activeId ? (
                       <MediaGridItemOverlay
                         media={fields.find((m) => m.field_id === activeId)!}
+                        alt={
+                          media[
+                            fields.findIndex((m) => m.field_id === activeId)
+                          ]?.alt
+                        }
                         checked={
                           !!selection[
                             fields.find((m) => m.field_id === activeId)!.id!
@@ -347,12 +397,18 @@ interface MediaGridItemProps {
   media: MediaView
   checked: boolean
   onCheckedChange: (value: boolean) => void
+  /** Pagly: the photo's words, read by screen readers. */
+  alt?: string
+  /** Pagly: the photo's alt field, under it, when the store keeps alt text. */
+  altField?: ReactNode
 }
 
 const MediaGridItem = ({
   media,
   checked,
   onCheckedChange,
+  alt,
+  altField,
 }: MediaGridItemProps) => {
   const { t } = useTranslation()
 
@@ -380,48 +436,52 @@ const MediaGridItem = ({
   }
 
   return (
-    <div
-      className={clx(
-        "shadow-elevation-card-rest hover:shadow-elevation-card-hover focus-visible:shadow-borders-focus bg-ui-bg-subtle-hover group relative aspect-square h-auto max-w-full overflow-hidden rounded-lg outline-none"
-      )}
-      style={style}
-      ref={setNodeRef}
-    >
-      {media.isThumbnail && (
-        <div className="absolute left-2 top-2">
-          <Tooltip content={t("products.media.thumbnailTooltip")}>
-            <ThumbnailBadge />
-          </Tooltip>
-        </div>
-      )}
+    <div className="flex flex-col gap-y-2" style={style} ref={setNodeRef}>
       <div
-        className={clx("absolute inset-0 cursor-grab touch-none outline-none", {
-          "cursor-grabbing": isDragging,
-        })}
-        ref={setActivatorNodeRef}
-        {...attributes}
-        {...listeners}
-      />
-      <div
-        className={clx("transition-fg absolute right-2 top-2 opacity-0", {
-          "group-focus-within:opacity-100 group-hover:opacity-100 group-focus:opacity-100":
-            !isDragging && !checked,
-          "opacity-100": checked,
-        })}
+        className={clx(
+          "shadow-elevation-card-rest hover:shadow-elevation-card-hover focus-visible:shadow-borders-focus bg-ui-bg-subtle-hover group relative aspect-square h-auto max-w-full overflow-hidden rounded-lg outline-none"
+        )}
       >
-        <Checkbox
-          onClick={(e) => {
-            e.stopPropagation()
-          }}
-          checked={checked}
-          onCheckedChange={handleToggle}
+        {media.isThumbnail && (
+          <div className="absolute left-2 top-2">
+            <Tooltip content={t("products.media.thumbnailTooltip")}>
+              <ThumbnailBadge />
+            </Tooltip>
+          </div>
+        )}
+        <div
+          className={clx(
+            "absolute inset-0 cursor-grab touch-none outline-none",
+            {
+              "cursor-grabbing": isDragging,
+            }
+          )}
+          ref={setActivatorNodeRef}
+          {...attributes}
+          {...listeners}
+        />
+        <div
+          className={clx("transition-fg absolute right-2 top-2 opacity-0", {
+            "group-focus-within:opacity-100 group-hover:opacity-100 group-focus:opacity-100":
+              !isDragging && !checked,
+            "opacity-100": checked,
+          })}
+        >
+          <Checkbox
+            onClick={(e) => {
+              e.stopPropagation()
+            }}
+            checked={checked}
+            onCheckedChange={handleToggle}
+          />
+        </div>
+        <img
+          src={media.url}
+          alt={alt?.trim() ?? ""}
+          className="size-full object-cover object-center"
         />
       </div>
-      <img
-        src={media.url}
-        alt=""
-        className="size-full object-cover object-center"
-      />
+      {altField}
     </div>
   )
 }
@@ -429,9 +489,11 @@ const MediaGridItem = ({
 export const MediaGridItemOverlay = ({
   media,
   checked,
+  alt,
 }: {
   media: MediaView
   checked: boolean
+  alt?: string
 }) => {
   return (
     <div className="shadow-elevation-card-rest hover:shadow-elevation-card-hover focus-visible:shadow-borders-focus bg-ui-bg-subtle-hover group relative aspect-square h-auto max-w-full cursor-grabbing overflow-hidden rounded-lg outline-none">
@@ -449,7 +511,7 @@ export const MediaGridItemOverlay = ({
       </div>
       <img
         src={media.url}
-        alt=""
+        alt={alt?.trim() ?? ""}
         className="size-full object-cover object-center"
       />
     </div>

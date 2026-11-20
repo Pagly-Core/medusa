@@ -8,6 +8,9 @@ export const MediaSchema = z.object({
   url: z.string(),
   isThumbnail: z.boolean(),
   file: z.any().nullable(), // File
+  // Pagly: the photo's words in the media library; left out until the field
+  // is filled, so an untouched photo never writes.
+  alt: z.string().max(125).optional(),
 })
 
 const ProductCreateVariantSchema = z.object({

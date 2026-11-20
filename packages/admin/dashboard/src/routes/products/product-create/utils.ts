@@ -125,17 +125,34 @@ export const decorateVariantsWithDefaultValues = (
 // Pagly: entries picked from the media library are already stored and carry
 // only a URL; only entries with a file still need uploading.
 export const partitionMediaForUpload = <
-  T extends { url: string; isThumbnail: boolean; file?: File | null }
+  T extends {
+    url: string
+    isThumbnail: boolean
+    file?: File | null
+    alt?: string
+  }
 >(
   media: T[]
 ): {
   thumbnail: T | undefined
   others: T[]
-  stored: { url: string; isThumbnail: boolean }[]
+  stored: { url: string; isThumbnail: boolean; alt?: string }[]
 } => ({
   thumbnail: media.find((m) => m.isThumbnail && !!m.file),
   others: media.filter((m) => !m.isThumbnail && !!m.file),
   stored: media
     .filter((m) => !m.file)
-    .map(({ url, isThumbnail }) => ({ url, isThumbnail })),
+    .map(({ url, isThumbnail, alt }) =>
+      alt === undefined ? { url, isThumbnail } : { url, isThumbnail, alt }
+    ),
 })
+
+/**
+ * Pagly: the alt written for each file a form uploaded, given back in the
+ * order the upload answered, so it follows the file to its stored address.
+ */
+export const withRequestAlts = <T extends object>(
+  files: T[],
+  requests: { alt?: string }[]
+): (T & { alt?: string })[] =>
+  files.map((file, index) => ({ ...file, alt: requests[index]?.alt }))

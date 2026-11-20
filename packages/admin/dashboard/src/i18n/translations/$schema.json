@@ -2325,6 +2325,15 @@
             },
             "removeSelected": {
               "type": "string"
+            },
+            "altLabel": {
+              "type": "string"
+            },
+            "altMissing": {
+              "type": "string"
+            },
+            "altFailedToast": {
+              "type": "string"
             }
           },
           "required": [
@@ -2347,7 +2356,10 @@
             "showAvailableImages",
             "availableImages",
             "selectToAdd",
-            "removeSelected"
+            "removeSelected",
+            "altLabel",
+            "altMissing",
+            "altFailedToast"
           ],
           "additionalProperties": false
         },
