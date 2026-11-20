@@ -294,6 +294,107 @@ medusaIntegrationTestRunner({
         )
       })
 
+      it("should give an address to a stock location that has none", async () => {
+        const bare = (
+          await api.post(
+            `/admin/stock-locations`,
+            { name: "No address yet" },
+            adminHeaders
+          )
+        ).data.stock_location
+
+        expect(bare.address ?? null).toBeNull()
+
+        // The fields the assistant's update_stock_location asks the answer for.
+        const response = await api.post(
+          `/admin/stock-locations/${bare.id}?fields=id,name,*address`,
+          {
+            address: {
+              address_1: "Francisco Ros 2490",
+              city: "Montevideo",
+              province: "uy-mo",
+              country_code: "uy",
+            },
+          },
+          adminHeaders
+        )
+
+        expect(response.status).toEqual(200)
+        expect(response.data.stock_location.address).toEqual(
+          expect.objectContaining({
+            address_1: "Francisco Ros 2490",
+            city: "Montevideo",
+            province: "uy-mo",
+            country_code: "uy",
+          })
+        )
+
+        const read = (
+          await api.get(
+            `/admin/stock-locations/${bare.id}?fields=*address`,
+            adminHeaders
+          )
+        ).data.stock_location
+
+        expect(read.address.id).toEqual(response.data.stock_location.address.id)
+        expect(read.address).toEqual(
+          expect.objectContaining({ address_1: "Francisco Ros 2490" })
+        )
+
+        const again = await api.post(
+          `/admin/stock-locations/${bare.id}`,
+          { address: { address_1: "Francisco Ros 2500", country_code: "uy" } },
+          adminHeaders
+        )
+
+        expect(again.data.stock_location.address).toEqual(
+          expect.objectContaining({
+            id: read.address.id,
+            address_1: "Francisco Ros 2500",
+          })
+        )
+      })
+
+      it("should give each addressless stock location its own address", async () => {
+        const [first, second] = await Promise.all(
+          ["Bare one", "Bare two"].map(
+            async (name) =>
+              (
+                await api.post(`/admin/stock-locations`, { name }, adminHeaders)
+              ).data.stock_location
+          )
+        )
+
+        const container = getContainer()
+        const { updateStockLocationsWorkflow } = require("@medusajs/core-flows")
+        await updateStockLocationsWorkflow(container).run({
+          input: {
+            selector: { id: [first.id, second.id] },
+            update: { address: { address_1: "Shared street 1", country_code: "uy" } },
+          },
+        })
+
+        const read = await Promise.all(
+          [first, second].map(
+            async (location) =>
+              (
+                await api.get(
+                  `/admin/stock-locations/${location.id}?fields=*address`,
+                  adminHeaders
+                )
+              ).data.stock_location
+          )
+        )
+
+        expect(read[0].address).toEqual(
+          expect.objectContaining({ address_1: "Shared street 1" })
+        )
+        expect(read[1].address).toEqual(
+          expect.objectContaining({ address_1: "Shared street 1" })
+        )
+        expect(read[0].address.id).not.toEqual(read[1].address.id)
+      })
+
       it("should update stock location address metadata", async () => {
         const response = await api.post(
           `/admin/stock-locations/${location1.id}`,
