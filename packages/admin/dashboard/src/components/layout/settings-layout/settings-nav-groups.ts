@@ -60,7 +60,6 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
       { to: "/settings/customer-accounts" },
       { to: "/settings/notifications" },
       { to: "/settings/order-self-service" },
-      { to: "/settings/return-reasons" },
     ],
   },
   {
