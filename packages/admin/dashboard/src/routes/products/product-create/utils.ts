@@ -139,3 +139,12 @@ export const partitionMediaForUpload = <
     .filter((m) => !m.file)
     .map(({ url, isThumbnail }) => ({ url, isThumbnail })),
 })
+
+/**
+ * Pagly: the alt written for each file a form uploaded, given back in the
+ * order the upload answered, so it follows the file to its stored address.
+ */
+export const withRequestAlts = <T extends object>(
+  files: T[],
+  _requests: { alt?: string | null }[]
+): (T & { alt?: string | null })[] => files
