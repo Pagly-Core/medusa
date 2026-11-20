@@ -19,6 +19,19 @@ export interface LinkStockLocationAddressInput {
   address_id: string
 }
 
+const unlink = async (
+  stockLocationService: IStockLocationService,
+  locationIds: string[]
+) => {
+  await promiseAll(
+    locationIds.map((id) =>
+      stockLocationService.updateStockLocations(id, {
+        address: null,
+      } as unknown as UpdateStockLocationInput)
+    )
+  )
+}
+
 export const linkStockLocationAddressesStepId =
   "link-stock-location-addresses-step"
 /**
@@ -41,15 +54,26 @@ export const linkStockLocationAddressesStep = createStep(
       Modules.STOCK_LOCATION
     )
 
-    await promiseAll(
-      input.map((link) =>
-        // The relation takes the address id; an `address_id` key is dropped
-        // without an error.
-        stockLocationService.updateStockLocations(link.id, {
-          address: link.address_id,
-        } as unknown as UpdateStockLocationInput)
+    try {
+      await promiseAll(
+        input.map((link) =>
+          // The relation takes the address id; an `address_id` key is dropped
+          // without an error.
+          stockLocationService.updateStockLocations(link.id, {
+            address: link.address_id,
+          } as unknown as UpdateStockLocationInput)
+        )
       )
-    )
+    } catch (error) {
+      // A failed step is not compensated, and the address step's
+      // compensation deletes these addresses next: deleting an address
+      // still linked deletes its location too, so unlink every one first.
+      await unlink(
+        stockLocationService,
+        input.map((link) => link.id)
+      )
+      throw error
+    }
 
     return new StepResponse(
       void 0,
@@ -65,12 +89,6 @@ export const linkStockLocationAddressesStep = createStep(
       Modules.STOCK_LOCATION
     )
 
-    await promiseAll(
-      locationIds.map((id) =>
-        stockLocationService.updateStockLocations(id, {
-          address: null,
-        } as unknown as UpdateStockLocationInput)
-      )
-    )
+    await unlink(stockLocationService, locationIds)
   }
 )

@@ -305,8 +305,9 @@ medusaIntegrationTestRunner({
 
         expect(bare.address ?? null).toBeNull()
 
+        // The fields the assistant's update_stock_location asks the answer for.
         const response = await api.post(
-          `/admin/stock-locations/${bare.id}`,
+          `/admin/stock-locations/${bare.id}?fields=id,name,*address`,
           {
             address: {
               address_1: "Francisco Ros 2490",
