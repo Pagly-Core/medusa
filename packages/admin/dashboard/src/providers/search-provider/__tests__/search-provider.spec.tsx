@@ -26,6 +26,12 @@ describe("search shortcut", () => {
     expect(press({ key: "k", metaKey: true }).defaultPrevented).toBe(true)
   })
 
+  it("works with Caps Lock on, when the key reads K", () => {
+    render(<SearchProvider>{null}</SearchProvider>)
+
+    expect(press({ key: "K", ctrlKey: true }).defaultPrevented).toBe(true)
+  })
+
   it("leaves a plain k and other shortcuts alone", () => {
     render(<SearchProvider>{null}</SearchProvider>)
 
