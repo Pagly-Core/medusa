@@ -24,6 +24,8 @@ export const SearchProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        // Pagly: Ctrl+K is the browser's own search in Chrome; keep it here.
+        e.preventDefault()
         setOpen((prev) => !prev)
       }
     }

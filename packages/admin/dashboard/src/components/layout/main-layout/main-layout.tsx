@@ -21,6 +21,7 @@ import { Link, useLocation } from "react-router-dom"
 import { useSignOut } from "../../../hooks/use-sign-out"
 import { useExtension } from "../../../providers/extension-provider"
 import { useSearch } from "../../../providers/search-provider"
+import { searchShortcutLabel } from "../../../providers/search-provider/search-shortcut"
 import { UserMenu } from "../user-menu"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
 import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
@@ -180,7 +181,7 @@ const Searchbar = () => {
           </Text>
         </div>
         <Text size="small" leading="compact" className="text-ui-fg-muted">
-          âŒ˜K
+          {searchShortcutLabel(navigator.platform)}
         </Text>
       </button>
     </div>
