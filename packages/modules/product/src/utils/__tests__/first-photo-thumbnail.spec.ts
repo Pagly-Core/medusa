@@ -74,4 +74,62 @@ describe("firstPhotoThumbnail", () => {
       thumbnail: "a.jpg",
     })
   })
+
+  it("follows the photos' own ranks on a create", () => {
+    expect(
+      firstPhotoThumbnail(
+        {
+          images: [
+            { url: "a.jpg", rank: 1 },
+            { url: "b.jpg", rank: 0 },
+            { url: "c.jpg", rank: 2 },
+          ],
+        },
+        undefined,
+        { byRank: true }
+      )
+    ).toEqual({
+      images: [
+        { url: "b.jpg", rank: 0 },
+        { url: "a.jpg", rank: 1 },
+        { url: "c.jpg", rank: 2 },
+      ],
+      thumbnail: "b.jpg",
+    })
+  })
+
+  it("keeps the list's order on an update, whatever ranks the photos carry", () => {
+    expect(
+      firstPhotoThumbnail({
+        images: [
+          { url: "c.jpg", rank: 2 },
+          { url: "a.jpg", rank: 0 },
+        ],
+      })
+    ).toEqual({
+      images: [
+        { url: "c.jpg", rank: 0 },
+        { url: "a.jpg", rank: 1 },
+      ],
+      thumbnail: "c.jpg",
+    })
+  })
+
+  it("ranks the photos again after the main photo moves", () => {
+    expect(
+      firstPhotoThumbnail({
+        images: [
+          { url: "a.jpg", rank: 0 },
+          { url: "b.jpg", rank: 1 },
+        ],
+        thumbnail: "b.jpg",
+      })
+    ).toEqual({
+      images: [
+        { url: "b.jpg", rank: 0 },
+        { url: "a.jpg", rank: 1 },
+      ],
+      thumbnail: "b.jpg",
+    })
+  })
 })

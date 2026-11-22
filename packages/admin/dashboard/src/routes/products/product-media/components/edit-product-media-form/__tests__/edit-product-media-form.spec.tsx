@@ -250,6 +250,34 @@ describe("EditProductMediaForm main photo", () => {
     )
   })
 
+  it("lists the photos by rank, and keeps the first as main on save", async () => {
+    render(
+      <EditProductMediaForm
+        product={
+          {
+            id: "prod_1",
+            thumbnail: B,
+            images: [
+              { id: "img_b", url: B, rank: 1 },
+              { id: "img_a", url: A, rank: 0 },
+            ],
+          } as never
+        }
+      />
+    )
+
+    save()
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(mutateAsync).toHaveBeenCalledWith({
+      images: [
+        { id: "img_a", url: A },
+        { id: "img_b", url: B },
+      ],
+      thumbnail: A,
+    })
+  })
+
   it("moves the photo made main to the front", async () => {
     render(<EditProductMediaForm product={product} />)
 

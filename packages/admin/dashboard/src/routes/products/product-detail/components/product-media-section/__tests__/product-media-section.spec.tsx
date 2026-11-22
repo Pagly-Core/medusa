@@ -119,4 +119,32 @@ describe("ProductMediaSection main photo", () => {
       thumbnail: B,
     })
   })
+
+  it("deletes from the photos as ranked, keeping the next one main", async () => {
+    mutateAsync.mockReset()
+    render(
+      <ProductMediaSection
+        product={
+          {
+            id: "prod_1",
+            title: "Taza",
+            thumbnail: B,
+            images: [
+              { id: "img_b", url: B, rank: 1 },
+              { id: "img_a", url: A, rank: 0 },
+            ],
+          } as never
+        }
+      />
+    )
+
+    fireEvent.click(screen.getAllByRole("checkbox")[0])
+    fireEvent.click(screen.getByRole("button", { name: /actions\.delete/ }))
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(mutateAsync.mock.calls[0][0]).toEqual({
+      images: [{ id: "img_b", url: B }],
+      thumbnail: B,
+    })
+  })
 })

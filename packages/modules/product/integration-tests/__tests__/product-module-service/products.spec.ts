@@ -1853,12 +1853,14 @@ moduleIntegrationTestRunner<IProductModuleService>({
           let stored = await retrieve(product.id)
           expect(stored.thumbnail).toEqual("photo-2")
           expect(urls(stored as any)).toEqual(["photo-2", "photo-1"])
+          const ids = stored.images.map((image) => image.id).sort()
 
           await service.updateProducts(product.id, { thumbnail: "photo-1" })
           stored = await retrieve(product.id)
           expect(stored.thumbnail).toEqual("photo-1")
           expect(urls(stored as any)).toEqual(["photo-1", "photo-2"])
-          expect(stored.images).toHaveLength(2)
+          // The same photos, moved: variant photos stay linked to them.
+          expect(stored.images.map((image) => image.id).sort()).toEqual(ids)
         })
 
         it("follows the first photo when photos are reordered", async () => {
