@@ -132,6 +132,14 @@ describe("what stops the product from selling", () => {
     expect(ids({ product: product({ options: [SIZE] }), variants: vs, currency: "uyu", cover })).toEqual([])
   })
 
+  it("drops the stock blockers only for the variants the part sells without stock", () => {
+    const vs = [variant(null, "M", { inventory_quantity: 0 }), variant(null, "XL", { inventory_quantity: 0 })]
+    const cover = { row: "En preventa", summary: "En preventa", variant_ids: ["variant_null_M"] }
+    expect(getBlockers({ product: product({ options: [SIZE] }), variants: vs, currency: "uyu", cover })).toEqual([
+      { id: "someOut", count: 1, names: ["XL"] },
+    ])
+  })
+
   it("says when a published product isn't in the online store", () => {
     expect(ids({ product: product({ sales_channels: [] }), variants: [variant("Negro", "M")], currency: "uyu", cover: null })).toEqual(["noChannel"])
     expect(ids({ product: product({ sales_channels: undefined }), variants: [variant("Negro", "M")], currency: "uyu", cover: null })).toEqual([])

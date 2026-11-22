@@ -183,6 +183,20 @@ describe("Variantes y precios", () => {
     expect(screen.queryByText("products.page.variants.outOfStock")).toBeNull()
   })
 
+  it("says the part's words only for the variants it covers", () => {
+    renderIn(
+      <ProductVariantSection
+        product={makeProduct({ options: [SIZE] })}
+        facts={makeFacts({
+          variants: [makeVariant(null, "M", { inventory_quantity: 0 }), makeVariant(null, "XL", { inventory_quantity: 0 })],
+          cover: { row: "En preventa", summary: "x", variant_ids: ["variant_x_M"] },
+        })}
+      />
+    )
+    expect(screen.getByText("En preventa")).toBeTruthy()
+    expect(screen.getByText("products.page.variants.outOfStock")).toBeTruthy()
+  })
+
   it("shows the offer price with the normal one struck through, and names the offer", () => {
     const sales = new Map([
       ["variant_x_M", { amount: 990, offer: "Black Week", ends_at: null }],
