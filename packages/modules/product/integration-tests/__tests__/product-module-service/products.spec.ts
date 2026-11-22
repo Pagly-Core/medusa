@@ -1807,6 +1807,75 @@ moduleIntegrationTestRunner<IProductModuleService>({
         })
       })
 
+      // Pagly: a product's main photo is always its first photo.
+      describe("main photo", function () {
+        const photos = [{ url: "photo-1" }, { url: "photo-2" }]
+
+        const retrieve = (id: string) =>
+          service.retrieveProduct(id, { relations: ["images"] })
+        const urls = (product: { images: { url: string; rank: number }[] }) =>
+          [...product.images]
+            .sort((a, b) => a.rank - b.rank)
+            .map((image) => image.url)
+
+        it("comes back after the main photo is deleted and new photos are saved", async () => {
+          const [product] = await service.createProducts([
+            buildProductAndRelationsData({ images: photos }),
+          ])
+
+          // The admin's product page deletes the main photo with thumbnail "".
+          await service.updateProducts(product.id, {
+            images: [{ url: "photo-2" }],
+            thumbnail: "",
+          })
+          expect((await retrieve(product.id)).thumbnail).toEqual("photo-2")
+
+          await service.updateProducts(product.id, { images: [] })
+          expect((await retrieve(product.id)).thumbnail).toBeNull()
+
+          // The photo editor saves new photos with none marked as main.
+          await service.updateProducts(product.id, {
+            images: [{ url: "new-1" }, { url: "new-2" }],
+            thumbnail: null,
+          })
+          const after = await retrieve(product.id)
+          expect(after.thumbnail).toEqual("new-1")
+          expect(urls(after as any)).toEqual(["new-1", "new-2"])
+        })
+
+        it("moves a chosen main photo to the front", async () => {
+          const [product] = await service.createProducts([
+            buildProductAndRelationsData({
+              images: photos,
+              thumbnail: "photo-2",
+            }),
+          ])
+          let stored = await retrieve(product.id)
+          expect(stored.thumbnail).toEqual("photo-2")
+          expect(urls(stored as any)).toEqual(["photo-2", "photo-1"])
+
+          await service.updateProducts(product.id, { thumbnail: "photo-1" })
+          stored = await retrieve(product.id)
+          expect(stored.thumbnail).toEqual("photo-1")
+          expect(urls(stored as any)).toEqual(["photo-1", "photo-2"])
+          expect(stored.images).toHaveLength(2)
+        })
+
+        it("follows the first photo when photos are reordered", async () => {
+          const [product] = await service.createProducts([
+            buildProductAndRelationsData({ images: photos }),
+          ])
+          const stored = await retrieve(product.id)
+
+          await service.updateProducts(product.id, {
+            images: [...stored.images]
+              .sort((a, b) => b.rank - a.rank)
+              .map(({ id, url }) => ({ id, url })),
+          })
+          expect((await retrieve(product.id)).thumbnail).toEqual("photo-2")
+        })
+      })
+
       describe("images", function () {
         it("should create images with correct rank", async () => {
           const images = [
