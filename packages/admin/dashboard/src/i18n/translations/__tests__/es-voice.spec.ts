@@ -156,6 +156,8 @@ const KEPT_CAPITALS: Record<string, string[]> = {
   "promotions.errors.promotionTabError": ["Promoción"],
   // medusa#30's one-version note names the Manage menu.
   "products.options.oneVersion": ["Gestionar"],
+  // The product page's offer note links to the Ofertas screen.
+  "products.page.variants.seeOffers": ["Ofertas"],
 }
 
 /** A capitalized word that follows another word, not a sentence's end. */
@@ -207,6 +209,8 @@ describe("es.json", () => {
 
   test("names every promotion allocation in Spanish", () => {
     expect(es.promotions.form.allocation.once.title).toBe("Una vez")
-    expect(es.promotions.fields.allocationTooltip).not.toMatch(/\b(Each|Once)\b/)
+    expect(es.promotions.fields.allocationTooltip).not.toMatch(
+      /\b(Each|Once)\b/
+    )
   })
 })

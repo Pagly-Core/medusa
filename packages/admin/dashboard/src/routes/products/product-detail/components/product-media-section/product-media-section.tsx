@@ -1,4 +1,4 @@
-import { PencilSquare, ThumbnailBadge } from "@medusajs/icons"
+import { PencilSquare, Plus } from "@medusajs/icons"
 import {
   Badge,
   Button,
@@ -6,21 +6,17 @@ import {
   CommandBar,
   Container,
   Heading,
+  IconButton,
   Text,
-  Tooltip,
   clx,
   usePrompt,
 } from "@medusajs/ui"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
-import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useUpdateProduct } from "../../../../../hooks/api/products"
 import { useMediaAlts } from "../../../../../lib/media-alt"
-import {
-  imagesByRank,
-  photosAfterDelete,
-} from "../../../common/images-by-rank"
+import { imagesByRank, photosAfterDelete } from "../../../common/images-by-rank"
 import { HttpTypes } from "@medusajs/types"
 
 type ProductMedisaSectionProps = {
@@ -91,24 +87,24 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
 
   return (
     <Container className="divide-y p-0">
+      {/* Pagly: Fotos, a row of tiles: the first is the main one, then one that adds more. */}
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">{t("products.media.label")}</Heading>
-        <ActionMenu
-          groups={[
-            {
-              actions: [
-                {
-                  label: t("actions.editImages"),
-                  to: "media?view=edit",
-                  icon: <PencilSquare />,
-                },
-              ],
-            },
-          ]}
-        />
+        <Heading level="h2">{t("products.page.photos.title")}</Heading>
+        <div className="flex items-center gap-x-2">
+          {media.length > 0 && (
+            <Text size="small" className="text-ui-fg-muted tabular-nums">
+              {media.length}
+            </Text>
+          )}
+          <IconButton size="small" variant="transparent" asChild>
+            <Link to="media?view=edit" aria-label={t("actions.editImages")}>
+              <PencilSquare />
+            </Link>
+          </IconButton>
+        </div>
       </div>
       {media.length > 0 ? (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-4 px-6 py-4">
+        <div className="grid grid-cols-4 gap-2 px-6 py-4 sm:grid-cols-[repeat(auto-fill,96px)]">
           {media.map((i, index) => {
             const isSelected = selection[i.id]
 
@@ -131,10 +127,10 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
                   />
                 </div>
                 {i.isThumbnail && (
-                  <div className="absolute left-2 top-2">
-                    <Tooltip content={t("fields.thumbnail")}>
-                      <ThumbnailBadge />
-                    </Tooltip>
+                  <div className="pointer-events-none absolute bottom-1.5 left-1.5 z-[1]">
+                    <Badge size="2xsmall" color="grey">
+                      {t("products.page.photos.main")}
+                    </Badge>
                   </div>
                 )}
                 <Link to={`media`} state={{ curr: index }}>
@@ -145,7 +141,7 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
                   />
                 </Link>
                 {altEnabled && i.url in alts && !alts[i.url]?.trim() && (
-                  <div className="pointer-events-none absolute bottom-2 left-2">
+                  <div className="pointer-events-none absolute left-1.5 top-1.5">
                     <Badge size="2xsmall" color="grey">
                       {t("products.media.altMissing")}
                     </Badge>
@@ -154,25 +150,27 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
               </div>
             )
           })}
+          <Link
+            to="media?view=edit"
+            className="border-ui-border-strong text-ui-fg-subtle hover:bg-ui-bg-subtle-hover txt-compact-small-plus focus-visible:shadow-borders-focus flex aspect-square flex-col items-center justify-center gap-1 rounded-[8px] border border-dashed outline-none"
+          >
+            <Plus />
+            {t("products.page.photos.add")}
+          </Link>
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-y-4 pb-8 pt-6">
-          <div className="flex flex-col items-center">
-            <Text
-              size="small"
-              leading="compact"
-              weight="plus"
-              className="text-ui-fg-subtle"
-            >
-              {t("products.media.emptyState.header")}
+        <div className="border-ui-border-strong mx-6 my-4 flex flex-col gap-3 rounded-lg border border-dashed px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col">
+            <Text size="small" leading="compact" weight="plus">
+              {t("products.page.photos.empty.title")}
             </Text>
-            <Text size="small" className="text-ui-fg-muted">
-              {t("products.media.emptyState.description")}
+            <Text size="small" className="text-ui-fg-subtle">
+              {t("products.page.photos.empty.detail")}
             </Text>
           </div>
           <Button size="small" variant="secondary" asChild>
             <Link to="media?view=edit">
-              {t("products.media.emptyState.action")}
+              {t("products.page.photos.empty.action")}
             </Link>
           </Button>
         </div>

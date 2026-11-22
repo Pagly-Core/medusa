@@ -96,7 +96,7 @@ export const ProductAttributesForm = ({
                 render={({ field: { onChange, value, ...field } }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>{t("fields.width")}</Form.Label>
+                      <Form.Label>{t("products.page.shipping.widthCm")}</Form.Label>
                       <Form.Control>
                         <Input
                           type="number"
@@ -126,7 +126,7 @@ export const ProductAttributesForm = ({
                 render={({ field: { onChange, value, ...field } }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>{t("fields.height")}</Form.Label>
+                      <Form.Label>{t("products.page.shipping.heightCm")}</Form.Label>
                       <Form.Control>
                         <Input
                           type="number"
@@ -156,7 +156,7 @@ export const ProductAttributesForm = ({
                 render={({ field: { onChange, value, ...field } }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>{t("fields.length")}</Form.Label>
+                      <Form.Label>{t("products.page.shipping.lengthCm")}</Form.Label>
                       <Form.Control>
                         <Input
                           type="number"
@@ -186,7 +186,7 @@ export const ProductAttributesForm = ({
                 render={({ field: { onChange, value, ...field } }) => {
                   return (
                     <Form.Item>
-                      <Form.Label>{t("fields.weight")}</Form.Label>
+                      <Form.Label>{t("products.page.shipping.weightGrams")}</Form.Label>
                       <Form.Control>
                         <Input
                           type="number"

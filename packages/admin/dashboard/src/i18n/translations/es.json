@@ -868,6 +868,144 @@
           "header": "No se pudo eliminar el producto"
         }
       }
+    },
+    "page": {
+      "summary": {
+        "range": "{{min}} – {{max}}",
+        "variants_one": "{{count}} variante",
+        "variants_other": "{{count}} variantes",
+        "stock": "{{count}} en stock",
+        "stockPlaces": "{{count}} en stock en {{places}} depósitos"
+      },
+      "header": {
+        "unpublish": "Pasar a borrador",
+        "more": "Más acciones"
+      },
+      "blockers": {
+        "title": "Para empezar a vender",
+        "count_one": "{{count}} cosa",
+        "count_other": "{{count}} cosas",
+        "noPrice": {
+          "title": "Sin precio",
+          "detail_one": "Una variante no tiene precio.",
+          "detail_other": "{{count}} variantes no tienen precio.",
+          "action": "Poner precios"
+        },
+        "noPhotos": {
+          "title": "Sin fotos",
+          "detail": "Sin fotos el producto casi no se vende.",
+          "action": "Agregar fotos"
+        },
+        "noStock": {
+          "title": "Sin stock",
+          "detail": "Ninguna variante tiene unidades cargadas.",
+          "action": "Cargar stock"
+        },
+        "someOut": {
+          "title_one": "{{names}} está sin stock",
+          "title_other": "{{names}} están sin stock",
+          "detail_one": "En la tienda se ve agotado.",
+          "detail_other": "En la tienda se ven agotados.",
+          "action": "Cargar stock"
+        },
+        "draft": {
+          "title": "Es un borrador",
+          "detail": "No se ve en la tienda hasta que lo publiques.",
+          "action": "Publicar"
+        },
+        "noChannel": {
+          "title": "No está en la tienda online",
+          "detail": "Está publicado, pero no en el canal de venta de la tienda.",
+          "action": "Agregarlo"
+        },
+        "unpublished": {
+          "title": "No está publicado",
+          "detail": "La tienda no lo muestra hasta que lo publiques.",
+          "action": "Publicar"
+        }
+      },
+      "photos": {
+        "title": "Fotos",
+        "main": "Principal",
+        "add": "Agregar",
+        "empty": {
+          "title": "Todavía no hay fotos",
+          "detail": "La primera es la que se ve en la tienda y en los listados.",
+          "action": "Agregar fotos"
+        },
+        "more": "Acciones de fotos"
+      },
+      "variants": {
+        "title": "Variantes y precios",
+        "titleOne": "Precio y stock",
+        "columns": {
+          "variant": "Variante",
+          "sku": "SKU",
+          "price": "Precio",
+          "stock": "Stock"
+        },
+        "editPrices": "Editar precios",
+        "editPrice": "Editar precio",
+        "addVariant": "Agregar variante",
+        "editOptions": "Editar opciones",
+        "noPrice": "Sin precio",
+        "inStock": "{{count}} en stock",
+        "outOfStock": "Sin stock",
+        "someOut": "{{count}} sin stock",
+        "untracked": "Sin control de stock",
+        "backorder": "Se vende sin stock",
+        "groupCount_one": "{{count}} variante",
+        "groupCount_other": "{{count}} variantes",
+        "sale": "En oferta: {{name}}.",
+        "saleUntil": "En oferta: {{name}}, hasta el {{date}}.",
+        "seeOffers": "Ver en Ofertas",
+        "price": "Precio",
+        "stock": "Stock",
+        "sku": "SKU",
+        "variants": "Variantes",
+        "oneVersionHint": "¿Viene en colores o talles?",
+        "addOptions": "Agregar opciones",
+        "more": "Más: stock, variantes y opciones",
+        "search": "Buscar variante o SKU"
+      },
+      "description": {
+        "title": "Descripción",
+        "edit": "Editar descripción",
+        "empty": "Sin descripción. Contá de qué está hecho, cómo queda y cómo se cuida."
+      },
+      "where": {
+        "title": "Dónde se vende",
+        "store": "Tienda online",
+        "notInStore": "Fuera de la tienda",
+        "channels": "Canales de venta",
+        "more": "Acciones de dónde se vende"
+      },
+      "organization": {
+        "title": "Organización",
+        "edit": "Editar organización",
+        "empty": "Sin categoría, tipo ni etiquetas.",
+        "category": "Categoría"
+      },
+      "shipping": {
+        "title": "Envío",
+        "edit": "Editar peso y medidas",
+        "weight": "Peso",
+        "sizes": "Medidas",
+        "sizesValue": "{{length}} × {{width}} × {{height}} cm",
+        "empty": "Sin peso ni medidas. Cargalos para cotizar el envío justo.",
+        "profile": "Perfil de envío",
+        "more": "Acciones de envío",
+        "widthCm": "Ancho (cm)",
+        "heightCm": "Alto (cm)",
+        "lengthCm": "Largo (cm)",
+        "weightGrams": "Peso (g)"
+      },
+      "selling": {
+        "title": "Venta",
+        "discounts": "Descuentos",
+        "discountsHint": "Le aplican cupones y promociones",
+        "discountsLabel": "Acepta descuentos"
+      }
     }
   },
   "collections": {

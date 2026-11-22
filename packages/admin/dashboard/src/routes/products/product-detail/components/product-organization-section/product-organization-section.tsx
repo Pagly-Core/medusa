@@ -1,97 +1,88 @@
-import { PencilSquare } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
-import { Badge, Container, Heading, Tooltip } from "@medusajs/ui"
+import { Badge, Container } from "@medusajs/ui"
+import { ComponentType } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
-import { ActionMenu } from "../../../../../components/common/action-menu"
-import { SectionRow } from "../../../../../components/common/section"
+
 import { useExtension } from "../../../../../providers/extension-provider"
+import { CardHeading, CardNote, CardRow } from "../card-parts"
 
-type ProductOrganizationSectionProps = {
-  product: HttpTypes.AdminProduct
-}
+/** What a plugin part in `product.details.organization` receives: it renders rows. */
+type OrganizationPartProps = { data: HttpTypes.AdminProduct }
 
+/**
+ * Pagly: Organización. The plugin rows first (collections), then category,
+ * type and tags, each only when it has something; one pencil edits them.
+ */
 export const ProductOrganizationSection = ({
   product,
-}: ProductOrganizationSectionProps) => {
+}: {
+  product: HttpTypes.AdminProduct
+}) => {
   const { t } = useTranslation()
-  const { getDisplays } = useExtension()
+  const { getWidgets } = useExtension()
+  const parts = getWidgets(
+    "product.details.organization" as any
+  ) as ComponentType<OrganizationPartProps>[]
+
+  const categories = product.categories ?? []
+  const tags = product.tags ?? []
+  const empty = !categories.length && !product.type && !tags.length
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">{t("products.organization.header")}</Heading>
-        <ActionMenu
-          groups={[
-            {
-              actions: [
-                {
-                  label: t("actions.edit"),
-                  to: "organization",
-                  icon: <PencilSquare />,
-                },
-              ],
-            },
-          ]}
-        />
-      </div>
-
-      <SectionRow
-        title={t("fields.tags")}
-        value={
-          product.tags?.length
-            ? product.tags.map((tag) => (
-                <OrganizationTag
-                  key={tag.id}
-                  label={tag.value}
-                  to={`/product-tags/${tag.id}`}
-                />
-              ))
-            : undefined
-        }
+      <CardHeading
+        title={t("products.page.organization.title")}
+        editTo="organization"
+        editLabel={t("products.page.organization.edit")}
       />
-      <SectionRow
-        title={t("fields.type")}
-        value={
-          product.type ? (
-            <OrganizationTag
-              label={product.type.value}
-              to={`/product-types/${product.type_id}`}
-            />
-          ) : undefined
-        }
-      />
-
-      {/* Pagly: no collection row. The collection-sources plugin shows a product's collections. */}
-
-      <SectionRow
-        title={t("fields.categories")}
-        value={
-          product.categories?.length
-            ? product.categories.map((pcat) => (
-                <OrganizationTag
-                  key={pcat.id}
-                  label={pcat.name}
-                  to={`/categories/${pcat.id}`}
-                />
-              ))
-            : undefined
-        }
-      />
-
-      {getDisplays("product", "organize").map((Component, i) => {
-        return <Component key={i} data={product} />
-      })}
+      {parts.map((Part, index) => (
+        <Part key={index} data={product} />
+      ))}
+      {categories.length > 0 && (
+        <CardRow label={t("products.page.organization.category")} top>
+          <Chips>
+            {categories.map((category) => (
+              <Chip key={category.id} to={`/categories/${category.id}`}>
+                {category.name}
+              </Chip>
+            ))}
+          </Chips>
+        </CardRow>
+      )}
+      {product.type && (
+        <CardRow label={t("fields.type")}>
+          <Chip to={`/product-types/${product.type_id}`}>
+            {product.type.value}
+          </Chip>
+        </CardRow>
+      )}
+      {tags.length > 0 && (
+        <CardRow label={t("fields.tags")} top>
+          <Chips>
+            {tags.map((tag) => (
+              <Chip key={tag.id} to={`/product-tags/${tag.id}`}>
+                {tag.value}
+              </Chip>
+            ))}
+          </Chips>
+        </CardRow>
+      )}
+      {empty && <CardNote>{t("products.page.organization.empty")}</CardNote>}
     </Container>
   )
 }
 
-const OrganizationTag = ({ label, to }: { label: string; to: string }) => {
-  return (
-    <Tooltip content={label}>
-      <Badge size="2xsmall" className="block w-fit truncate" asChild>
-        <Link to={to}>{label}</Link>
-      </Badge>
-    </Tooltip>
-  )
-}
+const Chips = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex flex-wrap gap-1.5">{children}</div>
+)
+
+const Chip = ({ to, children }: { to: string; children: React.ReactNode }) => (
+  <Badge
+    size="2xsmall"
+    className="transition-fg hover:bg-ui-bg-component-hover"
+    asChild
+  >
+    <Link to={to}>{children}</Link>
+  </Badge>
+)

@@ -3207,6 +3207,575 @@
           },
           "required": ["delete"],
           "additionalProperties": false
+        },
+        "page": {
+          "type": "object",
+          "properties": {
+            "summary": {
+              "type": "object",
+              "properties": {
+                "range": {
+                  "type": "string"
+                },
+                "variants_zero": {
+                  "type": "string"
+                },
+                "variants_one": {
+                  "type": "string"
+                },
+                "variants_two": {
+                  "type": "string"
+                },
+                "variants_few": {
+                  "type": "string"
+                },
+                "variants_many": {
+                  "type": "string"
+                },
+                "variants_other": {
+                  "type": "string"
+                },
+                "stock": {
+                  "type": "string"
+                },
+                "stockPlaces": {
+                  "type": "string"
+                }
+              },
+              "required": ["range", "stock", "stockPlaces"],
+              "additionalProperties": false
+            },
+            "header": {
+              "type": "object",
+              "properties": {
+                "unpublish": {
+                  "type": "string"
+                },
+                "more": {
+                  "type": "string"
+                }
+              },
+              "required": ["unpublish", "more"],
+              "additionalProperties": false
+            },
+            "blockers": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "count_zero": {
+                  "type": "string"
+                },
+                "count_one": {
+                  "type": "string"
+                },
+                "count_two": {
+                  "type": "string"
+                },
+                "count_few": {
+                  "type": "string"
+                },
+                "count_many": {
+                  "type": "string"
+                },
+                "count_other": {
+                  "type": "string"
+                },
+                "noPrice": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "detail_zero": {
+                      "type": "string"
+                    },
+                    "detail_one": {
+                      "type": "string"
+                    },
+                    "detail_two": {
+                      "type": "string"
+                    },
+                    "detail_few": {
+                      "type": "string"
+                    },
+                    "detail_many": {
+                      "type": "string"
+                    },
+                    "detail_other": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "action"],
+                  "additionalProperties": false
+                },
+                "noPhotos": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "detail", "action"],
+                  "additionalProperties": false
+                },
+                "noStock": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "detail", "action"],
+                  "additionalProperties": false
+                },
+                "someOut": {
+                  "type": "object",
+                  "properties": {
+                    "title_zero": {
+                      "type": "string"
+                    },
+                    "title_one": {
+                      "type": "string"
+                    },
+                    "title_two": {
+                      "type": "string"
+                    },
+                    "title_few": {
+                      "type": "string"
+                    },
+                    "title_many": {
+                      "type": "string"
+                    },
+                    "title_other": {
+                      "type": "string"
+                    },
+                    "detail_zero": {
+                      "type": "string"
+                    },
+                    "detail_one": {
+                      "type": "string"
+                    },
+                    "detail_two": {
+                      "type": "string"
+                    },
+                    "detail_few": {
+                      "type": "string"
+                    },
+                    "detail_many": {
+                      "type": "string"
+                    },
+                    "detail_other": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["action"],
+                  "additionalProperties": false
+                },
+                "draft": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "detail", "action"],
+                  "additionalProperties": false
+                },
+                "noChannel": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "detail", "action"],
+                  "additionalProperties": false
+                },
+                "unpublished": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "detail", "action"],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "title",
+                "noPrice",
+                "noPhotos",
+                "noStock",
+                "someOut",
+                "draft",
+                "noChannel",
+                "unpublished"
+              ],
+              "additionalProperties": false
+            },
+            "photos": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "main": {
+                  "type": "string"
+                },
+                "add": {
+                  "type": "string"
+                },
+                "empty": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "detail", "action"],
+                  "additionalProperties": false
+                },
+                "more": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "main", "add", "empty", "more"],
+              "additionalProperties": false
+            },
+            "variants": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "titleOne": {
+                  "type": "string"
+                },
+                "columns": {
+                  "type": "object",
+                  "properties": {
+                    "variant": {
+                      "type": "string"
+                    },
+                    "sku": {
+                      "type": "string"
+                    },
+                    "price": {
+                      "type": "string"
+                    },
+                    "stock": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["variant", "sku", "price", "stock"],
+                  "additionalProperties": false
+                },
+                "editPrices": {
+                  "type": "string"
+                },
+                "editPrice": {
+                  "type": "string"
+                },
+                "addVariant": {
+                  "type": "string"
+                },
+                "editOptions": {
+                  "type": "string"
+                },
+                "noPrice": {
+                  "type": "string"
+                },
+                "inStock": {
+                  "type": "string"
+                },
+                "outOfStock": {
+                  "type": "string"
+                },
+                "someOut": {
+                  "type": "string"
+                },
+                "untracked": {
+                  "type": "string"
+                },
+                "backorder": {
+                  "type": "string"
+                },
+                "groupCount_zero": {
+                  "type": "string"
+                },
+                "groupCount_one": {
+                  "type": "string"
+                },
+                "groupCount_two": {
+                  "type": "string"
+                },
+                "groupCount_few": {
+                  "type": "string"
+                },
+                "groupCount_many": {
+                  "type": "string"
+                },
+                "groupCount_other": {
+                  "type": "string"
+                },
+                "sale": {
+                  "type": "string"
+                },
+                "saleUntil": {
+                  "type": "string"
+                },
+                "seeOffers": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "string"
+                },
+                "stock": {
+                  "type": "string"
+                },
+                "sku": {
+                  "type": "string"
+                },
+                "variants": {
+                  "type": "string"
+                },
+                "oneVersionHint": {
+                  "type": "string"
+                },
+                "addOptions": {
+                  "type": "string"
+                },
+                "more": {
+                  "type": "string"
+                },
+                "search": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "titleOne",
+                "columns",
+                "editPrices",
+                "editPrice",
+                "addVariant",
+                "editOptions",
+                "noPrice",
+                "inStock",
+                "outOfStock",
+                "someOut",
+                "untracked",
+                "backorder",
+                "sale",
+                "saleUntil",
+                "seeOffers",
+                "price",
+                "stock",
+                "sku",
+                "variants",
+                "oneVersionHint",
+                "addOptions",
+                "more",
+                "search"
+              ],
+              "additionalProperties": false
+            },
+            "description": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "edit": {
+                  "type": "string"
+                },
+                "empty": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "edit", "empty"],
+              "additionalProperties": false
+            },
+            "where": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "store": {
+                  "type": "string"
+                },
+                "notInStore": {
+                  "type": "string"
+                },
+                "channels": {
+                  "type": "string"
+                },
+                "more": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "store", "notInStore", "channels", "more"],
+              "additionalProperties": false
+            },
+            "organization": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "edit": {
+                  "type": "string"
+                },
+                "empty": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "edit", "empty", "category"],
+              "additionalProperties": false
+            },
+            "shipping": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "edit": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "string"
+                },
+                "sizes": {
+                  "type": "string"
+                },
+                "sizesValue": {
+                  "type": "string"
+                },
+                "empty": {
+                  "type": "string"
+                },
+                "profile": {
+                  "type": "string"
+                },
+                "more": {
+                  "type": "string"
+                },
+                "widthCm": {
+                  "type": "string"
+                },
+                "heightCm": {
+                  "type": "string"
+                },
+                "lengthCm": {
+                  "type": "string"
+                },
+                "weightGrams": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "edit",
+                "weight",
+                "sizes",
+                "sizesValue",
+                "empty",
+                "profile",
+                "more",
+                "widthCm",
+                "heightCm",
+                "lengthCm",
+                "weightGrams"
+              ],
+              "additionalProperties": false
+            },
+            "selling": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "discounts": {
+                  "type": "string"
+                },
+                "discountsHint": {
+                  "type": "string"
+                },
+                "discountsLabel": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "discounts",
+                "discountsHint",
+                "discountsLabel"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "summary",
+            "header",
+            "blockers",
+            "photos",
+            "variants",
+            "description",
+            "where",
+            "organization",
+            "shipping",
+            "selling"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -3235,7 +3804,8 @@
         "organization",
         "stock",
         "shippingProfile",
-        "toasts"
+        "toasts",
+        "page"
       ],
       "additionalProperties": false
     },

@@ -68,6 +68,23 @@ const PRODUCT_INJECTION_ZONES = [
   "product.details.side",
 ] as const
 
+// Pagly: the places on the product page a plugin part goes. Each one is a
+// registry: a part names its place and the page renders it there, never at
+// the end of the page. `header` parts sit beside the store link, `where`,
+// `organization` and `shipping` parts are rows of those cards, `selling` parts
+// are Venta's rows and also get `coverStock(cover)`, which a part selling
+// without stock (a preorder) uses; `main` and `side` parts are whole cards at
+// the end of each column (`product.details.side` keeps its old meaning). See
+// PAGLY-CORE-DIVERGENCE.md.
+const PAGLY_PRODUCT_PART_INJECTION_ZONES = [
+  "product.details.header",
+  "product.details.where",
+  "product.details.organization",
+  "product.details.shipping",
+  "product.details.selling",
+  "product.details.main",
+] as const
+
 const LEGACY_PRODUCT_VARIANT_INJECTION_ZONES = [
   "product_variant.details.before",
   "product_variant.details.after",
@@ -459,6 +476,7 @@ export const INJECTION_ZONES = [
   ...CUSTOMER_GROUP_INJECTION_ZONES,
   ...LEGACY_PRODUCT_INJECTION_ZONES,
   ...PRODUCT_INJECTION_ZONES,
+  ...PAGLY_PRODUCT_PART_INJECTION_ZONES,
   ...LEGACY_PRODUCT_VARIANT_INJECTION_ZONES,
   ...PRODUCT_VARIANT_INJECTION_ZONES,
   ...LEGACY_PRODUCT_COLLECTION_INJECTION_ZONES,

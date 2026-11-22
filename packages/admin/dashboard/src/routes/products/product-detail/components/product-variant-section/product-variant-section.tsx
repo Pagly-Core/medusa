@@ -3,414 +3,735 @@ import {
   Component,
   GlobeEurope,
   PencilSquare,
+  Plus,
   Trash,
+  TriangleRightMini,
 } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import {
-  Badge,
+  Button,
   Container,
-  createDataTableColumnHelper,
-  createDataTableCommandHelper,
-  createDataTableFilterHelper,
-  DataTableAction,
-  Tooltip,
+  Heading,
+  IconButton,
+  Input,
+  Text,
+  clx,
   usePrompt,
 } from "@medusajs/ui"
-import { keepPreviousData } from "@tanstack/react-query"
-import { useCallback, useMemo } from "react"
+import { ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { Link, useNavigate } from "react-router-dom"
 
-import { CellContext } from "@tanstack/react-table"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { DataTable } from "../../../../../components/data-table"
-import { useDataTableDateFilters } from "../../../../../components/data-table/helpers/general/use-data-table-date-filters"
-import { VariantInventoryCell } from "../../../../../components/table/table-cells/product/variant-inventory-cell"
-import {
-  useDeleteVariantLazy,
-  useProductVariants,
-} from "../../../../../hooks/api/products"
-import { useQueryParams } from "../../../../../hooks/use-query-params"
-import {
-  getVariantTitle,
-  isDefaultOption,
-} from "../../../../../lib/default-names"
-import { PRODUCT_VARIANT_IDS_KEY } from "../../../common/constants"
-import { Thumbnail } from "../../../../../components/common/thumbnail"
+import { ActionMenu } from "../../../../../components/common/action-menu"
+import { useDeleteVariantLazy } from "../../../../../hooks/api/products"
+import { getVariantTitle } from "../../../../../lib/default-names"
+import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
 import { useFeatureFlag } from "../../../../../providers/feature-flag-provider"
+import {
+  FactVariant,
+  SalePrice,
+  groupVariants,
+  groupsStartOpen,
+  isCovered,
+  isOutOfStock,
+  isTracked,
+  priceRange,
+  realOptions,
+  shopperPrice,
+  variantName,
+} from "../../product-facts"
+import { ProductPageFacts } from "../../use-product-page-facts"
 
-type ProductVariantSectionProps = {
+type Props = {
   product: HttpTypes.AdminProduct
+  facts: ProductPageFacts
 }
 
-const PAGE_SIZE = 10
-const PREFIX = "pv"
+/** A row's cells by area: one line on a wide screen, name/SKU over price/stock on a phone. */
+/** Past this many variants, the card offers a search by name or SKU. */
+const SEARCH_FROM = 20
 
-export const ProductVariantSection = ({
-  product,
-}: ProductVariantSectionProps) => {
+const ROW =
+  "grid items-center gap-x-3 px-6 py-2.5 grid-cols-[minmax(0,1fr)_auto_28px] [grid-template-areas:'name_price_act'_'sku_stock_act'] md:grid-cols-[minmax(0,1fr)_120px_140px_132px_28px] md:[grid-template-areas:'name_sku_price_stock_act']"
+
+/**
+ * Pagly: Variantes y precios. The options sit over the rows they make, each
+ * row says its price and its stock, and with two options or more the rows
+ * group by the first one. A product in one version shows its price, stock and
+ * SKU as rows instead.
+ */
+export const ProductVariantSection = ({ product, facts }: Props) => {
   const { t } = useTranslation()
-  const isTranslationsEnabled = useFeatureFlag("translation")
+  const options = realOptions(product)
 
-  const { q, order, offset, allow_backorder, manage_inventory } =
-    useQueryParams(
-      ["q", "order", "offset", "manage_inventory", "allow_backorder"],
-      PREFIX
-    )
-
-  const columns = useColumns(product)
-  const filters = useFilters()
-  const commands = useCommands()
-
-  const { variants, count, isPending, isError, error } = useProductVariants(
-    product.id,
-    {
-      q,
-      order: order ? order : "variant_rank",
-      offset: offset ? parseInt(offset) : undefined,
-      limit: PAGE_SIZE,
-      allow_backorder: allow_backorder
-        ? JSON.parse(allow_backorder)
-        : undefined,
-      manage_inventory: manage_inventory
-        ? JSON.parse(manage_inventory)
-        : undefined,
-      fields:
-        "title,sku,thumbnail,*options,created_at,*inventory_items.inventory.location_levels,inventory_quantity,manage_inventory",
-    },
-    {
-      placeholderData: keepPreviousData,
-    }
-  )
-
-  const translationParams = new URLSearchParams()
-  variants?.forEach((variant) => {
-    translationParams.append("reference_id", variant.id)
-  })
-
-  if (isError) {
-    throw error
+  if (!options.length && facts.variants.length <= 1) {
+    return <OneVersion product={product} facts={facts} />
   }
+
+  const [query, setQuery] = useState("")
+  const searchable = facts.variants.length > SEARCH_FROM
+  const needle = query.trim().toLowerCase()
+  const shown = needle
+    ? facts.variants.filter((variant) =>
+        [variantName(product, variant), variant.sku ?? ""].some((text) =>
+          text.toLowerCase().includes(needle)
+        )
+      )
+    : facts.variants
+  const groups = groupVariants(product, shown)
+  const offers = [
+    ...new Map(
+      [...facts.sales.values()].map((sale) => [sale.offer, sale])
+    ).values(),
+  ]
 
   return (
     <Container className="divide-y p-0">
-      <DataTable
-        data={variants}
-        columns={columns}
-        filters={filters}
-        rowCount={count}
-        getRowId={(row) => row.id}
-        rowHref={(row) => `/products/${product.id}/variants/${row.id}`}
-        pageSize={PAGE_SIZE}
-        isLoading={isPending}
-        heading={t("products.variants.header")}
-        headingLevel="h2"
-        emptyState={{
-          empty: {
-            heading: t("products.variants.empty.heading"),
-            description: t("products.variants.empty.description"),
-          },
-          filtered: {
-            heading: t("products.variants.filtered.heading"),
-            description: t("products.variants.filtered.description"),
-          },
-        }}
-        action={{
-          label: t("actions.create"),
-          to: `variants/create`,
-        }}
-        actionMenu={{
-          groups: [
-            {
-              actions: [
-                {
-                  label: t("products.editPrices"),
-                  to: `prices`,
-                  icon: <PencilSquare />,
-                },
-                {
-                  label: t("inventory.stock.action"),
-                  to: `stock`,
-                  icon: <Buildings />,
-                },
-                ...(isTranslationsEnabled
-                  ? [
-                      {
-                        icon: <GlobeEurope />,
-                        label: t("translations.actions.manage"),
-                        to: `/settings/translations/edit?reference=product_variant&${translationParams.toString()}`,
-                      },
-                    ]
-                  : []),
-              ],
-            },
-          ],
-        }}
-        commands={commands}
-        prefix={PREFIX}
-      />
+      <div className="flex flex-col gap-y-1 px-6 py-4">
+        <div className="flex items-center justify-between gap-x-3">
+          <Heading level="h2">{t("products.page.variants.title")}</Heading>
+          <CardTools
+            product={product}
+            label={t("products.page.variants.editPrices")}
+          />
+        </div>
+        <div className="text-ui-fg-subtle flex flex-wrap gap-x-4 gap-y-0.5">
+          {options.map((option) => (
+            <Text key={option.id} size="small" leading="compact" asChild>
+              <span>
+                <span className="text-ui-fg-base font-medium">{`${option.title}:`}</span>{" "}
+                <span>
+                  {(option.values ?? []).map((v) => v.value).join(", ")}
+                </span>
+              </span>
+            </Text>
+          ))}
+        </div>
+        {offers.length > 0 && <SaleNote offers={offers} />}
+        {searchable && (
+          <Input
+            type="search"
+            size="small"
+            className="mt-2 md:max-w-[280px]"
+            aria-label={t("products.page.variants.search")}
+            placeholder={t("products.page.variants.search")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        )}
+      </div>
+      <div className="divide-y">
+        <div
+          className={clx(
+            ROW,
+            "text-ui-fg-subtle bg-ui-bg-subtle hidden md:grid"
+          )}
+        >
+          <HeadCell area="name">
+            {t("products.page.variants.columns.variant")}
+          </HeadCell>
+          <HeadCell area="sku">
+            {t("products.page.variants.columns.sku")}
+          </HeadCell>
+          <HeadCell area="price" end>
+            {t("products.page.variants.columns.price")}
+          </HeadCell>
+          <HeadCell area="stock" end>
+            {t("products.page.variants.columns.stock")}
+          </HeadCell>
+        </div>
+        {groups
+          ? groups.map((group) => (
+              <VariantGroup
+                key={`${group.value}-${needle}`}
+                product={product}
+                facts={facts}
+                value={group.value}
+                variants={group.variants}
+                startOpen={!!needle || groupsStartOpen(facts.variants)}
+              />
+            ))
+          : shown.map((variant) => (
+              <VariantRow
+                key={variant.id}
+                product={product}
+                facts={facts}
+                variant={variant}
+              />
+            ))}
+      </div>
     </Container>
   )
 }
 
-const columnHelper =
-  createDataTableColumnHelper<HttpTypes.AdminProductVariant>()
+const HeadCell = ({
+  area,
+  end,
+  children,
+}: {
+  area: string
+  end?: boolean
+  children: ReactNode
+}) => (
+  <Text
+    size="small"
+    leading="compact"
+    weight="plus"
+    className={clx(end && "text-right")}
+    style={{ gridArea: area }}
+  >
+    {children}
+  </Text>
+)
 
-const useColumns = (product: HttpTypes.AdminProduct) => {
+const Cell = ({
+  area,
+  end,
+  className,
+  children,
+}: {
+  area: string
+  end?: boolean
+  className?: string
+  children: ReactNode
+}) => (
+  <div
+    className={clx("min-w-0", end && "text-right", className)}
+    style={{ gridArea: area }}
+  >
+    {children}
+  </div>
+)
+
+const CardTools = ({
+  product,
+  label,
+}: {
+  product: HttpTypes.AdminProduct
+  label: string
+}) => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const { mutateAsync } = useDeleteVariantLazy(product.id)
-  const prompt = usePrompt()
-  const [searchParams] = useSearchParams()
+  const isTranslationsEnabled = useFeatureFlag("translation")
 
-  const tableSearchParams = useMemo(() => {
-    const filtered = new URLSearchParams()
-    for (const [key, value] of searchParams.entries()) {
-      if (key.startsWith(`${PREFIX}_`)) {
-        filtered.append(key, value)
-      }
-    }
-    return filtered
-  }, [searchParams])
-
-  const handleDelete = useCallback(
-    async (id: string, title: string) => {
-      const res = await prompt({
-        title: t("general.areYouSure"),
-        description: t("products.deleteVariantWarning", {
-          title,
-        }),
-        confirmText: t("actions.delete"),
-        cancelText: t("actions.cancel"),
-      })
-
-      if (!res) {
-        return
-      }
-
-      await mutateAsync({ variantId: id })
-    },
-    [mutateAsync, prompt, t]
-  )
-
-  const optionColumns = useMemo(() => {
-    if (!product?.options) {
-      return []
-    }
-
-    // Pagly: the create form's default option gets no column.
-    const options = product.options.filter((option) => !isDefaultOption(option))
-
-    return options.map((option) => {
-      return columnHelper.display({
-        id: option.id,
-        header: option.title,
-        cell: ({ row }) => {
-          const variantOpt = row.original.options?.find(
-            (opt) => opt.option_id === option.id
-          )
-
-          if (!variantOpt) {
-            return <span className="text-ui-fg-muted">-</span>
-          }
-
-          return (
-            <div className="flex items-center">
-              <Tooltip content={variantOpt.value}>
-                <Badge
-                  size="2xsmall"
-                  title={variantOpt.value}
-                  className="inline-flex min-w-[20px] max-w-[140px] items-center justify-center overflow-hidden truncate"
-                >
-                  {variantOpt.value}
-                </Badge>
-              </Tooltip>
-            </div>
-          )
-        },
-      })
-    })
-  }, [product])
-
-  const getActions = useCallback(
-    (ctx: CellContext<HttpTypes.AdminProductVariant, unknown>) => {
-      const variant = ctx.row.original as HttpTypes.AdminProductVariant & {
-        inventory_items: { inventory: HttpTypes.AdminInventoryItem }[]
-      }
-
-      const mainActions: DataTableAction<HttpTypes.AdminProductVariant>[] = [
-        {
-          icon: <PencilSquare />,
-          label: t("actions.edit"),
-          onClick: (row) => {
-            navigate(
-              `edit-variant?variant_id=${
-                row.row.original.id
-              }&${tableSearchParams.toString()}`,
-              {
-                state: {
-                  restore_params: tableSearchParams.toString(),
-                },
-              }
-            )
-          },
-        },
-        {
-          icon: <GlobeEurope />,
-          label: t("translations.actions.manage"),
-          onClick: () => {
-            navigate(
-              `/settings/translations/edit?reference=product_variant&reference_id=${variant.id}`
-            )
-          },
-        },
-      ]
-
-      const secondaryActions: DataTableAction<HttpTypes.AdminProductVariant>[] =
-        [
+  return (
+    <div className="flex items-center gap-x-1">
+      <IconButton size="small" variant="transparent" asChild>
+        <Link to="prices" aria-label={label}>
+          <PencilSquare />
+        </Link>
+      </IconButton>
+      <ActionMenu
+        groups={[
           {
-            icon: <Trash />,
-            label: t("actions.delete"),
-            // Pagly: a product's one version is named after the product.
-            onClick: () =>
-              handleDelete(
-                variant.id,
-                getVariantTitle(variant.title, product.title)!
-              ),
+            actions: [
+              {
+                label: t("inventory.stock.action"),
+                to: "stock",
+                icon: <Buildings />,
+              },
+              {
+                label: t("products.page.variants.addVariant"),
+                to: "variants/create",
+                icon: <Plus />,
+              },
+              {
+                label: t("products.page.variants.editOptions"),
+                to: "options/manage",
+                icon: <Component />,
+              },
+              ...(isTranslationsEnabled
+                ? [
+                    {
+                      label: t("translations.actions.manage"),
+                      to: `/settings/translations/edit?reference=product_variant&reference_id=${product.id}`,
+                      icon: <GlobeEurope />,
+                    },
+                  ]
+                : []),
+            ],
           },
-        ]
-
-      const inventoryItemsCount = variant.inventory_items?.length || 0
-
-      switch (inventoryItemsCount) {
-        case 0:
-          break
-        case 1: {
-          const inventoryItemLink = `/inventory/${
-            variant.inventory_items![0].inventory.id
-          }`
-
-          mainActions.push({
-            label: t("products.variant.inventory.actions.inventoryItems"),
-            onClick: () => {
-              navigate(inventoryItemLink)
-            },
-            icon: <Buildings />,
-          })
-          break
-        }
-        default: {
-          const ids = variant.inventory_items?.map((i) => i.inventory?.id)
-
-          if (!ids || ids.length === 0) {
-            break
-          }
-
-          const inventoryKitLink = `/inventory?${new URLSearchParams({
-            id: ids.join(","),
-          }).toString()}`
-
-          mainActions.push({
-            label: t("products.variant.inventory.actions.inventoryKit"),
-            onClick: () => {
-              navigate(inventoryKitLink)
-            },
-            icon: <Component />,
-          })
-        }
-      }
-
-      return [mainActions, secondaryActions]
-    },
-    [handleDelete, navigate, t, tableSearchParams, product.title]
+        ]}
+      />
+    </div>
   )
-
-  return useMemo(() => {
-    return [
-      columnHelper.accessor("thumbnail", {
-        header: "",
-        headerAlign: "center",
-        maxSize: 72,
-        cell: ({ row }) => {
-          return (
-            <div className="flex items-center pl-[1px]">
-              <Thumbnail src={row.original.thumbnail} />
-            </div>
-          )
-        },
-      }),
-      columnHelper.accessor("title", {
-        header: t("fields.title"),
-        // Pagly: a product's one version is named after the product.
-        cell: ({ getValue }) => getVariantTitle(getValue(), product.title),
-        enableSorting: true,
-        sortAscLabel: t("filters.sorting.alphabeticallyAsc"),
-        sortDescLabel: t("filters.sorting.alphabeticallyDesc"),
-      }),
-      columnHelper.accessor("sku", {
-        header: t("fields.sku"),
-        enableSorting: true,
-        sortAscLabel: t("filters.sorting.alphabeticallyAsc"),
-        sortDescLabel: t("filters.sorting.alphabeticallyDesc"),
-      }),
-      ...optionColumns,
-      columnHelper.display({
-        id: "inventory",
-        header: t("fields.inventory"),
-        cell: ({ row }) => <VariantInventoryCell variant={row.original} />,
-        maxSize: 250,
-      }),
-      columnHelper.action({
-        actions: getActions,
-      }),
-    ]
-  }, [t, optionColumns, getActions, product.title])
 }
 
-const filterHelper =
-  createDataTableFilterHelper<HttpTypes.AdminProductVariant>()
+/** The running offers on this product, each named once; the date when there's one offer with an end. */
+const SaleNote = ({ offers }: { offers: SalePrice[] }) => {
+  const { t, i18n } = useTranslation()
+  const { ListFormat } = Intl as unknown as {
+    ListFormat: new (locale: string, options: { type: "conjunction" }) => {
+      format: (items: string[]) => string
+    }
+  }
+  const name = new ListFormat(i18n.language, { type: "conjunction" }).format(
+    offers.map((offer) => offer.offer)
+  )
+  const endsAt = offers.length === 1 ? offers[0].ends_at : null
+  const date = endsAt
+    ? new Intl.DateTimeFormat(i18n.language, {
+        day: "numeric",
+        month: "short",
+      }).format(new Date(endsAt))
+    : null
 
-const useFilters = () => {
+  return (
+    <Text
+      size="small"
+      leading="compact"
+      className="text-ui-fg-subtle flex flex-wrap items-center gap-x-1.5"
+    >
+      <span aria-hidden className="bg-ui-tag-green-icon size-1.5 rounded-sm" />
+      <span>
+        {date
+          ? t("products.page.variants.saleUntil", { name, date })
+          : t("products.page.variants.sale", { name })}
+      </span>
+      <Link
+        to="/price-lists"
+        className="text-ui-fg-base underline underline-offset-2"
+      >
+        {t("products.page.variants.seeOffers")}
+      </Link>
+    </Text>
+  )
+}
+
+const usePrice = (facts: ProductPageFacts) => {
+  const money = (amount: number) =>
+    getLocaleAmount(amount, facts.currency, { wholeWithoutCents: true })
+
+  return (variant: FactVariant): ReactNode => {
+    const price = shopperPrice(variant, facts.currency, facts.sales)
+
+    if (!price) {
+      return null
+    }
+
+    if (price.was !== undefined) {
+      return (
+        <>
+          <span>{money(price.amount)}</span>{" "}
+          <s className="text-ui-fg-muted">{money(price.was)}</s>
+        </>
+      )
+    }
+
+    return money(price.amount)
+  }
+}
+
+const StockText = ({
+  facts,
+  variant,
+}: {
+  facts: ProductPageFacts
+  variant: FactVariant
+}) => {
   const { t } = useTranslation()
-  const dateFilters = useDataTableDateFilters()
+  const quantity = variant.inventory_quantity ?? 0
 
-  return useMemo(() => {
-    return [
-      filterHelper.accessor("allow_backorder", {
-        type: "radio",
-        label: t("fields.allowBackorder"),
-        options: [
-          { label: t("filters.radio.yes"), value: "true" },
-          { label: t("filters.radio.no"), value: "false" },
-        ],
-      }),
-      filterHelper.accessor("manage_inventory", {
-        type: "radio",
-        label: t("fields.manageInventory"),
-        options: [
-          { label: t("filters.radio.yes"), value: "true" },
-          { label: t("filters.radio.no"), value: "false" },
-        ],
-      }),
-      ...dateFilters,
-    ]
-  }, [t, dateFilters])
+  if (!isTracked(variant)) {
+    return (
+      <span className="text-ui-fg-muted">
+        {t("products.page.variants.untracked")}
+      </span>
+    )
+  }
+  if (quantity > 0) {
+    return (
+      <span>{t("products.page.variants.inStock", { count: quantity })}</span>
+    )
+  }
+  if (facts.cover && isCovered(variant, facts.cover)) {
+    return <Dotted tone="green">{facts.cover.row}</Dotted>
+  }
+  if (variant.allow_backorder) {
+    return (
+      <span className="text-ui-fg-subtle">
+        {t("products.page.variants.backorder")}
+      </span>
+    )
+  }
+  return <Dotted tone="orange">{t("products.page.variants.outOfStock")}</Dotted>
 }
 
-const commandHelper = createDataTableCommandHelper()
+const Dotted = ({
+  tone,
+  children,
+}: {
+  tone: "orange" | "green"
+  children: ReactNode
+}) => (
+  <span className="inline-flex items-center gap-x-1.5">
+    <span
+      aria-hidden
+      className={clx(
+        "size-1.5 shrink-0 rounded-sm",
+        tone === "orange" ? "bg-ui-tag-orange-icon" : "bg-ui-tag-green-icon"
+      )}
+    />
+    <span>{children}</span>
+  </span>
+)
 
-const useCommands = () => {
+const VariantRow = ({
+  product,
+  facts,
+  variant,
+  child,
+}: {
+  product: HttpTypes.AdminProduct
+  facts: ProductPageFacts
+  variant: FactVariant
+  child?: string
+}) => {
+  const { t } = useTranslation()
+  const price = usePrice(facts)(variant)
+  const name = child ?? variantName(product, variant)
+
+  return (
+    <div className={ROW}>
+      <Cell area="name" className={clx(child && "pl-8")}>
+        <Text
+          size="small"
+          leading="compact"
+          weight={child ? "regular" : "plus"}
+          className="truncate"
+        >
+          {name}
+        </Text>
+      </Cell>
+      <Cell area="sku" className={clx(child && "pl-8 md:pl-0")}>
+        <Text
+          size="small"
+          leading="compact"
+          className="text-ui-fg-muted truncate"
+        >
+          {variant.sku || "—"}
+        </Text>
+      </Cell>
+      <Cell area="price" end>
+        <Text size="small" leading="compact" className="tabular-nums">
+          {price ?? (
+            <span className="text-ui-fg-muted">
+              {t("products.page.variants.noPrice")}
+            </span>
+          )}
+        </Text>
+      </Cell>
+      <Cell area="stock" end>
+        <Text size="small" leading="compact" className="tabular-nums">
+          <StockText facts={facts} variant={variant} />
+        </Text>
+      </Cell>
+      <Cell area="act">
+        <VariantMenu product={product} variant={variant} />
+      </Cell>
+    </div>
+  )
+}
+
+const VariantGroup = ({
+  product,
+  facts,
+  value,
+  variants,
+  startOpen,
+}: {
+  product: HttpTypes.AdminProduct
+  facts: ProductPageFacts
+  value: string
+  variants: FactVariant[]
+  startOpen: boolean
+}) => {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(startOpen)
+  const range = priceRange(
+    variants.map(
+      (v) => shopperPrice(v, facts.currency, facts.sales)?.amount ?? null
+    )
+  )
+  const money = (amount: number) =>
+    getLocaleAmount(amount, facts.currency, { wholeWithoutCents: true })
+  const tracked = variants.filter(isTracked)
+  const total = tracked.reduce(
+    (sum, v) => sum + Math.max(0, v.inventory_quantity ?? 0),
+    0
+  )
+  const out = variants.filter(
+    (v) => isOutOfStock(v) && !isCovered(v, facts.cover)
+  ).length
+  const firstOption = realOptions(product)[0]
+  const second = (v: FactVariant) =>
+    variantName(product, {
+      ...v,
+      options: (v.options ?? []).filter((o) => o.option_id !== firstOption?.id),
+    })
+
+  return (
+    <>
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            setOpen(!open)
+          }
+        }}
+        className={clx(
+          ROW,
+          "hover:bg-ui-bg-subtle-hover focus-visible:shadow-borders-focus cursor-pointer outline-none"
+        )}
+      >
+        <Cell area="name" className="flex items-center gap-x-2">
+          <TriangleRightMini
+            className={clx(
+              "text-ui-fg-muted shrink-0 transition-transform",
+              open && "rotate-90"
+            )}
+          />
+          <Text
+            size="small"
+            leading="compact"
+            weight="plus"
+            className="truncate"
+          >
+            {value}
+          </Text>
+          <Text size="small" leading="compact" className="text-ui-fg-muted">
+            {t("products.page.variants.groupCount", { count: variants.length })}
+          </Text>
+        </Cell>
+        <Cell area="price" end>
+          <Text size="small" leading="compact" className="tabular-nums">
+            {range && facts.currency ? (
+              range.min === range.max ? (
+                money(range.min)
+              ) : (
+                t("products.page.summary.range", {
+                  min: money(range.min),
+                  max: money(range.max),
+                })
+              )
+            ) : (
+              <span className="text-ui-fg-muted">
+                {t("products.page.variants.noPrice")}
+              </span>
+            )}
+          </Text>
+        </Cell>
+        <Cell area="stock" end>
+          <Text size="small" leading="compact" className="tabular-nums">
+            {tracked.length ? (
+              t("products.page.variants.inStock", { count: total })
+            ) : (
+              <span className="text-ui-fg-muted">
+                {t("products.page.variants.untracked")}
+              </span>
+            )}
+          </Text>
+          {out > 0 && (
+            <Text size="xsmall" leading="compact" className="text-ui-fg-subtle">
+              <Dotted tone="orange">
+                {t("products.page.variants.someOut", { count: out })}
+              </Dotted>
+            </Text>
+          )}
+        </Cell>
+      </div>
+      {open &&
+        variants.map((variant) => (
+          <VariantRow
+            key={variant.id}
+            product={product}
+            facts={facts}
+            variant={variant}
+            child={second(variant)}
+          />
+        ))}
+    </>
+  )
+}
+
+const VariantMenu = ({
+  product,
+  variant,
+}: {
+  product: HttpTypes.AdminProduct
+  variant: FactVariant
+}) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const prompt = usePrompt()
+  const isTranslationsEnabled = useFeatureFlag("translation")
+  const { mutateAsync } = useDeleteVariantLazy(product.id)
+  const items = (
+    (variant as { inventory_items?: { inventory?: { id: string } }[] })
+      .inventory_items ?? []
+  )
+    .map((i) => i.inventory?.id)
+    .filter((id): id is string => !!id)
 
-  return [
-    commandHelper.command({
-      label: t("inventory.stock.action"),
-      shortcut: "i",
-      action: async (selection) => {
-        navigate(
-          `stock?${PRODUCT_VARIANT_IDS_KEY}=${Object.keys(selection).join(",")}`
-        )
-      },
-    }),
-  ]
+  const handleDelete = async () => {
+    const res = await prompt({
+      title: t("general.areYouSure"),
+      description: t("products.deleteVariantWarning", {
+        // Pagly: a product's one version is named after the product.
+        title: getVariantTitle(variant.title, product.title),
+      }),
+      confirmText: t("actions.delete"),
+      cancelText: t("actions.cancel"),
+    })
+
+    if (res) {
+      await mutateAsync({ variantId: variant.id })
+    }
+  }
+
+  return (
+    <ActionMenu
+      groups={[
+        {
+          actions: [
+            {
+              label: t("actions.edit"),
+              icon: <PencilSquare />,
+              onClick: () => navigate(`edit-variant?variant_id=${variant.id}`),
+            },
+            ...(isTranslationsEnabled
+              ? [
+                  {
+                    label: t("translations.actions.manage"),
+                    icon: <GlobeEurope />,
+                    onClick: () =>
+                      navigate(
+                        `/settings/translations/edit?reference=product_variant&reference_id=${variant.id}`
+                      ),
+                  },
+                ]
+              : []),
+            ...(items.length === 1
+              ? [
+                  {
+                    label: t(
+                      "products.variant.inventory.actions.inventoryItems"
+                    ),
+                    icon: <Buildings />,
+                    onClick: () => navigate(`/inventory/${items[0]}`),
+                  },
+                ]
+              : items.length > 1
+              ? [
+                  {
+                    label: t("products.variant.inventory.actions.inventoryKit"),
+                    icon: <Component />,
+                    onClick: () =>
+                      navigate(
+                        `/inventory?${new URLSearchParams({
+                          id: items.join(","),
+                        }).toString()}`
+                      ),
+                  },
+                ]
+              : []),
+          ],
+        },
+        {
+          actions: [
+            {
+              label: t("actions.delete"),
+              icon: <Trash />,
+              onClick: handleDelete,
+            },
+          ],
+        },
+      ]}
+    />
+  )
 }
+
+/** A product in one version: its price, stock and SKU, and a way to add options. */
+const OneVersion = ({ product, facts }: Props) => {
+  const { t } = useTranslation()
+  const variant = facts.variants[0]
+  const price = usePrice(facts)
+
+  return (
+    <Container className="divide-y p-0">
+      <div className="flex items-center justify-between gap-x-3 px-6 py-4">
+        <Heading level="h2">{t("products.page.variants.titleOne")}</Heading>
+        <CardTools
+          product={product}
+          label={t("products.page.variants.editPrice")}
+        />
+      </div>
+      <FactRow label={t("products.page.variants.price")}>
+        {(variant && price(variant)) ?? (
+          <span className="text-ui-fg-muted">
+            {t("products.page.variants.noPrice")}
+          </span>
+        )}
+      </FactRow>
+      <FactRow
+        label={t("products.page.variants.stock")}
+        action={
+          variant && isTracked(variant) ? (
+            <Button size="small" variant="secondary" asChild>
+              <Link to="stock">
+                {t("products.page.blockers.noStock.action")}
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      >
+        {variant ? <StockText facts={facts} variant={variant} /> : null}
+      </FactRow>
+      <FactRow label={t("products.page.variants.sku")}>
+        {variant?.sku || "—"}
+      </FactRow>
+      <FactRow
+        label={t("products.page.variants.variants")}
+        action={
+          <Button size="small" variant="secondary" asChild>
+            <Link to="options/manage">
+              {t("products.page.variants.addOptions")}
+            </Link>
+          </Button>
+        }
+      >
+        <span className="text-ui-fg-muted">
+          {t("products.page.variants.oneVersionHint")}
+        </span>
+      </FactRow>
+    </Container>
+  )
+}
+
+const FactRow = ({
+  label,
+  action,
+  children,
+}: {
+  label: string
+  action?: ReactNode
+  children: ReactNode
+}) => (
+  <div className="grid grid-cols-[120px_minmax(0,1fr)_auto] items-center gap-x-4 px-6 py-3 md:grid-cols-[140px_minmax(0,1fr)_auto]">
+    <Text
+      size="small"
+      leading="compact"
+      weight="plus"
+      className="text-ui-fg-subtle"
+    >
+      {label}
+    </Text>
+    <Text size="small" leading="compact" className="tabular-nums" asChild>
+      <div>{children}</div>
+    </Text>
+    <div>{action}</div>
+  </div>
+)

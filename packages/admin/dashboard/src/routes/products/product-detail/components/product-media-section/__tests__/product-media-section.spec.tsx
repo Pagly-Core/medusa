@@ -148,3 +148,34 @@ describe("ProductMediaSection main photo", () => {
     })
   })
 })
+
+// Pagly: the product page redesign's Fotos card.
+describe("ProductMediaSection as Fotos", () => {
+  it("is called Fotos, counts the photos, and marks the first as the main one", () => {
+    render(<ProductMediaSection product={product} />)
+
+    expect(screen.getByText("products.page.photos.title")).toBeTruthy()
+    expect(screen.getByText("2")).toBeTruthy()
+    expect(screen.getAllByText("products.page.photos.main")).toHaveLength(1)
+  })
+
+  it("ends the row with a tile that adds photos", () => {
+    render(<ProductMediaSection product={product} />)
+
+    expect(screen.getByText("products.page.photos.add")).toBeTruthy()
+  })
+
+  it("says the first photo is the one the store shows when there are none", () => {
+    render(
+      <ProductMediaSection
+        product={
+          { id: "prod_1", title: "Taza", thumbnail: null, images: [] } as never
+        }
+      />
+    )
+
+    expect(screen.getByText("products.page.photos.empty.title")).toBeTruthy()
+    expect(screen.getByText("products.page.photos.empty.detail")).toBeTruthy()
+    expect(screen.getByText("products.page.photos.empty.action")).toBeTruthy()
+  })
+})
