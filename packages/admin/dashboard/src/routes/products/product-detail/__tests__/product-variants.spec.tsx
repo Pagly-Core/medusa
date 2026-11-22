@@ -206,7 +206,7 @@ describe("Variantes y precios", () => {
 
   it("shows the offer price with the normal one struck through, and names the offer", () => {
     const sales = new Map([
-      ["variant_x_M", { amount: 990, offer: "Black Week", ends_at: null }],
+      ["variant_x_M", { amount: 990, offer: "Black Week", ends_at: null, type: "sale" as const }],
     ])
     renderIn(
       <ProductVariantSection
@@ -233,6 +233,46 @@ describe("Variantes y precios", () => {
     expect(screen.getByText("inventory.stock.action")).toBeTruthy()
     expect(screen.getByText("products.page.variants.addVariant")).toBeTruthy()
     expect(screen.getByText("products.page.variants.editOptions")).toBeTruthy()
+  })
+})
+
+describe("review fixes", () => {
+  it("names every running offer once", () => {
+    const sales = new Map([
+      ["variant_x_M", { amount: 990, offer: "Black Week", ends_at: null, type: "sale" as const }],
+      ["variant_x_XL", { amount: 990, offer: "Socios", ends_at: null, type: "sale" as const }],
+    ])
+    renderIn(
+      <ProductVariantSection product={makeProduct({ options: [SIZE] })} facts={makeFacts({ variants: [makeVariant(null, "M"), makeVariant(null, "XL")], sales })} />
+    )
+    const note = screen.getByText(/products\.page\.variants\.sale/).textContent
+    expect(note).toContain("Black Week")
+    expect(note).toContain("Socios")
+  })
+
+  it("shows an override's higher price as the price, with nothing struck", () => {
+    const sales = new Map([["variant_x_M", { amount: 1500, offer: "Mayoristas", ends_at: null, type: "override" as const }]])
+    const { container } = renderIn(
+      <ProductVariantSection product={makeProduct({ options: [SIZE] })} facts={makeFacts({ variants: [makeVariant(null, "M")], sales })} />
+    )
+    expect(screen.getByText(money(1500))).toBeTruthy()
+    expect(container.querySelector("s")).toBeNull()
+  })
+
+  it("finds a variant by name or SKU once there are more than 20", () => {
+    const sizes = Array.from({ length: 21 }, (_, i) => `T${i}`)
+    renderIn(
+      <ProductVariantSection product={makeProduct({ options: [SIZE] })} facts={makeFacts({ variants: sizes.map((s) => makeVariant(null, s)) })} />
+    )
+    const search = screen.getByRole("searchbox", { name: "products.page.variants.search" })
+    fireEvent.change(search, { target: { value: "T13" } })
+    expect(screen.getByText("T13")).toBeTruthy()
+    expect(screen.queryByText("T12")).toBeNull()
+  })
+
+  it("has no search with 20 variants or fewer", () => {
+    renderIn(<ProductVariantSection product={makeProduct()} facts={makeFacts()} />)
+    expect(screen.queryByRole("searchbox")).toBeNull()
   })
 })
 

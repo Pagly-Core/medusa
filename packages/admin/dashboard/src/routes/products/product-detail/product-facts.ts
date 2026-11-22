@@ -315,3 +315,13 @@ export const salePrices = (
 
   return sales
 }
+
+/** How many stock locations hold this product's units. */
+export const stockPlaces = (_variants: FactVariant[]): number => 0
+
+/** What the shopper pays for a variant: its price, or a running offer's. */
+export const shopperPrice = (
+  _variant: FactVariant,
+  _currency: string,
+  _sales: Map<string, SalePrice>
+): { amount: number; was?: number; offer?: string } | null => null

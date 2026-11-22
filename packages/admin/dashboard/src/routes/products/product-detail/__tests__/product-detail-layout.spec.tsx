@@ -25,16 +25,21 @@ vi.mock("react-router-dom", async (importOriginal) => ({
   Outlet: () => <div data-testid="outlet" />,
 }))
 
+const { current, covers } = vi.hoisted(() => ({
+  current: { id: "prod_1" },
+  covers: [] as unknown[],
+}))
+
 vi.mock("../../../../hooks/api/products", () => ({
   useProduct: () => ({
-    product: makeProduct(),
+    product: makeProduct({ id: current.id }),
     isLoading: false,
     isError: false,
   }),
 }))
 
 vi.mock("../use-product-page-facts", () => ({
-  useProductPageFacts: () => ({
+  useProductPageFacts: (_product: unknown, cover: unknown) => (covers.push(cover), {
     variants: [],
     currency: "uyu",
     places: 1,
@@ -94,10 +99,25 @@ vi.mock(
   "../components/product-shipping-section",
   markerModule("ProductShippingSection", "shipping")
 )
-vi.mock(
-  "../components/product-selling-section",
-  markerModule("ProductSellingSection", "selling")
-)
+vi.mock("../components/product-selling-section", async () => {
+  const { createElement, useEffect } = await import("react")
+  return {
+    ProductSellingSection: ({
+      product,
+      onCoverStock,
+    }: {
+      product: { id: string }
+      onCoverStock: (c: unknown) => void
+    }) => {
+      useEffect(() => {
+        if (product.id === "prod_1") {
+          onCoverStock({ row: "En preventa", summary: "En preventa" })
+        }
+      }, [product.id, onCoverStock])
+      return createElement("div", { "data-testid": "selling" })
+    },
+  }
+})
 
 afterEach(() => {
   cleanup()
@@ -160,6 +180,17 @@ describe("ProductDetail", () => {
     render(<ProductDetail />)
     expect(screen.queryByTestId("legacy")).toBeNull()
     expect(screen.queryByTestId("legacy-side")).toBeNull()
+  })
+
+  it("forgets a part's stock cover when it moves to another product", () => {
+    current.id = "prod_1"
+    const view = render(<ProductDetail />)
+    expect(covers.at(-1)).toEqual({ row: "En preventa", summary: "En preventa" })
+
+    current.id = "prod_2"
+    view.rerender(<ProductDetail />)
+    expect(covers.at(-1)).toBeNull()
+    current.id = "prod_1"
   })
 
   it("keeps the outlet for the product's drawers", () => {
