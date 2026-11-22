@@ -38,6 +38,7 @@ import { sdk } from "../../../../../lib/client"
 import { saveChangedAlts, useMediaAlts } from "../../../../../lib/media-alt"
 import { MediaAltInput } from "../../../common/components/media-alt-input"
 import { UploadMediaFormItem } from "../../../common/components/upload-media-form-item"
+import { imagesByRank } from "../../../common/images-by-rank"
 import {
   EditProductMediaSchema,
   MediaSchema,
@@ -351,7 +352,7 @@ const getDefaultValues = (
   thumbnail: string | null | undefined
 ) => {
   const media: Media[] =
-    images?.map((image) => ({
+    imagesByRank(images).map((image) => ({
       id: image.id!,
       url: image.url!,
       isThumbnail: image.url === thumbnail,

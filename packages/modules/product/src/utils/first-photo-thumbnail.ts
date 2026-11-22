@@ -1,4 +1,4 @@
-type Photo = { id?: string; url: string }
+type Photo = { id?: string; url: string; rank?: number | null }
 
 type PhotoFields = {
   images?: Photo[] | null
@@ -16,12 +16,18 @@ type PhotoFields = {
  * - An empty main photo next to photos means the first photo.
  * - Only the main photo given: the stored photos are reordered to match.
  *
+ * The photos' order is the list's, as an update stores it. With `byRank`
+ * (a create, which keeps the ranks it is given) photos that carry ranks are
+ * taken in rank order instead. Either way, photos that carry ranks are
+ * ranked again from 0 once the main photo is in front.
+ *
  * Returns the input unchanged when it touches neither photos nor the main
  * photo. `storedImages` are the product's photos in order, for updates.
  */
 export function firstPhotoThumbnail<T extends object>(
   input: T,
-  storedImages?: Photo[]
+  storedImages?: Photo[],
+  { byRank = false }: { byRank?: boolean } = {}
 ): T {
   const fields = input as PhotoFields
   const hasImages = Array.isArray(fields.images)
@@ -32,6 +38,12 @@ export function firstPhotoThumbnail<T extends object>(
   }
 
   let images = [...(hasImages ? fields.images! : storedImages ?? [])]
+  const ranked = images.some((image) => typeof image.rank === "number")
+
+  if (ranked && byRank) {
+    images.sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+  }
+
   const chosen = fields.thumbnail
 
   if (chosen) {
@@ -40,6 +52,10 @@ export function firstPhotoThumbnail<T extends object>(
       index > -1
         ? [images[index], ...images.filter((_, i) => i !== index)]
         : [{ url: chosen }, ...images]
+  }
+
+  if (ranked) {
+    images = images.map((image, rank) => ({ ...image, rank }))
   }
 
   return {

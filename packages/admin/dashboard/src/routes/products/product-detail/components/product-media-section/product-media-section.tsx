@@ -17,6 +17,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useUpdateProduct } from "../../../../../hooks/api/products"
 import { useMediaAlts } from "../../../../../lib/media-alt"
+import { imagesByRank } from "../../../common/images-by-rank"
 import { HttpTypes } from "@medusajs/types"
 
 type ProductMedisaSectionProps = {
@@ -71,15 +72,15 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
       return
     }
 
-    const mediaToKeep = product.images
-      ?.filter((i) => !ids.includes(i.id))
+    const mediaToKeep = imagesByRank(product.images)
+      .filter((i) => !ids.includes(i.id))
       .map((i) => ({ id: i.id, url: i.url }))
 
     await mutateAsync(
       {
         images: mediaToKeep,
         // Pagly: the main photo is always the first photo.
-        thumbnail: mediaToKeep?.[0]?.url ?? null,
+        thumbnail: mediaToKeep[0]?.url ?? null,
       },
       {
         onSuccess: () => {
@@ -215,12 +216,11 @@ type Media = {
 const getMedia = (product: HttpTypes.AdminProduct) => {
   const { images = [], thumbnail } = product
 
-  const media: Media[] =
-    images?.map((image) => ({
-      id: image.id,
-      url: image.url,
-      isThumbnail: image.url === thumbnail,
-    })) || []
+  const media: Media[] = imagesByRank(images).map((image) => ({
+    id: image.id,
+    url: image.url,
+    isThumbnail: image.url === thumbnail,
+  }))
 
   if (thumbnail && !media.some((mediaItem) => mediaItem.url === thumbnail)) {
     media.unshift({

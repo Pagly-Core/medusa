@@ -3544,7 +3544,10 @@ export default class ProductModuleService
       }
 
       // Pagly: the main photo is always the first photo.
-      Object.assign(productData, firstPhotoThumbnail(productData))
+      Object.assign(
+        productData,
+        firstPhotoThumbnail(productData, undefined, { byRank: true })
+      )
 
       if (productData.images?.length) {
         productData.images = productData.images.map((image, index) =>
