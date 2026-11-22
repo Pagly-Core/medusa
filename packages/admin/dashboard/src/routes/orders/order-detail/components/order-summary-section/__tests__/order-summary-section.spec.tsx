@@ -3,7 +3,6 @@ import { TooltipProvider } from "@medusajs/ui"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   cleanup,
-  fireEvent,
   render,
   screen,
   waitFor,
@@ -14,6 +13,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { OrderSummarySection } from "../order-summary-section"
 
 const fetch = vi.hoisted(() => vi.fn())
+
+vi.mock("../../../../../../providers/extension-provider", () => ({
+  useExtension: () => ({ getWidgets: () => [] }),
+}))
 
 vi.mock("../../../../../../lib/client", () => ({
   sdk: { client: { fetch } },
@@ -159,8 +162,10 @@ const renderSummary = () =>
     </QueryClientProvider>
   )
 
-const openDiscounts = () =>
-  fireEvent.click(screen.getByText("orders.summary.discountTotal"))
+// Pagly: the order page redesign keeps the discounts open; nothing to click.
+const openDiscounts = () => {
+  expect(screen.getByText("orders.summary.discount")).toBeTruthy()
+}
 
 beforeEach(() => {
   fetch.mockReset()

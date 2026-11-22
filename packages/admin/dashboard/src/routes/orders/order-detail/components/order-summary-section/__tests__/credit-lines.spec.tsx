@@ -9,6 +9,10 @@ import { OrderSummarySection } from "../order-summary-section"
 
 const fetch = vi.hoisted(() => vi.fn())
 
+vi.mock("../../../../../../providers/extension-provider", () => ({
+  useExtension: () => ({ getWidgets: () => [] }),
+}))
+
 vi.mock("../../../../../../lib/client", () => ({
   sdk: { client: { fetch } },
 }))

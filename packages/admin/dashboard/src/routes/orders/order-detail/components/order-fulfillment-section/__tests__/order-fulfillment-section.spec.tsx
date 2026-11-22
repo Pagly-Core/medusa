@@ -6,6 +6,10 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { OrderFulfillmentSection } from "../order-fulfillment-section"
 
+vi.mock("../../../../../../providers/extension-provider", () => ({
+  useExtension: () => ({ getWidgets: () => [] }),
+}))
+
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -105,10 +109,5 @@ describe("OrderFulfillmentSection", () => {
     expect(screen.getByText("1x M / Negro")).toBeTruthy()
   })
 
-  it("leaves out the default option's value on unfulfilled lines", () => {
-    renderSection()
-
-    expect(screen.queryByText(/Default option value/)).toBeNull()
-    expect(screen.getByText("M · Negro")).toBeTruthy()
-  })
+  // Pagly: the unfulfilled card is gone (each line says where it stands on Productos).
 })

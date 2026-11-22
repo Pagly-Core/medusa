@@ -4,7 +4,7 @@ import { fulfillment, makeOrder, orderItem } from "../../../__fixtures__/order"
 import { getLineState } from "../line-state"
 
 const withItem = (detail: Record<string, number>, over: Record<string, unknown> = {}) => {
-  const item = orderItem("item_mug", { detail })
+  const item = orderItem("item_mug", { detail }) as any
   return { item, order: makeOrder({ items: [item], ...over }) }
 }
 

@@ -1,6 +1,7 @@
+import { ComponentType } from "react"
 import { OrderCreditLineDTO } from "@medusajs/types"
 import { ArrowDownRightMini, DocumentText, XCircle } from "@medusajs/icons"
-import { AdminOrder, AdminPayment, HttpTypes } from "@medusajs/types"
+import { AdminPayment, HttpTypes } from "@medusajs/types"
 import {
   Badge,
   Button,
@@ -22,13 +23,9 @@ import {
 } from "../../../../../hooks/api"
 import { formatCurrency } from "../../../../../lib/format-currency"
 import { formatProvider } from "../../../../../lib/format-provider"
-import {
-  getLocaleAmount,
-  getStylizedAmount,
-} from "../../../../../lib/money-amount-helpers"
-import { getOrderPaymentStatus } from "../../../../../lib/order-helpers"
+import { useExtension } from "../../../../../providers/extension-provider"
+import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
 import { getPaymentsFromOrder } from "../../../../../lib/orders"
-import { getTotalCaptured, getTotalPending } from "../../../../../lib/payment"
 import { getLoyaltyPlugin } from "../../../../../lib/plugins"
 import { ExtendedOrder, ExtendedRefund } from "../../constants"
 
@@ -60,25 +57,47 @@ export const OrderPaymentSection = ({
         currencyCode={order.currency_code}
       />
 
-      <Total order={order} />
+      {/* Pagly: the paid and pending totals live in Productos, the status in the header. */}
+      <PaymentParts order={order} />
     </Container>
   )
 }
 
-const Header = ({ order }: { order: ExtendedOrder }) => {
+/** What a plugin part in `order.details.payment` receives. */
+type PaymentPartProps = { data: ExtendedOrder }
+
+/** Pagly: plugin payment parts (the card in words, the receipts) inside the card. */
+const PaymentParts = ({ order }: { order: ExtendedOrder }) => {
+  const { getWidgets } = useExtension()
+  const parts = getWidgets(
+    "order.details.payment" as any
+  ) as ComponentType<PaymentPartProps>[]
+
+  return (
+    <>
+      {parts.map((Part, index) => (
+        <Part key={index} data={order} />
+      ))}
+    </>
+  )
+}
+
+const Header = ({ order: _order }: { order: ExtendedOrder }) => {
   const { t } = useTranslation()
-  const { label, color } = getOrderPaymentStatus(t, order.payment_status)
 
   return (
     <div className="flex items-center justify-between px-6 py-4">
       <Heading level="h2">{t("orders.payment.title")}</Heading>
-
-      <StatusBadge color={color} className="text-nowrap">
-        {label}
-      </StatusBadge>
     </div>
   )
 }
+
+/** Pagly: a payment made by hand reads as such, never by its provider id. */
+const paymentMethodLabel = (
+  manualLabel: string,
+  providerId: string
+): string =>
+  providerId === "pp_system_default" ? manualLabel : formatProvider(providerId)
 
 const Refund = ({
   refund,
@@ -220,7 +239,7 @@ const Payment = ({
         </div>
         <div className="hidden items-center justify-end sm:flex">
           <Text size="small" leading="compact">
-            {formatProvider(payment.provider_id)}
+            {paymentMethodLabel(t("orders.payment.manualProvider"), payment.provider_id)}
           </Text>
         </div>
         <div className="flex items-center justify-end">
@@ -495,40 +514,6 @@ const PaymentBreakdown = ({
             )
         }
       })}
-    </div>
-  )
-}
-
-const Total = ({ order }: { order: AdminOrder }) => {
-  const { t } = useTranslation()
-  const totalPending = getTotalPending(order.payment_collections)
-
-  return (
-    <div className="flex flex-col gap-y-4 px-6 py-4">
-      <div className="flex items-center justify-between">
-        <Text size="small" weight="plus" leading="compact">
-          {t("orders.payment.totalPaidByCustomer")}
-        </Text>
-
-        <Text size="small" weight="plus" leading="compact">
-          {getStylizedAmount(
-            getTotalCaptured(order.payment_collections),
-            order.currency_code
-          )}
-        </Text>
-      </div>
-
-      {order.status !== "canceled" && totalPending > 0 && (
-        <div className="flex items-center justify-between">
-          <Text size="small" weight="plus" leading="compact">
-            {t("orders.payment.totalPending")}
-          </Text>
-
-          <Text size="small" weight="plus" leading="compact">
-            {getStylizedAmount(totalPending, order.currency_code)}
-          </Text>
-        </div>
-      )}
     </div>
   )
 }

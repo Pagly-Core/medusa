@@ -638,7 +638,7 @@
       "showAvailableImages": "Mostrar imágenes disponibles",
       "availableImages": "Seleccionar imágenes",
       "selectToAdd": "Agregá imágenes del producto a la variante. Para agregar nuevas imágenes, agregalas primero al producto.",
-      "removeSelected": "Eliminar seleccionados",
+      "removeSelected": "Eliminar seleccionados",
       "altLabel": "Texto alternativo",
       "altMissing": "Sin texto",
       "altFailedToast": "Los medios se guardaron, pero no el texto alternativo. Probá de nuevo."
@@ -1365,7 +1365,16 @@
       "shippingSubtotal": "Subtotal del envío",
       "discountSubtotal": "Subtotal del descuento",
       "taxTotal": "Total de impuestos",
-      "totalAfterDiscount": "Total después del descuento"
+      "totalAfterDiscount": "Total después del descuento",
+      "subtotal": "Subtotal",
+      "discount": "Descuento",
+      "discountNamed": "Descuento · {{name}}",
+      "shipping": "Envío",
+      "total": "Total",
+      "tax": "Impuestos",
+      "taxIncluded": "Impuestos incluidos",
+      "paid": "Pagado",
+      "pending": "Pendiente"
     },
     "transfer": {
       "title": "Transferir propiedad",
@@ -1422,7 +1431,8 @@
       "refundAmount": "Reembolso {{ amount }}",
       "paymentLink": "Copiar enlace de pago para {{ amount }}",
       "selectPaymentToRefund": "Seleccioná el pago a reembolsar",
-      "totalStoreCreditRefunds": "Total devuelto como saldo"
+      "totalStoreCreditRefunds": "Total devuelto como saldo",
+      "manualProvider": "Pago manual"
     },
     "edits": {
       "title": "Editar pedido",
@@ -1635,7 +1645,7 @@
       "unfulfilledItems": "Artículos no cumplidos",
       "statusLabel": "Estado del cumplimiento",
       "statusTitle": "Estado del cumplimiento",
-      "fulfillItems": "Cumplir artículos",
+      "fulfillItems": "Preparar pedido",
       "awaitingFulfillmentBadge": "Esperando cumplimiento",
       "requiresShipping": "Requiere envío",
       "number": "Cumplimiento #{{number}}",
@@ -1704,7 +1714,9 @@
       "editEmail": "Editar correo electrónico",
       "transferOwnership": "Transferir propiedad",
       "editBillingAddress": "Editar dirección de facturación",
-      "editShippingAddress": "Editar dirección de envío"
+      "editShippingAddress": "Editar dirección de envío",
+      "billing": "Factura",
+      "billingSameAsShipping": "Igual que el envío"
     },
     "activity": {
       "header": "Actividad",
@@ -1782,6 +1794,47 @@
           "email": "Correo electrónico actualizado"
         }
       }
+    },
+    "headerMeta": "{{date}} · {{channel}} · {{customer}}",
+    "nextStep": {
+      "prepare": {
+        "title": "Listo para preparar",
+        "detail_one": "{{count}} artículo · {{method}}",
+        "detail_other": "{{count}} artículos · {{method}}",
+        "action": "Preparar pedido"
+      },
+      "shipped": {
+        "title": "En camino",
+        "detail": "Salió {{date}}",
+        "action": "Marcar como entregado"
+      },
+      "unpaid": {
+        "title": "Falta el pago",
+        "detail": "Quedan {{amount}} por cobrar"
+      },
+      "receive": {
+        "title": "Devolución en camino",
+        "detail": "Recibí los productos cuando lleguen"
+      }
+    },
+    "products": {
+      "title": "Productos"
+    },
+    "lineState": {
+      "toPrepare": "Por preparar",
+      "prepared": "Preparado",
+      "partlyShipped": "{{done}} de {{total}} enviados",
+      "shipped": "Enviado",
+      "shippedIn": "Enviado · envío {{n}}",
+      "delivered": "Entregado",
+      "returnRequested": "Devolución pedida",
+      "returned": "Devuelto"
+    },
+    "shipping": {
+      "title": "Envío",
+      "method": "Método",
+      "recipient": "Para",
+      "shipmentOf": "Envío {{n}} de {{total}}"
     }
   },
   "draftOrders": {

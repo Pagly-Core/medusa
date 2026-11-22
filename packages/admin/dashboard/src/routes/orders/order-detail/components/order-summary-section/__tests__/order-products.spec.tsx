@@ -110,11 +110,11 @@ describe("OrderSummarySection as Productos", () => {
 
     const order = [
       at("orders.summary.subtotal"),
-      at("orders.summary.discountTotal"),
+      at("orders.summary.discount"),
       at("orders.summary.shipping"),
-      at("fields.total"),
+      at("orders.summary.total"),
       at("orders.summary.taxIncluded"),
-      at("fields.paidTotal"),
+      at("orders.summary.paid"),
     ]
     expect([...order].sort((a, b) => a - b)).toEqual(order)
   })
@@ -123,11 +123,12 @@ describe("OrderSummarySection as Productos", () => {
     renderProducts()
     expect(screen.queryByText("orders.summary.totalAfterDiscount")).toBeNull()
     expect(screen.queryByText("orders.summary.itemSubtotal")).toBeNull()
+    expect(screen.queryByText("fields.total")).toBeNull()
   })
 
   it("says nothing is pending when nothing is", () => {
     renderProducts()
-    expect(screen.queryByText("orders.returns.outstandingAmount")).toBeNull()
+    expect(screen.queryByText("orders.summary.pending")).toBeNull()
   })
 
   it("puts tax before the total when prices don't include it", () => {
@@ -139,9 +140,9 @@ describe("OrderSummarySection as Productos", () => {
     const { container } = renderProducts(order)
     const text = container.textContent ?? ""
 
-    expect(text.indexOf("orders.summary.taxTotal")).toBeGreaterThan(-1)
-    expect(text.indexOf("orders.summary.taxTotal")).toBeLessThan(
-      text.indexOf("fields.total")
+    expect(text.indexOf("orders.summary.tax")).toBeGreaterThan(-1)
+    expect(text.indexOf("orders.summary.tax")).toBeLessThan(
+      text.indexOf("orders.summary.total")
     )
     expect(screen.queryByText("orders.summary.taxIncluded")).toBeNull()
   })

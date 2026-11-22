@@ -13,6 +13,19 @@ const ORDER_INJECTION_ZONES = [
   "order.list",
 ] as const
 
+// Pagly: the places on the order page a plugin part goes. Each one is a
+// registry: a part names its place and the page renders it there, never at
+// the end of the page. `next` parts also get `claim(active)`, and an active
+// claim outranks the page's own next step; `line` parts get the line as
+// `item`. See PAGLY-CORE-DIVERGENCE.md.
+const PAGLY_ORDER_PART_INJECTION_ZONES = [
+  "order.details.next",
+  "order.details.line",
+  "order.details.shipping",
+  "order.details.payment",
+  "order.details.customer",
+] as const
+
 const LEGACY_CUSTOMER_INJECTION_ZONES = [
   "customer.details.before",
   "customer.details.after",
@@ -439,6 +452,7 @@ const TOPBAR_INJECTION_ZONES = ["topbar"] as const
 export const INJECTION_ZONES = [
   ...LEGACY_ORDER_INJECTION_ZONES,
   ...ORDER_INJECTION_ZONES,
+  ...PAGLY_ORDER_PART_INJECTION_ZONES,
   ...LEGACY_CUSTOMER_INJECTION_ZONES,
   ...CUSTOMER_INJECTION_ZONES,
   ...LEGACY_CUSTOMER_GROUP_INJECTION_ZONES,

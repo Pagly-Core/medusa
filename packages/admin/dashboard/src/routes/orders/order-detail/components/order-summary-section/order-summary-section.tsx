@@ -1,10 +1,9 @@
-import { ReactNode, useMemo, useState } from "react"
+import { ComponentType, ReactNode, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 
 import {
   ArrowDownRightMini,
-  ArrowLongRight,
   ArrowPath,
   ArrowUturnLeft,
   DocumentText,
@@ -19,7 +18,6 @@ import {
   AdminOrder,
   AdminOrderLineItem,
   AdminOrderPreview,
-  AdminPaymentCollection,
   AdminPlugin,
   AdminRegion,
   AdminReturn,
@@ -35,9 +33,7 @@ import {
   Heading,
   StatusBadge,
   Text,
-  toast,
   Tooltip,
-  usePrompt,
 } from "@medusajs/ui"
 
 import { AdminReservation } from "@medusajs/types/src/http"
@@ -47,13 +43,11 @@ import { Thumbnail } from "../../../../../components/common/thumbnail"
 import { useClaims } from "../../../../../hooks/api/claims"
 import { useExchanges } from "../../../../../hooks/api/exchanges"
 import { useOrderPreview } from "../../../../../hooks/api/orders"
-import { useMarkPaymentCollectionAsPaid } from "../../../../../hooks/api/payment-collections"
 import { useReservationItems } from "../../../../../hooks/api/reservations"
 import { useReturns } from "../../../../../hooks/api/returns"
 import { useDate } from "../../../../../hooks/use-date"
 import { getTotalCreditLines } from "../../../../../lib/credit-line"
 import { getOptionValues } from "../../../../../lib/default-names"
-import { formatCurrency } from "../../../../../lib/format-currency"
 import { getReservationsLimitCount } from "../../../../../lib/orders"
 import {
   getLocaleAmount,
@@ -63,7 +57,6 @@ import {
 import { getTotalCaptured } from "../../../../../lib/payment"
 import { getLoyaltyPlugin } from "../../../../../lib/plugins"
 import { getReturnableQuantity } from "../../../../../lib/rma"
-import { CopyPaymentLink } from "../copy-payment-link/copy-payment-link"
 import { getCreditKind } from "./credit-kinds"
 import ReturnInfoPopover from "./return-info-popover"
 import ShippingInfoPopover from "./shipping-info-popover"
@@ -73,6 +66,8 @@ import {
   useOrderDiscountLabels,
 } from "./use-order-discount-labels"
 import { formatPercentage } from "../../../../../lib/percentage-helpers.ts"
+import { useExtension } from "../../../../../providers/extension-provider"
+import { getLineState } from "./line-state"
 
 type OrderSummarySectionProps = {
   order: AdminOrder
@@ -84,7 +79,6 @@ export const OrderSummarySection = ({
   plugins,
 }: OrderSummarySectionProps) => {
   const { t } = useTranslation()
-  const prompt = usePrompt()
 
   const { reservations } = useReservationItems(
     {
@@ -95,19 +89,6 @@ export const OrderSummarySection = ({
   )
 
   const { order: orderPreview } = useOrderPreview(order.id!)
-
-  const { returns = [] } = useReturns({
-    status: "requested",
-    order_id: order.id,
-    fields: "+received_at",
-  })
-
-  const receivableReturns = useMemo(
-    () => returns.filter((r) => !r.canceled_at),
-    [returns]
-  )
-
-  const showReturns = !!receivableReturns.length
 
   /**
    * Show Allocation button only if there are unfulfilled items that don't have reservations
@@ -137,142 +118,28 @@ export const OrderSummarySection = ({
     return false
   }, [order.items, reservations])
 
-  const unpaidPaymentCollection = order.payment_collections.find(
-    (pc) => pc.status === "not_paid"
-  )
-
-  const { mutateAsync: markAsPaid } = useMarkPaymentCollectionAsPaid(
-    order.id,
-    unpaidPaymentCollection?.id!
-  )
-
   const pendingDifference = order.summary?.pending_difference || 0
   const isAmountSignificant = !isAmountLessThenRoundingError(
     pendingDifference,
     order.currency_code
   )
 
-  const showPayment =
-    unpaidPaymentCollection && pendingDifference > 0 && isAmountSignificant
   const showRefund = pendingDifference < 0 && isAmountSignificant
-
-  const handleMarkAsPaid = async (
-    paymentCollection: AdminPaymentCollection
-  ) => {
-    const res = await prompt({
-      title: t("orders.payment.markAsPaid"),
-      description: t("orders.payment.markAsPaidPayment", {
-        amount: formatCurrency(
-          paymentCollection.amount as number,
-          order.currency_code
-        ),
-      }),
-      confirmText: t("actions.confirm"),
-      cancelText: t("actions.cancel"),
-      variant: "confirmation",
-    })
-
-    if (!res) {
-      return
-    }
-
-    await markAsPaid(
-      { order_id: order.id },
-      {
-        onSuccess: () => {
-          toast.success(
-            t("orders.payment.markAsPaidPaymentSuccess", {
-              amount: formatCurrency(
-                paymentCollection.amount as number,
-                order.currency_code
-              ),
-            })
-          )
-        },
-        onError: (error) => {
-          toast.error(error.message)
-        },
-      }
-    )
-  }
 
   return (
     <Container className="divide-y divide-dashed p-0">
       <Header order={order} orderPreview={orderPreview} />
       <ItemBreakdown order={order} reservations={reservations!} />
-      <CostBreakdown order={order} />
-      <DiscountAndTotalBreakdown order={order} plugins={plugins} />
+      <CostBreakdown order={order} plugins={plugins} />
       <Total order={order} />
 
-      {(showAllocateButton || showReturns || showPayment || showRefund) && (
+      {(showAllocateButton || showRefund) && (
         <div className="bg-ui-bg-subtle flex items-center justify-end gap-x-2 rounded-b-xl px-4 py-4">
-          {showReturns &&
-            (receivableReturns.length === 1 ? (
-              <Button asChild variant="secondary" size="small">
-                <Link
-                  to={`/orders/${order.id}/returns/${receivableReturns[0].id}/receive`}
-                >
-                  {t("orders.returns.receive.action")}
-                </Link>
-              </Button>
-            ) : (
-              <ActionMenu
-                groups={[
-                  {
-                    actions: receivableReturns.map((r) => {
-                      let id = r.id
-                      let returnType = "Return"
-
-                      if (r.exchange_id) {
-                        id = r.exchange_id
-                        returnType = "Exchange"
-                      }
-
-                      if (r.claim_id) {
-                        id = r.claim_id
-                        returnType = "Claim"
-                      }
-
-                      return {
-                        label: t("orders.returns.receive.receiveItems", {
-                          id: `#${id.slice(-7)}`,
-                          returnType,
-                        }),
-                        icon: <ArrowLongRight />,
-                        to: `/orders/${order.id}/returns/${r.id}/receive`,
-                      }
-                    }),
-                  },
-                ]}
-              >
-                <Button variant="secondary" size="small">
-                  {t("orders.returns.receive.action")}
-                </Button>
-              </ActionMenu>
-            ))}
-
           {showAllocateButton && (
             <Button asChild variant="secondary" size="small">
               <Link to="allocate-items">
                 {t("orders.allocateItems.action")}
               </Link>
-            </Button>
-          )}
-
-          {showPayment && (
-            <CopyPaymentLink
-              paymentCollection={unpaidPaymentCollection}
-              order={order}
-            />
-          )}
-
-          {showPayment && (
-            <Button
-              size="small"
-              variant="secondary"
-              onClick={() => handleMarkAsPaid(unpaidPaymentCollection)}
-            >
-              {t("orders.payment.markAsPaid")}
             </Button>
           )}
 
@@ -316,7 +183,7 @@ const Header = ({
 
   return (
     <div className="flex items-center justify-between px-6 py-4">
-      <Heading level="h2">{t("fields.summary")}</Heading>
+      <Heading level="h2">{t("orders.products.title")}</Heading>
       <ActionMenu
         groups={[
           {
@@ -389,6 +256,7 @@ const Header = ({
 }
 
 const Item = ({
+  order,
   item,
   currencyCode,
   reservation,
@@ -397,6 +265,7 @@ const Item = ({
   exchanges,
   discountLabels,
 }: {
+  order: AdminOrder
   item: AdminOrderLineItem
   currencyCode: string
   reservation?: AdminReservation
@@ -453,6 +322,7 @@ const Item = ({
                 {/* Pagly: no "Default option value" for a one-version product. */}
                 {getOptionValues(item.variant?.options).join(" · ")}
               </Text>
+              <LineExtras item={item} order={order} />
             </div>
           </div>
           {appliedPromoCodes.length > 0 && (
@@ -574,6 +444,7 @@ const ItemBreakdown = ({
         return (
           <Item
             key={item.id}
+            order={order}
             item={item}
             currencyCode={order.currency_code}
             reservation={reservation}
@@ -616,14 +487,25 @@ const Cost = ({
   </div>
 )
 
+// Pagly: the money in the order it is read: subtotal, each discount by name,
+// shipping, taxes (before the total when prices don't include them), saldo and
+// gift cards, the total, then taxes included. One block instead of a total
+// before discounts and another after them.
 const CostBreakdown = ({
   order,
+  plugins,
 }: {
   order: AdminOrder & { region?: AdminRegion | null }
+  plugins: AdminPlugin[]
 }) => {
   const { t } = useTranslation()
   const [isTaxOpen, setIsTaxOpen] = useState(false)
   const [isShippingOpen, setIsShippingOpen] = useState(false)
+  const [isCreditLinesOpen, setIsCreditLinesOpen] = useState(false)
+
+  const creditLines = order.credit_lines ?? []
+  const loyaltyPlugin = getLoyaltyPlugin(plugins)
+  const discountLabels = useOrderDiscountLabels(order.id)
 
   const taxCodes = useMemo(() => {
     const taxCodeMap: { [key: string]: { total: number; rate: number } } = {}
@@ -653,21 +535,183 @@ const CostBreakdown = ({
     return taxCodeMap
   }, [order])
 
+  const discounts = useMemo(() => {
+    const discounts: { type: "item" | "shipping"; total: number; codes: string[] }[] = []
+
+    if (order.item_discount_total) {
+      discounts.push({
+        type: "item",
+        total: order.item_discount_total,
+        codes: Array.from(
+          new Set(
+            order.items
+              .flatMap((item) => item.adjustments || [])
+              .map((adjustment) => adjustment.code!)
+          )
+        ).sort(),
+      })
+    }
+
+    if (order.shipping_discount_total) {
+      discounts.push({
+        type: "shipping",
+        total: order.shipping_discount_total,
+        codes: Array.from(
+          new Set(
+            order.shipping_methods
+              .flatMap((shippingMethod) => shippingMethod.adjustments || [])
+              .map((adjustment) => adjustment.code!)
+          )
+        ).sort(),
+      })
+    }
+
+    return discounts
+  }, [order])
+
+  // Pagly: a named discount on shipping alone says so, as upstream's "Shipping (CODE)" row did.
+  const shippingOnlyCodes = useMemo(() => {
+    const itemCodes = new Set(
+      order.items.flatMap((item) => item.adjustments || []).map((a) => a.code)
+    )
+    return new Set(
+      order.shipping_methods
+        .flatMap((shippingMethod) => shippingMethod.adjustments || [])
+        .map((a) => a.code)
+        .filter((code) => !itemCodes.has(code))
+    )
+  }, [order])
+
   const hasTaxes = !!Object.keys(taxCodes).length
+  const taxIncluded =
+    order.items.length > 0 && order.items.every((item) => item.is_tax_inclusive)
+  const hasCreditLines = creditLines.length > 0
+
+  const taxRow = (
+    <>
+      <div className="flex justify-between">
+        <div
+          onClick={() => hasTaxes && setIsTaxOpen((o) => !o)}
+          className={clx("flex items-center gap-1", {
+            "cursor-pointer": hasTaxes,
+            "text-ui-fg-muted": taxIncluded,
+          })}
+        >
+          <span className="txt-small select-none">
+            {t(taxIncluded ? "orders.summary.taxIncluded" : "orders.summary.tax")}
+          </span>
+          {hasTaxes && (
+            <TriangleDownMini
+              style={{
+                transform: `rotate(${isTaxOpen ? 0 : -90}deg)`,
+              }}
+            />
+          )}
+        </div>
+        <div className="text-right">
+          <Text
+            size="small"
+            leading="compact"
+            className={clx("tabular-nums", { "text-ui-fg-muted": taxIncluded })}
+          >
+            {getLocaleAmount(order.original_tax_total, order.currency_code)}
+          </Text>
+        </div>
+      </div>
+
+      {isTaxOpen && (
+        <div className="flex flex-col gap-1 pl-5">
+          {Object.entries(taxCodes).map(([code, { total, rate }]) => {
+            return (
+              <div
+                key={code}
+                className="flex items-center justify-between gap-x-2"
+              >
+                <div className="flex gap-1">
+                  <span className="txt-small">{code}</span>
+                  <span className="txt-small">
+                    ({formatPercentage(rate)})
+                  </span>
+                </div>
+                <div className="relative flex-1">
+                  <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
+                </div>
+
+                <span className="txt-small text-ui-fg-muted">
+                  {getLocaleAmount(total, order.currency_code)}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </>
+  )
 
   return (
     <div className="text-ui-fg-subtle flex flex-col gap-y-2 px-6 py-4">
       <Cost
-        label={t("orders.summary.itemSubtotal")}
+        label={t("orders.summary.subtotal")}
         value={getLocaleAmount(order.item_subtotal, order.currency_code)}
       />
+
+      {!!order.discount_total && (
+        <Cost
+          label={t("orders.summary.discount")}
+          value={`−${getLocaleAmount(order.discount_total, order.currency_code)}`}
+        />
+      )}
+
+      {/* Pagly: one row per discount, by its name, once the plugin names them; always open. */}
+      {discountLabels?.length ? (
+        <div className="flex flex-col gap-1 pl-5">
+          {discountLabels.map((discount, index) => (
+            <div
+              key={`${discount.code ?? discount.label}-${index}`}
+              data-testid="order-discount-row"
+              className="flex items-center justify-between gap-x-2"
+            >
+              <div className="flex gap-1">
+                <span className="txt-small">{discount.label}</span>
+                {discount.code && shippingOnlyCodes.has(discount.code) && (
+                  <span className="txt-small">({t("fields.shipping")})</span>
+                )}
+              </div>
+              <div className="relative flex-1">
+                <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
+              </div>
+              <span className="txt-small text-ui-fg-muted">
+                {getLocaleAmount(discount.amount, order.currency_code)}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : discounts.length ? (
+        <div className="flex flex-col gap-1 pl-5">
+          {discounts.map(({ type, total, codes }) => (
+            <div key={type} className="flex items-center justify-between gap-x-2">
+              <div className="flex gap-1">
+                <span className="txt-small">{t(`fields.${type}`)}</span>
+                <span className="txt-small">({codes.join(", ")})</span>
+              </div>
+              <div className="relative flex-1">
+                <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
+              </div>
+              <span className="txt-small text-ui-fg-muted">
+                {getLocaleAmount(total, order.currency_code)}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       <Cost
         label={
           <div
             onClick={() => setIsShippingOpen((o) => !o)}
             className="flex cursor-pointer items-center gap-1"
           >
-            <span>{t("orders.summary.shippingSubtotal")}</span>
+            <span>{t("orders.summary.shipping")}</span>
             <TriangleDownMini
               style={{
                 transform: `rotate(${isShippingOpen ? 0 : -90}deg)`,
@@ -710,209 +754,7 @@ const CostBreakdown = ({
         </div>
       )}
 
-      <>
-        <div className="flex justify-between">
-          <div
-            onClick={() => hasTaxes && setIsTaxOpen((o) => !o)}
-            className={clx("flex items-center gap-1", {
-              "cursor-pointer": hasTaxes,
-            })}
-          >
-            <span className="txt-small select-none">
-              {t("orders.summary.taxTotal")}
-            </span>
-            {hasTaxes && (
-              <TriangleDownMini
-                style={{
-                  transform: `rotate(${isTaxOpen ? 0 : -90}deg)`,
-                }}
-              />
-            )}
-          </div>
-
-          <div className="text-right">
-            <Text size="small" leading="compact">
-              {getLocaleAmount(order.original_tax_total, order.currency_code)}
-            </Text>
-          </div>
-        </div>
-        {isTaxOpen && (
-          <div className="flex flex-col gap-1 pl-5">
-            {Object.entries(taxCodes).map(([code, { total, rate }]) => {
-              return (
-                <div
-                  key={code}
-                  className="flex items-center justify-between gap-x-2"
-                >
-                  <div className="flex gap-1">
-                    <span className="txt-small">{code}</span>
-                    <span className="txt-small">
-                      ({formatPercentage(rate)})
-                    </span>
-                  </div>
-                  <div className="relative flex-1">
-                    <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
-                  </div>
-                  <span className="txt-small text-ui-fg-muted">
-                    {getLocaleAmount(total, order.currency_code)}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </>
-      <div className="text-ui-fg-base flex items-center justify-between">
-        <Text className="text-ui-fg-subtle" size="small" leading="compact">
-          {t("fields.total")}
-        </Text>
-        <Text
-          className="text-ui-fg-subtle text-bold"
-          size="small"
-          leading="compact"
-        >
-          {getLocaleAmount(order.original_total, order.currency_code)}
-        </Text>
-      </div>
-    </div>
-  )
-}
-
-const DiscountAndTotalBreakdown = ({
-  order,
-  plugins,
-}: {
-  order: AdminOrder & { region?: AdminRegion | null }
-  plugins: AdminPlugin[]
-}) => {
-  const { t } = useTranslation()
-  const [isDiscountOpen, setIsDiscountOpen] = useState(false)
-  const [isCreditLinesOpen, setIsCreditLinesOpen] = useState(false)
-
-  const creditLines = order.credit_lines ?? []
-  const loyaltyPlugin = getLoyaltyPlugin(plugins)
-  const discountLabels = useOrderDiscountLabels(order.id)
-
-  const discounts = useMemo(() => {
-    const discounts: {
-      type: "item" | "shipping"
-      total: number
-      codes: string[]
-    }[] = []
-    if (order.item_discount_total) {
-      discounts.push({
-        type: "item",
-        total: order.item_discount_total,
-        codes: Array.from(
-          new Set(
-            order.items
-              .flatMap((item) => item.adjustments || [])
-              .map((adjustment) => adjustment.code!)
-          )
-        ).sort(),
-      })
-    }
-    if (order.shipping_discount_total) {
-      discounts.push({
-        type: "shipping",
-        total: order.shipping_discount_total,
-        codes: Array.from(
-          new Set(
-            order.shipping_methods
-              .flatMap((shippingMethod) => shippingMethod.adjustments || [])
-              .map((adjustment) => adjustment.code!)
-          )
-        ).sort(),
-      })
-    }
-    return discounts
-  }, [order])
-
-  // Pagly: a named discount on shipping alone says so, as upstream's "Shipping (CODE)" row did.
-  const shippingOnlyCodes = useMemo(() => {
-    const itemCodes = new Set(
-      order.items.flatMap((item) => item.adjustments || []).map((a) => a.code)
-    )
-    return new Set(
-      order.shipping_methods
-        .flatMap((shippingMethod) => shippingMethod.adjustments || [])
-        .map((a) => a.code)
-        .filter((code) => !itemCodes.has(code))
-    )
-  }, [order])
-
-  const hasDiscount = discounts.length > 0
-  const hasCreditLines = creditLines.length > 0
-
-  return (
-    <div className="text-ui-fg-subtle flex flex-col gap-y-2 px-6 py-4">
-      <Cost
-        label={
-          <div
-            onClick={() => hasDiscount && setIsDiscountOpen((o) => !o)}
-            className={clx("flex items-center gap-1", {
-              "cursor-pointer": hasDiscount,
-            })}
-          >
-            <span>{t("orders.summary.discountTotal")}</span>
-            {hasDiscount && (
-              <TriangleDownMini
-                style={{
-                  transform: `rotate(${isDiscountOpen ? 0 : -90}deg)`,
-                }}
-              />
-            )}
-          </div>
-        }
-        value={getLocaleAmount(order.discount_total, order.currency_code)}
-      />
-      {/* Pagly: one row per discount, by its name, once the plugin names them. */}
-      {isDiscountOpen && discountLabels?.length ? (
-        <div className="flex flex-col gap-1 pl-5">
-          {discountLabels.map((discount, index) => (
-            <div
-              key={`${discount.code ?? discount.label}-${index}`}
-              data-testid="order-discount-row"
-              className="flex items-center justify-between gap-x-2"
-            >
-              <div className="flex gap-1">
-                <span className="txt-small">{discount.label}</span>
-                {discount.code && shippingOnlyCodes.has(discount.code) && (
-                  <span className="txt-small">({t("fields.shipping")})</span>
-                )}
-              </div>
-              <div className="relative flex-1">
-                <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
-              </div>
-              <span className="txt-small text-ui-fg-muted">
-                {getLocaleAmount(discount.amount, order.currency_code)}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : isDiscountOpen && (
-        <div className="flex flex-col gap-1 pl-5">
-          {discounts.map(({ type, total, codes }) => {
-            return (
-              <div
-                key={type}
-                className="flex items-center justify-between gap-x-2"
-              >
-                <div className="flex gap-1">
-                  <span className="txt-small">{t(`fields.${type}`)}</span>
-                  <span className="txt-small">({codes.join(", ")})</span>
-                </div>
-                <div className="relative flex-1">
-                  <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
-                </div>
-                <span className="txt-small text-ui-fg-muted">
-                  {getLocaleAmount(total, order.currency_code)}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      )}
+      {!taxIncluded && taxRow}
 
       {hasCreditLines && (
         <>
@@ -939,6 +781,7 @@ const DiscountAndTotalBreakdown = ({
               order.currency_code
             )}
           />
+
           {isCreditLinesOpen && (
             <div className="flex flex-col gap-1 pl-5">
               {creditLines.map((creditLine) => {
@@ -1015,18 +858,26 @@ const DiscountAndTotalBreakdown = ({
         </>
       )}
 
-      <div className="text-ui-fg-base flex items-center justify-between">
-        <Text className="text-ui-fg-subtle" size="small" leading="compact">
-          {t("orders.summary.totalAfterDiscount")}
-        </Text>
+      <div className="flex items-center justify-between pt-1">
         <Text
-          className="text-ui-fg-subtle text-bold"
+          className="text-ui-fg-base"
           size="small"
           leading="compact"
+          weight="plus"
+        >
+          {t("orders.summary.total")}
+        </Text>
+        <Text
+          className="text-ui-fg-base tabular-nums"
+          size="small"
+          leading="compact"
+          weight="plus"
         >
           {getLocaleAmount(order.total, order.currency_code)}
         </Text>
       </div>
+
+      {taxIncluded && taxRow}
     </div>
   )
 }
@@ -1314,14 +1165,19 @@ const ExchangeBreakdown = ({
 
 const Total = ({ order }: { order: AdminOrder }) => {
   const { t } = useTranslation()
+  const pending = order.summary?.pending_difference || 0
+  const showPending = !isAmountLessThenRoundingError(
+    pending,
+    order.currency_code
+  )
 
   return (
-    <div className=" flex flex-col gap-y-2 px-6 py-4">
-      <div className="text-ui-fg-base flex items-center justify-between">
-        <Text className="text-ui-fg-subtle" size="small" leading="compact">
-          {t("fields.paidTotal")}
+    <div className="text-ui-fg-subtle flex flex-col gap-y-2 px-6 py-4">
+      <div className="flex items-center justify-between">
+        <Text size="small" leading="compact">
+          {t("orders.summary.paid")}
         </Text>
-        <Text className="text-ui-fg-subtle" size="small" leading="compact">
+        <Text size="small" leading="compact" className="tabular-nums">
           {getStylizedAmount(
             getTotalCaptured(order.payment_collections || []),
             order.currency_code
@@ -1330,12 +1186,11 @@ const Total = ({ order }: { order: AdminOrder }) => {
       </div>
 
       {getTotalCreditLines(order.credit_lines ?? []) > 0 && (
-        <div className="text-ui-fg-base flex items-center justify-between">
-          <Text className="text-ui-fg-subtle" size="small" leading="compact">
+        <div className="flex items-center justify-between">
+          <Text size="small" leading="compact">
             {t("fields.creditTotal")}
           </Text>
-
-          <Text className="text-ui-fg-subtle" size="small" leading="compact">
+          <Text size="small" leading="compact" className="tabular-nums">
             {getStylizedAmount(
               getTotalCreditLines(order.credit_lines ?? []),
               order.currency_code
@@ -1344,25 +1199,78 @@ const Total = ({ order }: { order: AdminOrder }) => {
         </div>
       )}
 
-      <div className="text-ui-fg-base flex items-center justify-between">
-        <Text
-          className="text-ui-fg-subtle text-semibold"
-          size="small"
-          leading="compact"
-        >
-          {t("orders.returns.outstandingAmount")}
-        </Text>
-        <Text
-          className="text-ui-fg-subtle text-bold" // ici
-          size="small"
-          leading="compact"
-        >
-          {getStylizedAmount(
-            order.summary.pending_difference || 0,
-            order.currency_code
-          )}
-        </Text>
-      </div>
+      {showPending && (
+        <div className="flex items-center justify-between">
+          <Text
+            className="text-ui-fg-base"
+            size="small"
+            leading="compact"
+            weight="plus"
+          >
+            {t("orders.summary.pending")}
+          </Text>
+          <Text
+            className="text-ui-fg-base tabular-nums"
+            size="small"
+            leading="compact"
+            weight="plus"
+          >
+            {getStylizedAmount(pending, order.currency_code)}
+          </Text>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const LINE_STATE_DOT = {
+  orange: "bg-ui-tag-orange-icon",
+  blue: "bg-ui-tag-blue-icon",
+  green: "bg-ui-tag-green-icon",
+  grey: "bg-ui-tag-neutral-icon",
+} as const
+
+/** What a plugin part in `order.details.line` receives. */
+type LinePartProps = {
+  data: AdminOrder
+  item: AdminOrderLineItem
+}
+
+/**
+ * Pagly: under each line, where it stands and the plugin parts that belong
+ * to it (personalization, preorder date, gift card code, review), so the page
+ * lists each product once.
+ */
+const LineExtras = ({
+  item,
+  order,
+}: {
+  item: AdminOrderLineItem
+  order: AdminOrder
+}) => {
+  const { t } = useTranslation()
+  const { getWidgets } = useExtension()
+  const parts = getWidgets("order.details.line" as any) as ComponentType<LinePartProps>[]
+  const state = getLineState(item, order)
+
+  if (!state && !parts.length) {
+    return null
+  }
+
+  return (
+    <div className="text-ui-fg-subtle mt-1.5 flex flex-wrap items-center gap-x-3.5 gap-y-1">
+      {state && (
+        <span className="txt-compact-small inline-flex items-center gap-x-1.5">
+          <span
+            aria-hidden
+            className={clx("size-1.5 rounded-[2px]", LINE_STATE_DOT[state.color])}
+          />
+          {t(state.key as any, state.values as any) as string}
+        </span>
+      )}
+      {parts.map((Part, index) => (
+        <Part key={index} data={order} item={item} />
+      ))}
     </div>
   )
 }
