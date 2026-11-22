@@ -202,12 +202,13 @@ describe("Ver en tienda online", { timeout: 60_000 }, () => {
     )
 
   const renderProduct = async () => {
-    const { ProductGeneralSection } = await import(
-      "../../routes/products/product-detail/components/product-general-section"
+    const { ProductHeader } = await import(
+      "../../routes/products/product-detail/components/product-header"
     )
 
     renderWithProviders(
-      <ProductGeneralSection
+      <ProductHeader
+        facts={{ variants: [], currency: "uyu", places: 1, sales: new Map(), cover: null, isPending: false }}
         product={
           {
             id: "prod_1",
@@ -233,7 +234,7 @@ describe("Ver en tienda online", { timeout: 60_000 }, () => {
     register(undefined)
     await renderProduct()
 
-    await screen.findByText("actions.edit")
+    await screen.findByText("Set de gadgets de cocina 4 en 1")
     expect(screen.queryByText("onlineStore.view")).toBeNull()
   })
 
