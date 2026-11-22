@@ -109,6 +109,7 @@ export const makeOrder = (over: Over = {}) =>
       {
         id: "sm_1",
         name: "UES a domicilio",
+        is_tax_inclusive: true,
         subtotal: 250,
         total: 250,
         created_at: NOW,
@@ -137,6 +138,8 @@ export const makeOrder = (over: Over = {}) =>
         id: "paycol_1",
         status: "completed",
         amount: 2833,
+        captured_amount: 2833,
+        refunded_amount: 0,
         currency_code: "uyu",
         payments: [payment()],
       },

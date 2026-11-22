@@ -187,6 +187,8 @@ describe("the order's discounts", () => {
 
     // The amounts follow the machine's number format.
     const rows = screen.getAllByTestId("order-discount-row")
+    // Each named discount takes off, like the Descuento row above it.
+    expect(rows.every((row) => row.textContent?.includes("−"))).toBe(true)
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringMatching(/^Air Jordan 1 Low \+ laces bundle.*16[.,]50/),
       expect.stringMatching(/^Shoelaces volume discount · 3\+.*6[.,]00/),

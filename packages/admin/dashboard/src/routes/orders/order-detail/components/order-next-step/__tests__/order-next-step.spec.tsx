@@ -209,6 +209,54 @@ describe("OrderNextStep", () => {
     expect(screen.queryByText("orders.nextStep.shipped.title")).toBeNull()
   })
 
+  it("keeps the payment and returns in reach while a plugin part holds the slot, but not preparing", () => {
+    const Request = ({ claim }: any) => {
+      useEffect(() => claim(true), [claim])
+      return <div data-testid="customer-request" />
+    }
+    zones.current = { "order.details.next": [Request] }
+    returns.current = [{ id: "ret_1", canceled_at: null }]
+
+    renderStep(
+      makeOrder({
+        summary: { pending_difference: 2833 },
+        payment_collections: [
+          { id: "paycol_1", status: "not_paid", amount: 2833, captured_amount: 0, currency_code: "uyu", payments: [] },
+        ],
+      })
+    )
+
+    expect(screen.getByTestId("customer-request")).toBeTruthy()
+    expect(screen.getByText("orders.nextStep.unpaid.title")).toBeTruthy()
+    expect(screen.getByText("orders.nextStep.receive.title")).toBeTruthy()
+    expect(screen.queryByText("orders.nextStep.prepare.title")).toBeNull()
+  })
+
+  it("offers every return to receive when several are on their way back", () => {
+    returns.current = [
+      { id: "ret_1", canceled_at: null },
+      { id: "ret_2", canceled_at: null, exchange_id: "exc_1" },
+    ]
+
+    renderStep(shipped())
+
+    expect(screen.queryByRole("link", { name: "orders.returns.receive.action" })).toBeNull()
+    expect(screen.getByRole("button", { name: "orders.returns.receive.action" })).toBeTruthy()
+  })
+
+  it("offers to prepare items that don't ship when nothing else is left", () => {
+    renderStep(
+      makeOrder({
+        items: [orderItem("item_ebook", { requires_shipping: false, quantity: 1 })],
+      })
+    )
+
+    const action = screen.getByRole("link", { name: "orders.nextStep.prepare.action" })
+    expect(action.getAttribute("href")).toBe(
+      "/orders/order_1/fulfillment?requires_shipping=false"
+    )
+  })
+
   it("asks for the payment when the order still owes it", () => {
     const order = makeOrder({
       payment_status: "not_paid",

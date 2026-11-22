@@ -75,6 +75,37 @@ describe("getLineState", () => {
     })
   })
 
+  it("numbers a line's shipment as Envío does, canceled ones included", () => {
+    const { item, order } = withItem(
+      { fulfilled_quantity: 2, shipped_quantity: 2 },
+      {
+        fulfillments: [
+          fulfillment("ful_1", {
+            canceled_at: "2026-11-21T09:00:00.000Z",
+            items: [{ line_item_id: "item_mug", quantity: 2 }],
+          }),
+          fulfillment("ful_2", {
+            shipped_at: "2026-11-21T11:00:00.000Z",
+            items: [{ line_item_id: "item_mug", quantity: 2 }],
+          }),
+        ],
+      }
+    )
+    expect(getLineState(item, order)).toEqual({
+      key: "orders.lineState.shippedIn",
+      color: "green",
+      values: { n: 2 },
+    })
+  })
+
+  it("says a line that doesn't ship is done once prepared", () => {
+    const item = orderItem("item_ebook", { requires_shipping: false, quantity: 1, detail: { fulfilled_quantity: 1 } }) as any
+    expect(getLineState(item, makeOrder({ items: [item] }))).toEqual({
+      key: "orders.lineState.delivered",
+      color: "green",
+    })
+  })
+
   it("says a line arrived", () => {
     const { item, order } = withItem({
       fulfilled_quantity: 2,

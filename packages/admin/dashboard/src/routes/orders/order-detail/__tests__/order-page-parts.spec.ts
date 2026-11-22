@@ -46,6 +46,7 @@ const NEW_KEYS = [
   "orders.summary.taxIncluded",
   "orders.summary.paid",
   "orders.summary.pending",
+  "orders.summary.toCapture",
   "orders.shipping.title",
   "orders.shipping.method",
   "orders.shipping.recipient",

@@ -147,6 +147,27 @@ describe("OrderSummarySection as Productos", () => {
     expect(screen.queryByText("orders.summary.taxIncluded")).toBeNull()
   })
 
+  it("says what is still to capture when a payment is only authorized", () => {
+    renderProducts(
+      makeOrder({
+        payment_collections: [
+          { id: "paycol_1", status: "authorized", amount: 2833, captured_amount: 0, refunded_amount: 0, currency_code: "uyu", payments: [] },
+        ],
+      })
+    )
+    expect(screen.getByText("orders.summary.toCapture")).toBeTruthy()
+  })
+
+  it("doesn't call taxes included when shipping adds its own", () => {
+    const order = makeOrder()
+    order.shipping_methods = order.shipping_methods.map((sm: any) => ({ ...sm, is_tax_inclusive: false }))
+    const { container } = renderProducts(order)
+    const text = container.textContent ?? ""
+
+    expect(screen.queryByText("orders.summary.taxIncluded")).toBeNull()
+    expect(text.indexOf("orders.summary.tax")).toBeLessThan(text.indexOf("orders.summary.total"))
+  })
+
   it("leaves out a taxes row when the order has none", () => {
     renderProducts(makeOrder({ tax_total: 0, original_tax_total: 0 }))
     expect(screen.queryByText("orders.summary.taxIncluded")).toBeNull()
