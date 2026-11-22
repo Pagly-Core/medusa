@@ -45,7 +45,8 @@ export const getOrderFulfillmentStatus = (
   status: string
 ) => {
   const [label, color] = {
-    not_fulfilled: [t("orders.fulfillment.status.notFulfilled"), "red"],
+    // Pagly: still to prepare is the normal state of a new order, not an error.
+    not_fulfilled: [t("orders.fulfillment.status.notFulfilled"), "orange"],
     partially_fulfilled: [
       t("orders.fulfillment.status.partiallyFulfilled"),
       "orange",

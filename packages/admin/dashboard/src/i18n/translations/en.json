@@ -591,7 +591,7 @@
       "showAvailableImages": "Show available images",
       "availableImages": "Select images",
       "selectToAdd": "Add product images to the variant. To add new images, add them to the product first.",
-      "removeSelected": "Remove Selected",
+      "removeSelected": "Remove Selected",
       "altLabel": "Alt text",
       "altMissing": "No alt text",
       "altFailedToast": "Media saved, but not the alt text. Try again."
@@ -1299,7 +1299,17 @@
       "shippingSubtotal": "Shipping Subtotal",
       "discountSubtotal": "Discount Subtotal",
       "taxTotal": "Tax Total",
-      "totalAfterDiscount": "Total After Discount"
+      "totalAfterDiscount": "Total After Discount",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "discountNamed": "Discount · {{name}}",
+      "shipping": "Shipping",
+      "total": "Total",
+      "tax": "Taxes",
+      "taxIncluded": "Taxes included",
+      "paid": "Paid",
+      "pending": "Pending",
+      "toCapture": "To capture"
     },
     "transfer": {
       "title": "Transfer ownership",
@@ -1356,7 +1366,8 @@
       "createRefundWrongQuantity": "Quantity should be a number between 1 and {{number}}",
       "refundAmount": "Refund {{ amount }}",
       "paymentLink": "Copy payment link for {{ amount }}",
-      "selectPaymentToRefund": "Select payment to refund"
+      "selectPaymentToRefund": "Select payment to refund",
+      "manualProvider": "Manual payment"
     },
     "edits": {
       "title": "Edit order",
@@ -1652,7 +1663,9 @@
       "editEmail": "Edit email",
       "transferOwnership": "Transfer ownership",
       "editBillingAddress": "Edit billing address",
-      "editShippingAddress": "Edit shipping address"
+      "editShippingAddress": "Edit shipping address",
+      "billing": "Invoice",
+      "billingSameAsShipping": "Same as shipping"
     },
     "activity": {
       "header": "Activity",
@@ -1735,6 +1748,47 @@
       "displayId": "Display ID",
       "refundableAmount": "Refundable amount",
       "returnableQuantity": "Returnable quantity"
+    },
+    "headerMeta": "{{date}} · {{channel}} · {{customer}}",
+    "nextStep": {
+      "prepare": {
+        "title": "Ready to prepare",
+        "detail_one": "{{count}} item · {{method}}",
+        "detail_other": "{{count}} items · {{method}}",
+        "action": "Prepare order"
+      },
+      "shipped": {
+        "title": "On its way",
+        "detail": "Left {{date}}",
+        "action": "Mark as delivered"
+      },
+      "unpaid": {
+        "title": "Payment due",
+        "detail": "{{amount}} still to collect"
+      },
+      "receive": {
+        "title": "Return on its way back",
+        "detail": "Receive the items when they arrive"
+      }
+    },
+    "products": {
+      "title": "Products"
+    },
+    "lineState": {
+      "toPrepare": "To prepare",
+      "prepared": "Prepared",
+      "partlyShipped": "{{done}} of {{total}} shipped",
+      "shipped": "Shipped",
+      "shippedIn": "Shipped · shipment {{n}}",
+      "delivered": "Delivered",
+      "returnRequested": "Return requested",
+      "returned": "Returned"
+    },
+    "shipping": {
+      "title": "Shipping",
+      "method": "Method",
+      "recipient": "To",
+      "shipmentOf": "Shipment {{n}} of {{total}}"
     }
   },
   "draftOrders": {

@@ -30,6 +30,10 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
   const { getFullDate } = useDate()
 
   const { mutateAsync: cancelOrder } = useCancelOrder(order.id)
+  const customer =
+    [order.customer?.first_name, order.customer?.last_name]
+      .filter(Boolean)
+      .join(" ") || order.email
 
   const handleCancel = async () => {
     const res = await prompt({
@@ -56,17 +60,24 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
   }
 
   return (
-    <Container className="flex items-center justify-between px-6 py-4">
-      <div>
+    <Container className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-6 py-4">
+      <div className="min-w-[240px] flex-1">
         <div className="flex items-center gap-x-1">
           <Heading>#{order.display_id}</Heading>
           <Copy content={`#${order.display_id}`} className="text-ui-fg-muted" />
         </div>
         <Text size="small" className="text-ui-fg-subtle">
-          {t("orders.onDateFromSalesChannel", {
-            date: getFullDate({ date: order.created_at, includeTime: true }),
-            salesChannel: order.sales_channel?.name,
-          })}
+          {/* Pagly: when, where and who, in one line. */}
+          {customer
+            ? t("orders.headerMeta", {
+                date: getFullDate({ date: order.created_at, includeTime: true }),
+                channel: order.sales_channel?.name,
+                customer,
+              })
+            : t("orders.onDateFromSalesChannel", {
+                date: getFullDate({ date: order.created_at, includeTime: true }),
+                salesChannel: order.sales_channel?.name,
+              })}
         </Text>
       </div>
       <div className="flex items-center gap-x-4">

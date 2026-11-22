@@ -1,18 +1,14 @@
-import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
 import { useLoaderData, useParams } from "react-router-dom"
 
 import { TwoColumnPageSkeleton } from "../../../components/common/skeleton"
-import { LayoutComposer, detailPageDefaultEntries } from "../../../components/layout-composer"
+import { TwoColumnPage } from "../../../components/layout/pages"
 import { useOrder, useOrderPreview } from "../../../hooks/api/orders"
 import { usePlugins } from "../../../hooks/api/plugins"
-import { ActiveOrderClaimSection } from "./components/active-order-claim-section"
-import { ActiveOrderExchangeSection } from "./components/active-order-exchange-section"
-import { ActiveOrderReturnSection } from "./components/active-order-return-section"
-import { OrderActiveEditSection } from "./components/order-active-edit-section"
 import { OrderActivitySection } from "./components/order-activity-section"
 import { OrderCustomerSection } from "./components/order-customer-section"
 import { OrderFulfillmentSection } from "./components/order-fulfillment-section"
 import { OrderGeneralSection } from "./components/order-general-section"
+import { OrderNextStep } from "./components/order-next-step"
 import { OrderPaymentSection } from "./components/order-payment-section"
 import { OrderSummarySection } from "./components/order-summary-section"
 import { DEFAULT_FIELDS, ExtendedOrder } from "./constants"
@@ -63,56 +59,32 @@ export const OrderDetail = () => {
     throw error
   }
 
+  // Pagly: a fixed page instead of the drag-and-drop layout: what the order
+  // waits on first, then the order told once. Plugin parts go in the five
+  // order zones (next, line, shipping, payment, customer), never at the end.
+  // Below 1280px the side column follows the main one, so a phone reads the
+  // next step first.
   return (
-    <LayoutComposer
-      widgetsZonePrefix="order.details"
-      preferredLayoutId={CORE_LAYOUT_IDS.TWO_COLUMN}
+    <TwoColumnPage
+      widgets={NO_PAGE_WIDGETS}
       data={order}
-      sections={{
-        main: (
-          <>
-            <LayoutComposer.Entry id="OrderActiveEditSection">
-              <OrderActiveEditSection order={order} />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="ActiveOrderClaimSection">
-              <ActiveOrderClaimSection orderPreview={orderPreview!} />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="ActiveOrderExchangeSection">
-              <ActiveOrderExchangeSection orderPreview={orderPreview!} />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="ActiveOrderReturnSection">
-              <ActiveOrderReturnSection orderPreview={orderPreview!} />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="OrderGeneralSection">
-              <OrderGeneralSection order={order as ExtendedOrder} />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="OrderSummarySection">
-              <OrderSummarySection order={order} plugins={plugins} />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="OrderPaymentSection">
-              <OrderPaymentSection
-                order={order as ExtendedOrder}
-                plugins={plugins}
-              />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="OrderFulfillmentSection">
-              <OrderFulfillmentSection order={order as ExtendedOrder} />
-            </LayoutComposer.Entry>
-            {/* Pagly: metadata is edited through metaobjects, not as raw keys. */}
-            {detailPageDefaultEntries(order, { metadata: false })}
-          </>
-        ),
-        side: (
-          <>
-            <LayoutComposer.Entry id="OrderCustomerSection">
-              <OrderCustomerSection order={order} />
-            </LayoutComposer.Entry>
-            <LayoutComposer.Entry id="OrderActivitySection">
-              <OrderActivitySection order={order as ExtendedOrder} />
-            </LayoutComposer.Entry>
-          </>
-        ),
-      }}
-    />
+      showJSON
+      hasOutlet
+    >
+      <TwoColumnPage.Main>
+        <OrderGeneralSection order={order as ExtendedOrder} />
+        <OrderNextStep order={order} orderPreview={orderPreview} />
+        <OrderSummarySection order={order} plugins={plugins} />
+        <OrderFulfillmentSection order={order as ExtendedOrder} />
+        <OrderPaymentSection order={order as ExtendedOrder} plugins={plugins} />
+      </TwoColumnPage.Main>
+      <TwoColumnPage.Sidebar>
+        <OrderCustomerSection order={order} />
+        <OrderActivitySection order={order as ExtendedOrder} />
+      </TwoColumnPage.Sidebar>
+    </TwoColumnPage>
   )
 }
+
+const NO_PAGE_WIDGETS = { before: [], after: [], sideBefore: [], sideAfter: [] }
+

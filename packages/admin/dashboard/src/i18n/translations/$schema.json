@@ -5057,6 +5057,36 @@
             },
             "totalAfterDiscount": {
               "type": "string"
+            },
+            "subtotal": {
+              "type": "string"
+            },
+            "discount": {
+              "type": "string"
+            },
+            "discountNamed": {
+              "type": "string"
+            },
+            "shipping": {
+              "type": "string"
+            },
+            "total": {
+              "type": "string"
+            },
+            "tax": {
+              "type": "string"
+            },
+            "taxIncluded": {
+              "type": "string"
+            },
+            "paid": {
+              "type": "string"
+            },
+            "pending": {
+              "type": "string"
+            },
+            "toCapture": {
+              "type": "string"
             }
           },
           "required": [
@@ -5073,7 +5103,17 @@
             "shippingSubtotal",
             "discountSubtotal",
             "taxTotal",
-            "totalAfterDiscount"
+            "totalAfterDiscount",
+            "subtotal",
+            "discount",
+            "discountNamed",
+            "shipping",
+            "total",
+            "tax",
+            "taxIncluded",
+            "paid",
+            "pending",
+            "toCapture"
           ],
           "additionalProperties": false
         },
@@ -5273,6 +5313,9 @@
             },
             "selectPaymentToRefund": {
               "type": "string"
+            },
+            "manualProvider": {
+              "type": "string"
             }
           },
           "required": [
@@ -5302,7 +5345,8 @@
             "createRefundWrongQuantity",
             "refundAmount",
             "paymentLink",
-            "selectPaymentToRefund"
+            "selectPaymentToRefund",
+            "manualProvider"
           ],
           "additionalProperties": false
         },
@@ -6443,6 +6487,12 @@
             },
             "editShippingAddress": {
               "type": "string"
+            },
+            "billing": {
+              "type": "string"
+            },
+            "billingSameAsShipping": {
+              "type": "string"
             }
           },
           "required": [
@@ -6450,7 +6500,9 @@
             "editEmail",
             "transferOwnership",
             "editBillingAddress",
-            "editShippingAddress"
+            "editShippingAddress",
+            "billing",
+            "billingSameAsShipping"
           ],
           "additionalProperties": false
         },
@@ -6779,6 +6831,158 @@
           },
           "required": ["displayId", "refundableAmount", "returnableQuantity"],
           "additionalProperties": false
+        },
+        "headerMeta": {
+          "type": "string"
+        },
+        "nextStep": {
+          "type": "object",
+          "properties": {
+            "prepare": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "detail_zero": {
+                  "type": "string"
+                },
+                "detail_one": {
+                  "type": "string"
+                },
+                "detail_two": {
+                  "type": "string"
+                },
+                "detail_few": {
+                  "type": "string"
+                },
+                "detail_many": {
+                  "type": "string"
+                },
+                "detail_other": {
+                  "type": "string"
+                },
+                "action": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "action"],
+              "additionalProperties": false
+            },
+            "shipped": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                },
+                "action": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "detail", "action"],
+              "additionalProperties": false
+            },
+            "unpaid": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "detail"],
+              "additionalProperties": false
+            },
+            "receive": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "required": ["title", "detail"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["prepare", "shipped", "unpaid", "receive"],
+          "additionalProperties": false
+        },
+        "products": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": ["title"],
+          "additionalProperties": false
+        },
+        "lineState": {
+          "type": "object",
+          "properties": {
+            "toPrepare": {
+              "type": "string"
+            },
+            "prepared": {
+              "type": "string"
+            },
+            "partlyShipped": {
+              "type": "string"
+            },
+            "shipped": {
+              "type": "string"
+            },
+            "shippedIn": {
+              "type": "string"
+            },
+            "delivered": {
+              "type": "string"
+            },
+            "returnRequested": {
+              "type": "string"
+            },
+            "returned": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "toPrepare",
+            "prepared",
+            "partlyShipped",
+            "shipped",
+            "shippedIn",
+            "delivered",
+            "returnRequested",
+            "returned"
+          ],
+          "additionalProperties": false
+        },
+        "shipping": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "shipmentOf": {
+              "type": "string"
+            }
+          },
+          "required": ["title", "method", "recipient", "shipmentOf"],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -6810,7 +7014,12 @@
         "refund",
         "customer",
         "activity",
-        "fields"
+        "fields",
+        "headerMeta",
+        "nextStep",
+        "products",
+        "lineState",
+        "shipping"
       ],
       "additionalProperties": false
     },

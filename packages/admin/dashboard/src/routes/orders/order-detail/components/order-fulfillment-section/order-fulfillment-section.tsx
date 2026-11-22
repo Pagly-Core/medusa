@@ -1,5 +1,4 @@
-import { Buildings, XCircle } from "@medusajs/icons"
-import { AdminOrder, AdminOrderLineItem } from "@medusajs/types"
+import { Buildings, CheckCircle, FlyingBox, XCircle } from "@medusajs/icons"
 import {
   Button,
   Container,
@@ -15,23 +14,20 @@ import {
   usePrompt,
 } from "@medusajs/ui"
 import { format } from "date-fns"
-import { useState } from "react"
+import { ComponentType, ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate } from "react-router-dom"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { Skeleton } from "../../../../../components/common/skeleton"
-import { Thumbnail } from "../../../../../components/common/thumbnail"
 import {
   useCancelOrderFulfillment,
   useMarkOrderFulfillmentAsDelivered,
 } from "../../../../../hooks/api/orders"
 import { useStockLocation } from "../../../../../hooks/api/stock-locations"
-import {
-  getOptionValues,
-  getVariantTitle,
-} from "../../../../../lib/default-names"
+import { getFormattedAddress } from "../../../../../lib/addresses"
+import { getVariantTitle } from "../../../../../lib/default-names"
 import { formatProvider } from "../../../../../lib/format-provider"
-import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
+import { useExtension } from "../../../../../providers/extension-provider"
 import { FulfillmentSetType } from "../../../../locations/common/constants"
 import { ExtendedOrderFulfillment, ExtendedOrder } from "../../constants"
 
@@ -39,178 +35,144 @@ type OrderFulfillmentSectionProps = {
   order: ExtendedOrder
 }
 
+/** What a plugin part in `order.details.shipping` receives. */
+type ShippingPartProps = { data: ExtendedOrder }
+
+/**
+ * Pagly: one Envío card for how the order ships, where to, and each shipment,
+ * numbered when there are several. The products aren't listed again: each
+ * line on Productos says where it stands, and preparing is the next step.
+ * Plugin parts (a carrier's labels) sit inside it.
+ */
 export const OrderFulfillmentSection = ({
   order,
 }: OrderFulfillmentSectionProps) => {
-  const fulfillments = order.fulfillments || []
-
-  return (
-    <div className="flex flex-col gap-y-3">
-      <UnfulfilledItemBreakdown order={order} />
-      {fulfillments.map((f, index) => (
-        <Fulfillment key={f.id} index={index} fulfillment={f} order={order} />
-      ))}
-    </div>
-  )
-}
-
-const UnfulfilledItem = ({
-  item,
-  currencyCode,
-}: {
-  item: AdminOrderLineItem
-  currencyCode: string
-}) => {
-  return (
-    <div
-      key={item.id}
-      className="text-ui-fg-subtle grid grid-cols-2 items-start px-6 py-4"
-    >
-      <div className="flex items-start gap-x-4">
-        <Thumbnail src={item.thumbnail} />
-        <div>
-          <Text
-            size="small"
-            leading="compact"
-            weight="plus"
-            className="text-ui-fg-base"
-          >
-            {item.title}
-          </Text>
-          {item.variant_sku && (
-            <div className="flex items-center gap-x-1">
-              <Text size="small">{item.variant_sku}</Text>
-              <Copy content={item.variant_sku} className="text-ui-fg-muted" />
-            </div>
-          )}
-          <Text size="small">
-            {/* Pagly: no "Default option value" for a one-version product. */}
-            {getOptionValues(item.variant?.options).join(" · ")}
-          </Text>
-        </div>
-      </div>
-      <div className="grid grid-cols-3 items-center gap-x-4">
-        <div className="flex items-center justify-end">
-          <Text size="small">
-            {getLocaleAmount(item.unit_price, currencyCode)}
-          </Text>
-        </div>
-        <div className="flex items-center justify-end">
-          <Text>
-            <span className="tabular-nums">
-              {item.quantity - item.detail.fulfilled_quantity}
-            </span>
-            x
-          </Text>
-        </div>
-        <div className="flex items-center justify-end">
-          <Text size="small">
-            {getLocaleAmount((item.subtotal as number) || 0, currencyCode)}
-          </Text>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const UnfulfilledItemBreakdown = ({ order }: { order: AdminOrder }) => {
-  // Create an array of order items that haven't been fulfilled or at least not fully fulfilled
-  const unfulfilledItemsWithShipping = order.items!.filter(
-    (i) => i.requires_shipping && i.detail.fulfilled_quantity < i.quantity
-  )
-
-  const unfulfilledItemsWithoutShipping = order.items!.filter(
-    (i) => !i.requires_shipping && i.detail.fulfilled_quantity < i.quantity
-  )
-
-  return (
-    <>
-      {!!unfulfilledItemsWithShipping.length && (
-        <UnfulfilledItemDisplay
-          order={order}
-          unfulfilledItems={unfulfilledItemsWithShipping}
-          requiresShipping={true}
-        />
-      )}
-
-      {!!unfulfilledItemsWithoutShipping.length && (
-        <UnfulfilledItemDisplay
-          order={order}
-          unfulfilledItems={unfulfilledItemsWithoutShipping}
-          requiresShipping={false}
-        />
-      )}
-    </>
-  )
-}
-
-const UnfulfilledItemDisplay = ({
-  order,
-  unfulfilledItems,
-  requiresShipping = false,
-}: {
-  order: AdminOrder
-  unfulfilledItems: AdminOrderLineItem[]
-  requiresShipping: boolean
-}) => {
   const { t } = useTranslation()
+  const { getWidgets } = useExtension()
+  const parts = getWidgets(
+    "order.details.shipping" as any
+  ) as ComponentType<ShippingPartProps>[]
 
-  if (order.status === "canceled") {
-    return
-  }
+  const fulfillments = order.fulfillments || []
+  const method = order.shipping_methods?.find(
+    (shippingMethod) => !shippingMethod.detail?.return_id
+  )
+  const address = getFormattedAddress({ address: order.shipping_address })
+  const open = order.status !== "canceled"
+  const toPrepare = (requiresShipping: boolean) =>
+    open &&
+    order.items.some(
+      (item) =>
+        !!item.requires_shipping === requiresShipping &&
+        item.detail.fulfilled_quantity < item.quantity
+    )
 
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">{t("orders.fulfillment.unfulfilledItems")}</Heading>
-
-        <div className="flex items-center gap-x-4">
-          {requiresShipping && (
-            <StatusBadge color="red" className="text-nowrap">
-              {t("orders.fulfillment.requiresShipping")}
-            </StatusBadge>
-          )}
-
-          <StatusBadge color="red" className="text-nowrap">
-            {t("orders.fulfillment.awaitingFulfillmentBadge")}
-          </StatusBadge>
-
-          <ActionMenu
-            groups={[
-              {
-                actions: [
-                  {
-                    label: t("orders.fulfillment.fulfillItems"),
-                    icon: <Buildings />,
-                    to: `/orders/${order.id}/fulfillment?requires_shipping=${requiresShipping}`,
-                  },
-                ],
-              },
-            ]}
-          />
-        </div>
+        <Heading level="h2">{t("orders.shipping.title")}</Heading>
+        <ActionMenu
+          groups={[
+            {
+              actions: [
+                ...(toPrepare(true)
+                  ? [
+                      {
+                        label: t("orders.fulfillment.fulfillItems"),
+                        icon: <Buildings />,
+                        to: `/orders/${order.id}/fulfillment?requires_shipping=true`,
+                      },
+                    ]
+                  : []),
+                ...(toPrepare(false)
+                  ? [
+                      {
+                        label: t("orders.fulfillment.fulfillItems"),
+                        icon: <Buildings />,
+                        to: `/orders/${order.id}/fulfillment?requires_shipping=false`,
+                      },
+                    ]
+                  : []),
+                {
+                  label: t("addresses.shippingAddress.editLabel"),
+                  icon: <FlyingBox />,
+                  to: "shipping-address",
+                },
+              ],
+            },
+          ]}
+        />
       </div>
-      <div>
-        {unfulfilledItems.map((item: AdminOrderLineItem) => (
-          <UnfulfilledItem
-            key={item.id}
-            item={item}
-            currencyCode={order.currency_code}
-          />
-        ))}
-      </div>
+
+      {method && (
+        <ShippingRow label={t("orders.shipping.method")}>
+          <Text size="small" leading="compact">
+            {method.name}
+          </Text>
+        </ShippingRow>
+      )}
+
+      {!!address.length && (
+        <ShippingRow label={t("orders.shipping.recipient")}>
+          <div className="flex items-start justify-between gap-x-2">
+            <Text size="small" leading="compact">
+              {address.map((line, i) => (
+                <span key={i} className="break-words">
+                  {line}
+                  <br />
+                </span>
+              ))}
+            </Text>
+            <Copy content={address.join("\n")} className="text-ui-fg-muted" />
+          </div>
+        </ShippingRow>
+      )}
+
+      {fulfillments.map((f, index) => (
+        <Fulfillment
+          key={f.id}
+          index={index}
+          total={fulfillments.length}
+          fulfillment={f}
+          order={order}
+        />
+      ))}
+
+      {parts.map((Part, index) => (
+        <Part key={index} data={order} />
+      ))}
     </Container>
   )
 }
+
+const ShippingRow = ({
+  label,
+  children,
+}: {
+  label: string
+  children: ReactNode
+}) => (
+  <div className="text-ui-fg-subtle grid grid-cols-2 items-start px-6 py-4">
+    <Text size="small" leading="compact" weight="plus">
+      {label}
+    </Text>
+    {children}
+  </div>
+)
+
+const LINK =
+  "text-ui-fg-base underline decoration-ui-border-strong underline-offset-2 transition-fg hover:decoration-current"
 
 const Fulfillment = ({
   fulfillment,
   order,
   index,
+  total,
 }: {
   fulfillment: ExtendedOrderFulfillment
   order: ExtendedOrder
   index: number
+  total: number
 }) => {
   const { t } = useTranslation()
   const prompt = usePrompt()
@@ -340,13 +302,13 @@ const Fulfillment = ({
   }
 
   return (
-    <Container className="divide-y p-0">
+    <div className="divide-y">
       <div className="flex items-center justify-between px-6 py-4">
-        <Heading level="h2">
-          {t("orders.fulfillment.number", {
-            number: index + 1,
-          })}
-        </Heading>
+        <Text size="small" leading="compact" weight="plus">
+          {total > 1
+            ? t("orders.shipping.shipmentOf", { n: index + 1, total })
+            : null}
+        </Text>
         <div className="flex items-center gap-x-4">
           <Tooltip
             content={format(
@@ -362,6 +324,20 @@ const Fulfillment = ({
             groups={[
               {
                 actions: [
+                  // Pagly: marking delivered is the next step's button; here it waits in the menu.
+                  ...(showDeliveryButton
+                    ? [
+                        {
+                          label: t(
+                            isPickUpFulfillment
+                              ? "orders.fulfillment.markAsPickedUp"
+                              : "orders.fulfillment.markAsDelivered"
+                          ),
+                          icon: <CheckCircle />,
+                          onClick: handleMarkAsDelivered,
+                        },
+                      ]
+                    : []),
                   {
                     label: t("actions.cancel"),
                     icon: <XCircle />,
@@ -409,7 +385,7 @@ const Fulfillment = ({
           ) : stock_location ? (
             <Link
               to={`/settings/locations/${stock_location.id}`}
-              className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover transition-fg"
+              className={LINK}
             >
               <Text size="small" leading="compact">
                 {stock_location.name}
@@ -420,6 +396,7 @@ const Fulfillment = ({
           )}
         </div>
       )}
+      {fulfillment.provider_id !== "manual_manual" && (
       <div className="text-ui-fg-subtle grid grid-cols-2 items-center px-6 py-4">
         <Text size="small" leading="compact" weight="plus">
           {t("fields.provider")}
@@ -429,6 +406,8 @@ const Fulfillment = ({
           {formatProvider(fulfillment.provider_id)}
         </Text>
       </div>
+      )}
+      {!!fulfillment.labels?.length && (
       <div className="text-ui-fg-subtle grid grid-cols-2 items-start px-6 py-4">
         <Text size="small" leading="compact" weight="plus">
           {t("orders.fulfillment.trackingLabel")}
@@ -448,7 +427,7 @@ const Fulfillment = ({
                           href={tlink.tracking_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover transition-fg"
+                          className={LINK}
                         >
                           <Text size="small" leading="compact" as="span">
                             {tlink.tracking_number}
@@ -461,7 +440,7 @@ const Fulfillment = ({
                           href={tlink.label_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover transition-fg"
+                          className={LINK}
                         >
                           <Text size="small" leading="compact" as="span">
                             Label
@@ -481,26 +460,13 @@ const Fulfillment = ({
                 )
               })}
             </ul>
-          ) : (
-            <Text size="small" leading="compact">
-              -
-            </Text>
-          )}
+          ) : null}
         </div>
       </div>
+      )}
 
-      {(showShippingButton || showDeliveryButton) && (
-        <div className="bg-ui-bg-subtle flex items-center justify-end gap-x-2 rounded-b-xl px-4 py-4">
-          {showDeliveryButton && (
-            <Button onClick={handleMarkAsDelivered} variant="secondary">
-              {t(
-                isPickUpFulfillment
-                  ? "orders.fulfillment.markAsPickedUp"
-                  : "orders.fulfillment.markAsDelivered"
-              )}
-            </Button>
-          )}
-
+      {showShippingButton && (
+        <div className="flex items-center justify-end gap-x-2 px-6 py-4">
           {showShippingButton && (
             <Button
               onClick={() => navigate(`./${fulfillment.id}/create-shipment`)}
@@ -545,6 +511,6 @@ const Fulfillment = ({
           </Prompt.Footer>
         </Prompt.Content>
       </Prompt>
-    </Container>
+    </div>
   )
 }
