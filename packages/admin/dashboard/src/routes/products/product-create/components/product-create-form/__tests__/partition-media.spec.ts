@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { partitionMediaForUpload, withRequestAlts } from "../../../utils"
+import {
+  firstPhotoIsMain,
+  partitionMediaForUpload,
+  withRequestAlts,
+} from "../../../utils"
 
 const file = (name: string) => new File(["x"], name, { type: "image/png" })
 
@@ -81,6 +85,27 @@ describe("withRequestAlts", () => {
     ).toEqual([
       { ...uploads[0], alt: "Taza roja" },
       { ...uploads[1], alt: undefined },
+    ])
+  })
+})
+
+// Pagly: a product's main photo is always its first photo.
+describe("firstPhotoIsMain", () => {
+  it("marks the first photo as the main one, whatever was marked before", () => {
+    expect(
+      firstPhotoIsMain([
+        { url: "a", isThumbnail: false },
+        { url: "b", isThumbnail: true },
+      ])
+    ).toEqual([
+      { url: "a", isThumbnail: true },
+      { url: "b", isThumbnail: false },
+    ])
+  })
+
+  it("marks the first photo when none was marked", () => {
+    expect(firstPhotoIsMain([{ url: "a", isThumbnail: false }])).toEqual([
+      { url: "a", isThumbnail: true },
     ])
   })
 })

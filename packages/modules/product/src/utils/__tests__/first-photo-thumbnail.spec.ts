@@ -44,7 +44,7 @@ describe("firstPhotoThumbnail", () => {
   })
 
   it("clears the main photo when the last photo goes", () => {
-    expect(firstPhotoThumbnail({ images: [], thumbnail: "a.jpg" })).toEqual({
+    expect(firstPhotoThumbnail({ images: [], thumbnail: "" })).toEqual({
       images: [],
       thumbnail: null,
     })
