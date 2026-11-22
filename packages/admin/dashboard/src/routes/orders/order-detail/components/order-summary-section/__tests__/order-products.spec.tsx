@@ -147,6 +147,12 @@ describe("OrderSummarySection as Productos", () => {
     expect(screen.queryByText("orders.summary.taxIncluded")).toBeNull()
   })
 
+  it("leaves out a taxes row when the order has none", () => {
+    renderProducts(makeOrder({ tax_total: 0, original_tax_total: 0 }))
+    expect(screen.queryByText("orders.summary.taxIncluded")).toBeNull()
+    expect(screen.queryByText("orders.summary.tax")).toBeNull()
+  })
+
   it("moves payment steps out to the next step", () => {
     renderProducts(
       makeOrder({
