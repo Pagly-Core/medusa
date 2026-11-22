@@ -30,6 +30,7 @@ import {
   FactVariant,
   groupVariants,
   groupsStartOpen,
+  isCovered,
   isOutOfStock,
   isTracked,
   priceRange,
@@ -309,7 +310,7 @@ const StockText = ({
       <span>{t("products.page.variants.inStock", { count: quantity })}</span>
     )
   }
-  if (facts.cover) {
+  if (facts.cover && isCovered(variant, facts.cover)) {
     return <Dotted tone="green">{facts.cover.row}</Dotted>
   }
   if (variant.allow_backorder) {
@@ -425,7 +426,9 @@ const VariantGroup = ({
     (sum, v) => sum + Math.max(0, v.inventory_quantity ?? 0),
     0
   )
-  const out = facts.cover ? 0 : variants.filter(isOutOfStock).length
+  const out = variants.filter(
+    (v) => isOutOfStock(v) && !isCovered(v, facts.cover)
+  ).length
   const firstOption = realOptions(product)[0]
   const second = (v: FactVariant) =>
     variantName(product, {

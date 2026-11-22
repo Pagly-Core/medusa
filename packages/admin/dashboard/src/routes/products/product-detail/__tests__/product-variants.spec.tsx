@@ -188,8 +188,15 @@ describe("Variantes y precios", () => {
       <ProductVariantSection
         product={makeProduct({ options: [SIZE] })}
         facts={makeFacts({
-          variants: [makeVariant(null, "M", { inventory_quantity: 0 }), makeVariant(null, "XL", { inventory_quantity: 0 })],
-          cover: { row: "En preventa", summary: "x", variant_ids: ["variant_x_M"] },
+          variants: [
+            makeVariant(null, "M", { inventory_quantity: 0 }),
+            makeVariant(null, "XL", { inventory_quantity: 0 }),
+          ],
+          cover: {
+            row: "En preventa",
+            summary: "x",
+            variant_ids: ["variant_x_M"],
+          },
         })}
       />
     )

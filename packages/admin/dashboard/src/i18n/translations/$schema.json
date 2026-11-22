@@ -3687,6 +3687,18 @@
                 },
                 "more": {
                   "type": "string"
+                },
+                "widthCm": {
+                  "type": "string"
+                },
+                "heightCm": {
+                  "type": "string"
+                },
+                "lengthCm": {
+                  "type": "string"
+                },
+                "weightGrams": {
+                  "type": "string"
                 }
               },
               "required": [
@@ -3697,7 +3709,11 @@
                 "sizesValue",
                 "empty",
                 "profile",
-                "more"
+                "more",
+                "widthCm",
+                "heightCm",
+                "lengthCm",
+                "weightGrams"
               ],
               "additionalProperties": false
             },

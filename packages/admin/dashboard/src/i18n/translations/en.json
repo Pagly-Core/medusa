@@ -941,7 +941,11 @@
         "sizesValue": "{{length}} × {{width}} × {{height}} cm",
         "empty": "No weight or size. Add them to quote shipping right.",
         "profile": "Shipping profile",
-        "more": "Shipping: actions"
+        "more": "Shipping: actions",
+        "widthCm": "Width (cm)",
+        "heightCm": "Height (cm)",
+        "lengthCm": "Length (cm)",
+        "weightGrams": "Weight (g)"
       },
       "selling": {
         "title": "Selling",

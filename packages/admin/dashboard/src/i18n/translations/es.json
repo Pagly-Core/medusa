@@ -988,7 +988,11 @@
         "sizesValue": "{{length}} × {{width}} × {{height}} cm",
         "empty": "Sin peso ni medidas. Cargalos para cotizar el envío justo.",
         "profile": "Perfil de envío",
-        "more": "Acciones de envío"
+        "more": "Acciones de envío",
+        "widthCm": "Ancho (cm)",
+        "heightCm": "Alto (cm)",
+        "lengthCm": "Largo (cm)",
+        "weightGrams": "Peso (g)"
       },
       "selling": {
         "title": "Venta",

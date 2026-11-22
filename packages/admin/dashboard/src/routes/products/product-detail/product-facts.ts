@@ -45,9 +45,18 @@ export type FactProduct = Pick<
 /**
  * What a plugin part in `product.details.selling` says when it sells the
  * product without stock (a running preorder): the words for a variant with no
- * units, and for the header line.
+ * units, and for the header line; `variant_ids` when only some variants are
+ * sold that way (all of them without it).
  */
-export type StockCover = { row: string; summary: string } | null
+export type StockCover = {
+  row: string
+  summary: string
+  variant_ids?: string[]
+} | null
+
+/** Whether a part sells this variant without stock. */
+export const isCovered = (variant: FactVariant, cover: StockCover): boolean =>
+  !!cover && (!cover.variant_ids || cover.variant_ids.includes(variant.id))
 
 /** A variant's sale price from a running offer (price list). */
 export type SalePrice = {
@@ -193,10 +202,10 @@ export const getBlockers = ({
     blockers.push({ id: "noPhotos" })
   }
 
-  if (!cover && variants.length) {
-    const out = variants.filter(isOutOfStock)
+  if (variants.length) {
+    const out = variants.filter((v) => isOutOfStock(v) && !isCovered(v, cover))
 
-    if (out.length === variants.length) {
+    if (out.length && out.length === variants.length) {
       blockers.push({ id: "noStock" })
     } else if (out.length) {
       blockers.push({

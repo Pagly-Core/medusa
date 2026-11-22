@@ -129,9 +129,13 @@ describe("product page parts", () => {
 
   it("says Pagly's words in Spanish", () => {
     expect(read(es, "products.page.variants.title")).toBe("Variantes y precios")
-    expect(read(es, "products.page.blockers.title")).toBe("Para empezar a vender")
+    expect(read(es, "products.page.blockers.title")).toBe(
+      "Para empezar a vender"
+    )
     expect(read(es, "products.page.where.title")).toBe("Dónde se vende")
-    expect(read(es, "products.page.variants.untracked")).toBe("Sin control de stock")
+    expect(read(es, "products.page.variants.untracked")).toBe(
+      "Sin control de stock"
+    )
     expect(read(es, "products.page.photos.main")).toBe("Principal")
   })
 })
