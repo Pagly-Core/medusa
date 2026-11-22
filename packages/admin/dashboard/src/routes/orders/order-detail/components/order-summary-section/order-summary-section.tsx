@@ -583,6 +583,7 @@ const CostBreakdown = ({
   }, [order])
 
   const hasTaxes = !!Object.keys(taxCodes).length
+  const showTaxes = !!order.original_tax_total
   const taxIncluded =
     order.items.length > 0 && order.items.every((item) => item.is_tax_inclusive)
   const hasCreditLines = creditLines.length > 0
@@ -754,7 +755,7 @@ const CostBreakdown = ({
         </div>
       )}
 
-      {!taxIncluded && taxRow}
+      {showTaxes && !taxIncluded && taxRow}
 
       {hasCreditLines && (
         <>
@@ -877,7 +878,7 @@ const CostBreakdown = ({
         </Text>
       </div>
 
-      {taxIncluded && taxRow}
+      {showTaxes && taxIncluded && taxRow}
     </div>
   )
 }
@@ -1178,7 +1179,7 @@ const Total = ({ order }: { order: AdminOrder }) => {
           {t("orders.summary.paid")}
         </Text>
         <Text size="small" leading="compact" className="tabular-nums">
-          {getStylizedAmount(
+          {getLocaleAmount(
             getTotalCaptured(order.payment_collections || []),
             order.currency_code
           )}

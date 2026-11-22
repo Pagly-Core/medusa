@@ -1410,9 +1410,9 @@
         "partiallyAuthorized": "Parcialmente autorizado",
         "awaiting": "Esperando",
         "pending": "Pendiente",
-        "captured": "Capturado",
+        "captured": "Pagado",
         "partiallyRefunded": "Parcialmente reembolsado",
-        "partiallyCaptured": "Parcialmente capturado",
+        "partiallyCaptured": "Pagado en parte",
         "refunded": "Reembolsado",
         "canceled": "Cancelado",
         "requiresAction": "Requiere acción"
@@ -1672,10 +1672,10 @@
         "noLocation": "La ubicación es obligatoria"
       },
       "status": {
-        "notFulfilled": "No cumplido",
-        "partiallyFulfilled": "Parcialmente cumplido",
-        "fulfilled": "Cumplido",
-        "partiallyShipped": "Parcialmente enviado",
+        "notFulfilled": "Por preparar",
+        "partiallyFulfilled": "Preparado en parte",
+        "fulfilled": "Preparado",
+        "partiallyShipped": "Enviado en parte",
         "shipped": "Enviado",
         "delivered": "Entregado",
         "partiallyDelivered": "Parcialmente entregado",
