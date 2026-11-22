@@ -70,6 +70,7 @@ import {
   applyPublishedProductsContext,
   computeOptionLinkChanges,
   eventBuilders,
+  firstPhotoThumbnail,
 } from "../utils"
 import { joinerConfig } from "./../joiner-config"
 import { buildOptionValueFilterQuery } from "../utils/build-option-value-filter-query"
@@ -3218,7 +3219,15 @@ export default class ProductModuleService
       this.productService_.list(
         { id: data.map((d) => d.id) },
         {
-          relations: ["options", "options.values", "tags"],
+          relations: [
+            "options",
+            "options.values",
+            "tags",
+            // Pagly: a new main photo alone reorders the stored photos.
+            ...(data.some((d) => d.thumbnail !== undefined && !d.images)
+              ? ["images"]
+              : []),
+          ],
         },
         sharedContext
       ),
@@ -3255,8 +3264,24 @@ export default class ProductModuleService
 
     await (sharedContext.transactionManager as any).flush()
 
+    // Pagly: the main photo is always the first photo.
+    const storedImagesById = new Map(
+      originalProducts.map((product) => [
+        product.id,
+        (product.images as unknown as { isInitialized?: () => boolean })
+          ?.isInitialized?.()
+          ? [...product.images]
+              .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+              .map((image) => ({ id: image.id, url: image.url }))
+          : undefined,
+      ])
+    )
+    const withMainPhoto = data.map((product) =>
+      firstPhotoThumbnail(product, storedImagesById.get(product.id))
+    )
+
     const normalizedProducts = (await this.normalizeUpdateProductInput(
-      data
+      withMainPhoto
     )) as UpdateProductInput[]
 
     for (const product of normalizedProducts) {
@@ -3518,9 +3543,8 @@ export default class ProductModuleService
         productData.status = ProductStatus.DRAFT
       }
 
-      if (!productData.thumbnail && productData.images?.length) {
-        productData.thumbnail = productData.images[0].url
-      }
+      // Pagly: the main photo is always the first photo.
+      Object.assign(productData, firstPhotoThumbnail(productData))
 
       if (productData.images?.length) {
         productData.images = productData.images.map((image, index) =>

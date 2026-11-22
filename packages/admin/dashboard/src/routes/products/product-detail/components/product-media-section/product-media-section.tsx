@@ -78,7 +78,8 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
     await mutateAsync(
       {
         images: mediaToKeep,
-        thumbnail: includingThumbnail ? "" : undefined,
+        // Pagly: the main photo is always the first photo.
+        thumbnail: mediaToKeep?.[0]?.url ?? null,
       },
       {
         onSuccess: () => {
@@ -229,5 +230,6 @@ const getMedia = (product: HttpTypes.AdminProduct) => {
     })
   }
 
-  return media
+  // Pagly: the main photo is always the first photo.
+  return media.map((item, index) => ({ ...item, isThumbnail: index === 0 }))
 }

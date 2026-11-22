@@ -19,6 +19,7 @@ import {
 } from "../../constants"
 import {
   normalizeProductFormValues,
+  firstPhotoIsMain,
   partitionMediaForUpload,
   withRequestAlts,
 } from "../../utils"
@@ -111,7 +112,8 @@ export const ProductCreateForm = ({
       isDraftSubmission = submitter.dataset.name === SAVE_DRAFT_BUTTON
     }
 
-    const media = values.media || []
+    // Pagly: the main photo is always the first photo.
+    const media = firstPhotoIsMain(values.media || [])
     const payload = { ...values, media: undefined }
 
     let uploadedMedia: {

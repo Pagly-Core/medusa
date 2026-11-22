@@ -112,19 +112,13 @@ export const ProductCreateMediaSection = ({
     }
   }
 
+  // Pagly: the main photo is the first photo, so making one main moves it
+  // to the front.
   const getMakeThumbnail = (index: number) => {
     return () => {
-      const newFields = (form.getValues("media") ?? []).map((field, i) => {
-        return {
-          ...field,
-          isThumbnail: i === index,
-        }
-      })
-
-      form.setValue("media", newFields, {
-        shouldDirty: true,
-        shouldTouch: true,
-      })
+      if (index > 0) {
+        move(index, 0)
+      }
     }
   }
 
@@ -148,6 +142,7 @@ export const ProductCreateMediaSection = ({
           {activeId ? (
             <MediaGridItemOverlay
               field={fields.find((m) => m.field_id === activeId)!}
+              isMain={fields.findIndex((m) => m.field_id === activeId) === 0}
             />
           ) : null}
         </DragOverlay>
@@ -160,6 +155,7 @@ export const ProductCreateMediaSection = ({
                 <MediaItem
                   key={field.field_id}
                   field={field}
+                  isMain={index === 0}
                   onDelete={onDelete}
                   onMakeThumbnail={onMakeThumbnail}
                   alt={media[index]?.alt}
@@ -209,6 +205,8 @@ type MediaItemProps = {
   field: MediaField
   onDelete: () => void
   onMakeThumbnail: () => void
+  /** Pagly: the first photo is the product's main photo. */
+  isMain: boolean
   /** Pagly: the photo's words, read by screen readers. */
   alt?: string
   /** Pagly: the photo's alt field, under it, when the store keeps alt text. */
@@ -236,6 +234,7 @@ const mediaName = (field: MediaField) => {
 
 const MediaItem = ({
   field,
+  isMain,
   onDelete,
   onMakeThumbnail,
   alt,
@@ -291,7 +290,7 @@ const MediaItem = ({
                 {mediaName(field)}
               </Text>
               <div className="flex items-center gap-x-1">
-                {field.isThumbnail && <ThumbnailBadge />}
+                {isMain && <ThumbnailBadge />}
                 {field.file && (
                   <Text
                     size="xsmall"
@@ -343,7 +342,13 @@ const MediaItem = ({
   )
 }
 
-const MediaGridItemOverlay = ({ field }: { field: MediaField }) => {
+const MediaGridItemOverlay = ({
+  field,
+  isMain,
+}: {
+  field: MediaField
+  isMain: boolean
+}) => {
   return (
     <li className="bg-ui-bg-component shadow-elevation-card-rest flex items-center justify-between rounded-lg px-3 py-2">
       <div className="flex items-center gap-x-2">
@@ -363,7 +368,7 @@ const MediaGridItemOverlay = ({ field }: { field: MediaField }) => {
               {mediaName(field)}
             </Text>
             <div className="flex items-center gap-x-1">
-              {field.isThumbnail && <ThumbnailBadge />}
+              {isMain && <ThumbnailBadge />}
               <Text
                 size="xsmall"
                 leading="compact"

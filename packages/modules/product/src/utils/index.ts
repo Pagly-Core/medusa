@@ -1,4 +1,5 @@
 export * from "./compute-option-link-changes"
 export * from "./compute-set-difference"
 export * from "./events"
+export * from "./first-photo-thumbnail"
 export * from "./published-products-context"

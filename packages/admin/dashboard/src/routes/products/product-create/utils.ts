@@ -156,3 +156,9 @@ export const withRequestAlts = <T extends object>(
   requests: { alt?: string }[]
 ): (T & { alt?: string })[] =>
   files.map((file, index) => ({ ...file, alt: requests[index]?.alt }))
+
+/** Pagly: a product's main photo is always its first photo. */
+export const firstPhotoIsMain = <T extends { isThumbnail: boolean }>(
+  media: T[]
+): T[] =>
+  media.map((item, index) => ({ ...item, isThumbnail: index === 0 }))
