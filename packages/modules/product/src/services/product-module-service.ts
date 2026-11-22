@@ -3219,15 +3219,7 @@ export default class ProductModuleService
       this.productService_.list(
         { id: data.map((d) => d.id) },
         {
-          relations: [
-            "options",
-            "options.values",
-            "tags",
-            // Pagly: a new main photo alone reorders the stored photos.
-            ...(data.some((d) => d.thumbnail !== undefined && !d.images)
-              ? ["images"]
-              : []),
-          ],
+          relations: ["options", "options.values", "tags"],
         },
         sharedContext
       ),
@@ -3264,16 +3256,24 @@ export default class ProductModuleService
 
     await (sharedContext.transactionManager as any).flush()
 
-    // Pagly: the main photo is always the first photo.
+    // Pagly: the main photo is always the first photo. A new main photo
+    // alone reorders the stored photos, so only those products load them.
+    const mainPhotoOnlyIds = data
+      .filter((d) => d.thumbnail !== undefined && !d.images)
+      .map((d) => d.id)
+    const withStoredImages = mainPhotoOnlyIds.length
+      ? await this.productService_.list(
+          { id: mainPhotoOnlyIds },
+          { relations: ["images"] },
+          sharedContext
+        )
+      : []
     const storedImagesById = new Map(
-      originalProducts.map((product) => [
+      withStoredImages.map((product) => [
         product.id,
-        (product.images as unknown as { isInitialized?: () => boolean })
-          ?.isInitialized?.()
-          ? [...product.images]
-              .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
-              .map((image) => ({ id: image.id, url: image.url }))
-          : undefined,
+        [...(product.images ?? [])]
+          .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+          .map((image) => ({ id: image.id, url: image.url })),
       ])
     )
     const withMainPhoto = data.map((product) =>

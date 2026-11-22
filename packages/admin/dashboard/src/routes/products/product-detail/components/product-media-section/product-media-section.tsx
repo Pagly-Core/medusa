@@ -17,7 +17,10 @@ import { Link, useNavigate } from "react-router-dom"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useUpdateProduct } from "../../../../../hooks/api/products"
 import { useMediaAlts } from "../../../../../lib/media-alt"
-import { imagesByRank } from "../../../common/images-by-rank"
+import {
+  imagesByRank,
+  photosAfterDelete,
+} from "../../../common/images-by-rank"
 import { HttpTypes } from "@medusajs/types"
 
 type ProductMedisaSectionProps = {
@@ -72,16 +75,12 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
       return
     }
 
-    const mediaToKeep = imagesByRank(product.images)
-      .filter((i) => !ids.includes(i.id))
-      .map((i) => ({ id: i.id, url: i.url }))
-
+    // Pagly: the main photo is always the first photo; one kept apart from
+    // the photos stays in front unless it is deleted.
     await mutateAsync(
-      {
-        images: mediaToKeep,
-        // Pagly: the main photo is always the first photo.
-        thumbnail: mediaToKeep[0]?.url ?? null,
-      },
+      photosAfterDelete(product.images, product.thumbnail, ids, {
+        mainDeleted: ids.includes(OUTSIDE_THUMBNAIL_ID),
+      }),
       {
         onSuccess: () => {
           setSelection({})
@@ -213,6 +212,8 @@ type Media = {
   isThumbnail: boolean
 }
 
+const OUTSIDE_THUMBNAIL_ID = "img_thumbnail"
+
 const getMedia = (product: HttpTypes.AdminProduct) => {
   const { images = [], thumbnail } = product
 
@@ -224,7 +225,7 @@ const getMedia = (product: HttpTypes.AdminProduct) => {
 
   if (thumbnail && !media.some((mediaItem) => mediaItem.url === thumbnail)) {
     media.unshift({
-      id: "img_thumbnail",
+      id: OUTSIDE_THUMBNAIL_ID,
       url: thumbnail,
       isThumbnail: true,
     })

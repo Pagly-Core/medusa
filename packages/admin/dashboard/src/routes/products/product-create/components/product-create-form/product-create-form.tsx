@@ -20,6 +20,7 @@ import {
 import {
   normalizeProductFormValues,
   firstPhotoIsMain,
+  mediaInFormOrder,
   partitionMediaForUpload,
   withRequestAlts,
 } from "../../utils"
@@ -127,52 +128,40 @@ export const ProductCreateForm = ({
       if (media.length) {
         // Pagly: media picked from the library is already stored; only
         // entries with a file are uploaded.
-        const {
-          thumbnail: thumbnailReq,
-          others: otherMediaReq,
-          stored,
-        } = partitionMediaForUpload(media)
+        const { thumbnail: thumbnailReq, others: otherMediaReq } =
+          partitionMediaForUpload(media)
 
-        const fileReqs = [] as Promise<
-          (AdminFile & {
-            isThumbnail: boolean
-          })[]
-        >[]
-        if (thumbnailReq) {
-          fileReqs.push(
-            sdk.admin.upload.create({ files: [thumbnailReq.file] }).then((r) =>
-              withRequestAlts(r.files, [thumbnailReq]).map((f) => ({
-                ...f,
-                isThumbnail: true,
-              }))
-            )
-          )
-        }
-        if (otherMediaReq?.length) {
-          fileReqs.push(
-            sdk.admin.upload
-              .create({
-                files: otherMediaReq.map((m) => m.file),
-              })
-              .then((r) =>
-                withRequestAlts(r.files, otherMediaReq).map((f) => ({
-                  ...f,
-                  isThumbnail: false,
-                }))
-              )
-          )
-        }
+        const [thumbnailUploads, otherUploads] = await Promise.all([
+          thumbnailReq
+            ? sdk.admin.upload
+                .create({ files: [thumbnailReq.file] })
+                .then((r) =>
+                  withRequestAlts(r.files, [thumbnailReq]).map((f) => ({
+                    ...f,
+                    isThumbnail: true,
+                  }))
+                )
+            : Promise.resolve([] as (AdminFile & { isThumbnail: boolean })[]),
+          otherMediaReq.length
+            ? sdk.admin.upload
+                .create({
+                  files: otherMediaReq.map((m) => m.file),
+                })
+                .then((r) =>
+                  withRequestAlts(r.files, otherMediaReq).map((f) => ({
+                    ...f,
+                    isThumbnail: false,
+                  }))
+                )
+            : Promise.resolve([] as (AdminFile & { isThumbnail: boolean })[]),
+        ])
 
-        uploadedMedia = [
-          ...stored.map((m) => ({ ...m, file: null })),
-          ...((await Promise.all(fileReqs)).flat() as {
-            id?: string
-            url: string
-            isThumbnail: boolean
-            file: File
-            alt?: string
-          }[]),
-        ]
+        // Pagly: the photos keep the order the merchant gave them.
+        uploadedMedia = mediaInFormOrder(
+          media,
+          thumbnailUploads,
+          otherUploads
+        ).map((m) => ({ ...m, file: null }))
       }
     } catch (error) {
       if (error instanceof Error) {
