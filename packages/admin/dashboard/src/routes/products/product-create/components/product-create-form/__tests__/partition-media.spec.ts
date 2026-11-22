@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   firstPhotoIsMain,
+  mediaInFormOrder,
   partitionMediaForUpload,
   withRequestAlts,
 } from "../../../utils"
@@ -107,5 +108,36 @@ describe("firstPhotoIsMain", () => {
     expect(firstPhotoIsMain([{ url: "a", isThumbnail: false }])).toEqual([
       { url: "a", isThumbnail: true },
     ])
+  })
+})
+
+describe("mediaInFormOrder", () => {
+  it("puts uploaded and picked photos back in the order the form had them", () => {
+    const a = { url: "a", isThumbnail: true, file: null }
+    const b = { url: "blob:b", isThumbnail: false, file: file("b.png") }
+    const c = { url: "c", isThumbnail: false, file: null }
+    const d = { url: "blob:d", isThumbnail: false, file: file("d.png") }
+
+    expect(
+      mediaInFormOrder(
+        [a, b, c, d],
+        [],
+        [
+          { url: "stored-b", isThumbnail: false },
+          { url: "stored-d", isThumbnail: false },
+        ]
+      ).map((m) => m.url)
+    ).toEqual(["a", "stored-b", "c", "stored-d"])
+  })
+
+  it("puts an uploaded main photo first", () => {
+    const a = { url: "blob:a", isThumbnail: true, file: file("a.png") }
+    const b = { url: "b", isThumbnail: false, file: null }
+
+    expect(
+      mediaInFormOrder([a, b], [{ url: "stored-a", isThumbnail: true }], []).map(
+        (m) => m.url
+      )
+    ).toEqual(["stored-a", "b"])
   })
 })
