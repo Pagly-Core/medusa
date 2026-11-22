@@ -821,6 +821,134 @@
           "header": "Failed to delete product"
         }
       }
+    },
+    "page": {
+      "summary": {
+        "range": "{{min}} – {{max}}",
+        "variants_one": "{{count}} variant",
+        "variants_other": "{{count}} variants",
+        "stock": "{{count}} in stock",
+        "stockPlaces": "{{count}} in stock in {{places}} locations"
+      },
+      "header": {
+        "unpublish": "Move to draft",
+        "more": "More actions"
+      },
+      "blockers": {
+        "title": "Before it can sell",
+        "count_one": "{{count}} thing",
+        "count_other": "{{count}} things",
+        "noPrice": {
+          "title": "No price",
+          "detail_one": "A variant has no price.",
+          "detail_other": "{{count}} variants have no price.",
+          "action": "Set prices"
+        },
+        "noPhotos": {
+          "title": "No photos",
+          "detail": "Without photos a product hardly sells.",
+          "action": "Add photos"
+        },
+        "noStock": {
+          "title": "No stock",
+          "detail": "No variant has units.",
+          "action": "Add stock"
+        },
+        "someOut": {
+          "title_one": "{{names}} is out of stock",
+          "title_other": "{{names}} are out of stock",
+          "detail_one": "The store shows it as sold out.",
+          "detail_other": "The store shows them as sold out.",
+          "action": "Add stock"
+        },
+        "draft": {
+          "title": "It's a draft",
+          "detail": "The store won't show it until you publish it.",
+          "action": "Publish"
+        },
+        "noChannel": {
+          "title": "Not in the online store",
+          "detail": "It's published, but not in the store's sales channel.",
+          "action": "Add it"
+        }
+      },
+      "photos": {
+        "title": "Photos",
+        "main": "Main",
+        "add": "Add",
+        "empty": {
+          "title": "No photos yet",
+          "detail": "The first one is what the store and its lists show.",
+          "action": "Add photos"
+        },
+        "more": "Photos: actions"
+      },
+      "variants": {
+        "title": "Variants and prices",
+        "titleOne": "Price and stock",
+        "columns": {
+          "variant": "Variant",
+          "sku": "SKU",
+          "price": "Price",
+          "stock": "Stock"
+        },
+        "editPrices": "Edit prices",
+        "editPrice": "Edit price",
+        "addVariant": "Add variant",
+        "editOptions": "Edit options",
+        "noPrice": "No price",
+        "inStock": "{{count}} in stock",
+        "outOfStock": "Out of stock",
+        "someOut": "{{count}} out of stock",
+        "untracked": "Stock not tracked",
+        "backorder": "Sells without stock",
+        "groupCount_one": "{{count}} variant",
+        "groupCount_other": "{{count}} variants",
+        "sale": "On offer: {{name}}.",
+        "saleUntil": "On offer: {{name}}, until {{date}}.",
+        "seeOffers": "See in Offers",
+        "price": "Price",
+        "stock": "Stock",
+        "sku": "SKU",
+        "variants": "Variants",
+        "oneVersionHint": "Does it come in colors or sizes?",
+        "addOptions": "Add options",
+        "more": "More: stock, variants and options"
+      },
+      "description": {
+        "title": "Description",
+        "edit": "Edit description",
+        "empty": "No description. Say what it's made of, how it fits and how to care for it."
+      },
+      "where": {
+        "title": "Where it sells",
+        "store": "Online store",
+        "notInStore": "Not in the store",
+        "channels": "Sales channels",
+        "more": "Where it sells: actions"
+      },
+      "organization": {
+        "title": "Organization",
+        "edit": "Edit organization",
+        "empty": "No category, type or tags.",
+        "category": "Category"
+      },
+      "shipping": {
+        "title": "Shipping",
+        "edit": "Edit weight and size",
+        "weight": "Weight",
+        "sizes": "Size",
+        "sizesValue": "{{length}} × {{width}} × {{height}} cm",
+        "empty": "No weight or size. Add them to quote shipping right.",
+        "profile": "Shipping profile",
+        "more": "Shipping: actions"
+      },
+      "selling": {
+        "title": "Selling",
+        "discounts": "Discounts",
+        "discountsHint": "Coupons and promotions apply to it",
+        "discountsLabel": "Accepts discounts"
+      }
     }
   },
   "collections": {

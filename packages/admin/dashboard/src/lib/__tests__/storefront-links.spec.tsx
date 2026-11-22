@@ -70,6 +70,7 @@ vi.mock("../../components/common/action-menu", () => ({
 
 vi.mock("../../hooks/api/products", () => ({
   useDeleteProduct: () => ({ mutateAsync: vi.fn() }),
+  useUpdateProduct: () => ({ mutateAsync: vi.fn() }),
   useDeleteVariant: () => ({ mutateAsync: vi.fn() }),
 }))
 
@@ -83,7 +84,7 @@ vi.mock(
 )
 
 vi.mock("../../providers/extension-provider", () => ({
-  useExtension: () => ({ getDisplays: () => [] }),
+  useExtension: () => ({ getDisplays: () => [], getWidgets: () => [] }),
 }))
 
 vi.mock("../../providers/feature-flag-provider", () => ({
@@ -170,9 +171,7 @@ describe("useStorefrontHref", () => {
   it("links where the plugin says the store is", () => {
     const { result } = renderHook(() => useStorefrontHref())
 
-    expect(result.current("/products/batidor")).toBe(
-      `${LIVE}/products/batidor`
-    )
+    expect(result.current("/products/batidor")).toBe(`${LIVE}/products/batidor`)
   })
 
   it("has no link while the plugin has no address for the store", () => {
@@ -197,9 +196,9 @@ describe("useStorefrontHref", () => {
 // The sections load the whole dashboard's modules on first import.
 describe("Ver en tienda online", { timeout: 60_000 }, () => {
   const viewLink = async () =>
-    (await screen.findByRole("link", { name: "onlineStore.view" })).getAttribute(
-      "href"
-    )
+    (
+      await screen.findByRole("link", { name: "onlineStore.view" })
+    ).getAttribute("href")
 
   const renderProduct = async () => {
     const { ProductHeader } = await import(
@@ -208,7 +207,14 @@ describe("Ver en tienda online", { timeout: 60_000 }, () => {
 
     renderWithProviders(
       <ProductHeader
-        facts={{ variants: [], currency: "uyu", places: 1, sales: new Map(), cover: null, isPending: false }}
+        facts={{
+          variants: [],
+          currency: "uyu",
+          places: 1,
+          sales: new Map(),
+          cover: null,
+          isPending: false,
+        }}
         product={
           {
             id: "prod_1",

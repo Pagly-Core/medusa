@@ -44,13 +44,19 @@ vi.mock("../../../../hooks/api/products", () => ({
 }))
 
 vi.mock("../../../../components/common/action-menu", () => ({
-  ActionMenu: ({ groups }: { groups: { actions: { label: string; onClick?: () => void }[] }[] }) => (
+  ActionMenu: ({
+    groups,
+  }: {
+    groups: { actions: { label: string; onClick?: () => void }[] }[]
+  }) => (
     <span>
-      {groups.flatMap((g) => g.actions).map((a) => (
-        <button key={a.label} onClick={a.onClick}>
-          {a.label}
-        </button>
-      ))}
+      {groups
+        .flatMap((g) => g.actions)
+        .map((a) => (
+          <button key={a.label} onClick={a.onClick}>
+            {a.label}
+          </button>
+        ))}
     </span>
   ),
 }))
@@ -61,7 +67,9 @@ afterEach(() => {
   deleteVariant.mockClear()
 })
 
-const money = (n: number) => getLocaleAmount(n, "uyu", { wholeWithoutCents: true })
+// Testing Library reads the page's no-break spaces as spaces.
+const money = (n: number) =>
+  getLocaleAmount(n, "uyu", { wholeWithoutCents: true }).replace(/ /g, " ")
 
 const renderIn = (node: React.ReactNode) =>
   render(
@@ -73,7 +81,12 @@ const renderIn = (node: React.ReactNode) =>
 describe("Variantes y precios", () => {
   it("says the options above the rows, leaving out the default one", () => {
     renderIn(
-      <ProductVariantSection product={makeProduct({ options: [DEFAULT_OPTION, SIZE] })} facts={makeFacts({ variants: [makeVariant(null, "M"), makeVariant(null, "XL")] })} />
+      <ProductVariantSection
+        product={makeProduct({ options: [DEFAULT_OPTION, SIZE] })}
+        facts={makeFacts({
+          variants: [makeVariant(null, "M"), makeVariant(null, "XL")],
+        })}
+      />
     )
     expect(screen.getByText("Talle:")).toBeTruthy()
     expect(screen.getByText("M, XL")).toBeTruthy()
@@ -82,10 +95,20 @@ describe("Variantes y precios", () => {
 
   it("shows each variant's price and stock, out of stock in words", () => {
     renderIn(
-      <ProductVariantSection product={makeProduct({ options: [SIZE] })} facts={makeFacts({ variants: [makeVariant(null, "M", { inventory_quantity: 6 }), makeVariant(null, "XL", { inventory_quantity: 0 })] })} />
+      <ProductVariantSection
+        product={makeProduct({ options: [SIZE] })}
+        facts={makeFacts({
+          variants: [
+            makeVariant(null, "M", { inventory_quantity: 6 }),
+            makeVariant(null, "XL", { inventory_quantity: 0 }),
+          ],
+        })}
+      />
     )
     expect(screen.getAllByText(money(1290))).toHaveLength(2)
-    expect(screen.getByText('products.page.variants.inStock {"count":6}')).toBeTruthy()
+    expect(
+      screen.getByText('products.page.variants.inStock {"count":6}')
+    ).toBeTruthy()
     expect(screen.getByText("products.page.variants.outOfStock")).toBeTruthy()
   })
 
@@ -93,7 +116,15 @@ describe("Variantes y precios", () => {
     renderIn(
       <ProductVariantSection
         product={makeProduct({ options: [SIZE] })}
-        facts={makeFacts({ variants: [makeVariant(null, "M", { manage_inventory: false }), makeVariant(null, "XL", { inventory_quantity: 0, allow_backorder: true })] })}
+        facts={makeFacts({
+          variants: [
+            makeVariant(null, "M", { manage_inventory: false }),
+            makeVariant(null, "XL", {
+              inventory_quantity: 0,
+              allow_backorder: true,
+            }),
+          ],
+        })}
       />
     )
     expect(screen.getByText("products.page.variants.untracked")).toBeTruthy()
@@ -101,12 +132,18 @@ describe("Variantes y precios", () => {
   })
 
   it("groups by the first option, open up to 8 variants, and folds on a click", () => {
-    renderIn(<ProductVariantSection product={makeProduct()} facts={makeFacts()} />)
+    renderIn(
+      <ProductVariantSection product={makeProduct()} facts={makeFacts()} />
+    )
 
     const group = screen.getByRole("button", { name: /Negro/ })
     expect(group.getAttribute("aria-expanded")).toBe("true")
-    expect(screen.getByText('products.page.variants.groupCount {"count":2}')).toBeTruthy()
-    expect(screen.getByText('products.page.variants.someOut {"count":1}')).toBeTruthy()
+    expect(
+      screen.getByText('products.page.variants.groupCount {"count":2}')
+    ).toBeTruthy()
+    expect(
+      screen.getByText('products.page.variants.someOut {"count":1}')
+    ).toBeTruthy()
     expect(screen.getByText("XL")).toBeTruthy()
 
     fireEvent.click(group)
@@ -115,16 +152,31 @@ describe("Variantes y precios", () => {
   })
 
   it("starts the groups folded above 8 variants", () => {
-    const variants = ["S", "M", "L", "XL", "XXL"].flatMap((s) => [makeVariant("Negro", s), makeVariant("Crudo", s)])
-    renderIn(<ProductVariantSection product={makeProduct()} facts={makeFacts({ variants })} />)
-    expect(screen.getByRole("button", { name: /Crudo/ }).getAttribute("aria-expanded")).toBe("false")
+    const variants = ["S", "M", "L", "XL", "XXL"].flatMap((s) => [
+      makeVariant("Negro", s),
+      makeVariant("Crudo", s),
+    ])
+    renderIn(
+      <ProductVariantSection
+        product={makeProduct()}
+        facts={makeFacts({ variants })}
+      />
+    )
+    expect(
+      screen
+        .getByRole("button", { name: /Crudo/ })
+        .getAttribute("aria-expanded")
+    ).toBe("false")
   })
 
   it("says a part's words for a variant with no units while it sells without stock", () => {
     renderIn(
       <ProductVariantSection
         product={makeProduct({ options: [SIZE] })}
-        facts={makeFacts({ variants: [makeVariant(null, "M", { inventory_quantity: 0 })], cover: { row: "En preventa", summary: "x" } })}
+        facts={makeFacts({
+          variants: [makeVariant(null, "M", { inventory_quantity: 0 })],
+          cover: { row: "En preventa", summary: "x" },
+        })}
       />
     )
     expect(screen.getByText("En preventa")).toBeTruthy()
@@ -132,18 +184,31 @@ describe("Variantes y precios", () => {
   })
 
   it("shows the offer price with the normal one struck through, and names the offer", () => {
-    const sales = new Map([["variant_x_M", { amount: 990, offer: "Black Week", ends_at: null }]])
+    const sales = new Map([
+      ["variant_x_M", { amount: 990, offer: "Black Week", ends_at: null }],
+    ])
     renderIn(
-      <ProductVariantSection product={makeProduct({ options: [SIZE] })} facts={makeFacts({ variants: [makeVariant(null, "M")], sales })} />
+      <ProductVariantSection
+        product={makeProduct({ options: [SIZE] })}
+        facts={makeFacts({ variants: [makeVariant(null, "M")], sales })}
+      />
     )
     expect(screen.getByText(money(990))).toBeTruthy()
     expect(screen.getByText(money(1290)).tagName).toBe("S")
-    expect(screen.getByText('products.page.variants.sale {"name":"Black Week"}')).toBeTruthy()
+    expect(
+      screen.getByText('products.page.variants.sale {"name":"Black Week"}')
+    ).toBeTruthy()
   })
 
   it("edits prices from a pencil, and keeps stock, add and options in the menu", () => {
-    renderIn(<ProductVariantSection product={makeProduct()} facts={makeFacts()} />)
-    expect(screen.getByRole("link", { name: "products.page.variants.editPrices" }).getAttribute("href")).toBe("/prices")
+    renderIn(
+      <ProductVariantSection product={makeProduct()} facts={makeFacts()} />
+    )
+    expect(
+      screen
+        .getByRole("link", { name: "products.page.variants.editPrices" })
+        .getAttribute("href")
+    ).toBe("/prices")
     expect(screen.getByText("inventory.stock.action")).toBeTruthy()
     expect(screen.getByText("products.page.variants.addVariant")).toBeTruthy()
     expect(screen.getByText("products.page.variants.editOptions")).toBeTruthy()
@@ -155,7 +220,18 @@ describe("Precio y stock, for a product in one version", () => {
     renderIn(
       <ProductVariantSection
         product={makeProduct({ title: "Taza", options: [DEFAULT_OPTION] })}
-        facts={makeFacts({ variants: [makeVariant(null, null, { title: "Default variant", sku: "TAZA-01", inventory_quantity: 14, options: [{ option_id: "opt_default", value: "Default option value" }] })] })}
+        facts={makeFacts({
+          variants: [
+            makeVariant(null, null, {
+              title: "Default variant",
+              sku: "TAZA-01",
+              inventory_quantity: 14,
+              options: [
+                { option_id: "opt_default", value: "Default option value" },
+              ],
+            }),
+          ],
+        })}
       />
     )
 
@@ -163,14 +239,22 @@ describe("Precio y stock, for a product in one version", () => {
     one()
     expect(screen.getByText("products.page.variants.titleOne")).toBeTruthy()
     expect(screen.getByText(money(1290))).toBeTruthy()
-    expect(screen.getByText('products.page.variants.inStock {"count":14}')).toBeTruthy()
+    expect(
+      screen.getByText('products.page.variants.inStock {"count":14}')
+    ).toBeTruthy()
     expect(screen.getByText("TAZA-01")).toBeTruthy()
-    expect(screen.queryByText("products.page.variants.columns.variant")).toBeNull()
+    expect(
+      screen.queryByText("products.page.variants.columns.variant")
+    ).toBeNull()
   })
 
   it("offers to add options", () => {
     one()
-    expect(screen.getByRole("link", { name: "products.page.variants.addOptions" }).getAttribute("href")).toBe("/options/manage")
+    expect(
+      screen
+        .getByRole("link", { name: "products.page.variants.addOptions" })
+        .getAttribute("href")
+    ).toBe("/options/manage")
   })
 })
 
@@ -178,8 +262,16 @@ describe("a variant's menu", () => {
   it("names the product in the delete prompt of its one version", async () => {
     renderIn(
       <ProductVariantSection
-        product={makeProduct({ title: "Taza", options: [DEFAULT_OPTION, SIZE] })}
-        facts={makeFacts({ variants: [makeVariant(null, "M", { title: "Default variant" }), makeVariant(null, "XL")] })}
+        product={makeProduct({
+          title: "Taza",
+          options: [DEFAULT_OPTION, SIZE],
+        })}
+        facts={makeFacts({
+          variants: [
+            makeVariant(null, "M", { title: "Default variant" }),
+            makeVariant(null, "XL"),
+          ],
+        })}
       />
     )
     fireEvent.click(screen.getAllByText("actions.delete")[0])

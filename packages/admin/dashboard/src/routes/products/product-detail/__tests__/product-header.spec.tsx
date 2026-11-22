@@ -36,15 +36,19 @@ vi.mock("../../../../hooks/api/products", () => ({
 }))
 
 vi.mock("../../../../providers/extension-provider", () => ({
-  useExtension: () => ({ getWidgets: (zone: string) => parts.current[zone] ?? [] }),
+  useExtension: () => ({
+    getWidgets: (zone: string) => parts.current[zone] ?? [],
+  }),
 }))
 
 vi.mock("../../../../components/common/action-menu", () => ({
   ActionMenu: ({ groups }: { groups: { actions: { label: string }[] }[] }) => (
     <ul data-testid="menu">
-      {groups.flatMap((g) => g.actions).map((a) => (
-        <li key={a.label}>{a.label}</li>
-      ))}
+      {groups
+        .flatMap((g) => g.actions)
+        .map((a) => (
+          <li key={a.label}>{a.label}</li>
+        ))}
     </ul>
   ),
 }))
@@ -55,7 +59,9 @@ afterEach(() => {
   mutateAsync.mockClear()
 })
 
-const money = (n: number) => getLocaleAmount(n, "uyu", { wholeWithoutCents: true })
+// Testing Library reads the page's no-break spaces as spaces.
+const money = (n: number) =>
+  getLocaleAmount(n, "uyu", { wholeWithoutCents: true }).replace(/ /g, " ")
 
 const renderIn = (node: React.ReactNode) =>
   render(
@@ -69,24 +75,48 @@ describe("ProductHeader", () => {
     const facts = makeFacts({
       variants: [
         makeVariant("Negro", "M", { inventory_quantity: 6 }),
-        makeVariant("Negro", "XL", { prices: [{ amount: 1390, currency_code: "uyu", rules: {} }], inventory_quantity: 3 }),
+        makeVariant("Negro", "XL", {
+          prices: [{ amount: 1390, currency_code: "uyu", rules: {} }],
+          inventory_quantity: 3,
+        }),
       ],
       places: 2,
     })
     renderIn(<ProductHeader product={makeProduct()} facts={facts} />)
 
     expect(screen.getByRole("heading", { name: "Remera lino" })).toBeTruthy()
-    expect(screen.getByText(`products.page.summary.range ${JSON.stringify({ min: money(1290), max: money(1390) })}`)).toBeTruthy()
-    expect(screen.getByText('products.page.summary.variants {"count":2}')).toBeTruthy()
-    expect(screen.getByText('products.page.summary.stockPlaces {"count":9,"places":2}')).toBeTruthy()
+    expect(
+      screen.getByText(
+        `products.page.summary.range ${JSON.stringify({
+          min: money(1290),
+          max: money(1390),
+        })}`
+      )
+    ).toBeTruthy()
+    expect(
+      screen.getByText('products.page.summary.variants {"count":2}')
+    ).toBeTruthy()
+    expect(
+      screen.getByText(
+        'products.page.summary.stockPlaces {"count":9,"places":2}'
+      )
+    ).toBeTruthy()
   })
 
   it("says one price, and the stock without places when the store has one", () => {
-    const facts = makeFacts({ variants: [makeVariant(null, null, { inventory_quantity: 14, options: [] })] })
-    renderIn(<ProductHeader product={makeProduct({ options: [] })} facts={facts} />)
+    const facts = makeFacts({
+      variants: [
+        makeVariant(null, null, { inventory_quantity: 14, options: [] }),
+      ],
+    })
+    renderIn(
+      <ProductHeader product={makeProduct({ options: [] })} facts={facts} />
+    )
 
     expect(screen.getByText(money(1290))).toBeTruthy()
-    expect(screen.getByText('products.page.summary.stock {"count":14}')).toBeTruthy()
+    expect(
+      screen.getByText('products.page.summary.stock {"count":14}')
+    ).toBeTruthy()
     expect(screen.queryByText(/products\.page\.summary\.variants/)).toBeNull()
   })
 
@@ -95,23 +125,42 @@ describe("ProductHeader", () => {
       variants: [makeVariant(null, "M", { inventory_quantity: 0 })],
       cover: { row: "En preventa", summary: "En preventa, llega 15 dic" },
     })
-    renderIn(<ProductHeader product={makeProduct({ options: [] })} facts={facts} />)
+    renderIn(
+      <ProductHeader product={makeProduct({ options: [] })} facts={facts} />
+    )
     expect(screen.getByText("En preventa, llega 15 dic")).toBeTruthy()
   })
 
   it("opens the product in the store, and can't while it's a draft", () => {
-    const { unmount } = renderIn(<ProductHeader product={makeProduct()} facts={makeFacts()} />)
-    expect(screen.getByRole("link", { name: "onlineStore.view" }).getAttribute("href")).toContain("/products/remera-lino")
+    const { unmount } = renderIn(
+      <ProductHeader product={makeProduct()} facts={makeFacts()} />
+    )
+    expect(
+      screen
+        .getByRole("link", { name: "onlineStore.view" })
+        .getAttribute("href")
+    ).toContain("/products/remera-lino")
     unmount()
 
-    renderIn(<ProductHeader product={makeProduct({ status: "draft" })} facts={makeFacts()} />)
+    renderIn(
+      <ProductHeader
+        product={makeProduct({ status: "draft" })}
+        facts={makeFacts()}
+      />
+    )
     expect(screen.queryByRole("link", { name: "onlineStore.view" })).toBeNull()
-    const disabled = screen.getByRole("button", { name: "onlineStore.view" }) as HTMLButtonElement
+    const disabled = screen.getByRole("button", {
+      name: "onlineStore.view",
+    }) as HTMLButtonElement
     expect(disabled.disabled).toBe(true)
   })
 
   it("renders the header parts with the product", () => {
-    parts.current["product.details.header"] = [({ data }: { data: { title: string } }) => <span>ask about {data.title}</span>]
+    parts.current["product.details.header"] = [
+      ({ data }: { data: { title: string } }) => (
+        <span>ask about {data.title}</span>
+      ),
+    ]
     renderIn(<ProductHeader product={makeProduct()} facts={makeFacts()} />)
     expect(screen.getByText("ask about Remera lino")).toBeTruthy()
   })
@@ -127,7 +176,10 @@ describe("ProductHeader", () => {
 describe("ProductBlockers", () => {
   it("is not there while nothing stops the product from selling", () => {
     const { container } = renderIn(
-      <ProductBlockers product={makeProduct()} facts={makeFacts({ variants: [makeVariant("Negro", "M")] })} />
+      <ProductBlockers
+        product={makeProduct()}
+        facts={makeFacts({ variants: [makeVariant("Negro", "M")] })}
+      />
     )
     expect(container.textContent).toBe("")
   })
@@ -135,23 +187,48 @@ describe("ProductBlockers", () => {
   it("names the variants out of stock, with the fix, and no heading for one", () => {
     renderIn(<ProductBlockers product={makeProduct()} facts={makeFacts()} />)
 
-    expect(screen.getByText('products.page.blockers.someOut.title {"count":1,"names":"Negro · XL"}')).toBeTruthy()
+    expect(
+      screen.getByText(
+        'products.page.blockers.someOut.title {"count":1,"names":"Negro · XL"}'
+      )
+    ).toBeTruthy()
     expect(screen.queryByText("products.page.blockers.title")).toBeNull()
-    expect(screen.getByRole("link", { name: "products.page.blockers.someOut.action" }).getAttribute("href")).toBe("/stock")
+    expect(
+      screen
+        .getByRole("link", { name: "products.page.blockers.someOut.action" })
+        .getAttribute("href")
+    ).toBe("/stock")
   })
 
   it("lists a new product's blockers under a heading, and publishes from there", async () => {
     const draft = makeProduct({ status: "draft", images: [], thumbnail: null })
-    const facts = makeFacts({ variants: [makeVariant(null, "S", { prices: [], inventory_quantity: 0 })] })
+    const facts = makeFacts({
+      variants: [makeVariant(null, "S", { prices: [], inventory_quantity: 0 })],
+    })
     renderIn(<ProductBlockers product={draft} facts={facts} />)
 
     expect(screen.getByText("products.page.blockers.title")).toBeTruthy()
     for (const id of ["noPrice", "noPhotos", "noStock", "draft"]) {
-      expect(screen.getByText(new RegExp(`products\\.page\\.blockers\\.${id}\\.title`))).toBeTruthy()
+      expect(
+        screen.getByText(
+          new RegExp(`products\\.page\\.blockers\\.${id}\\.title`)
+        )
+      ).toBeTruthy()
     }
-    expect(screen.getByRole("link", { name: "products.page.blockers.noPrice.action" }).getAttribute("href")).toBe("/prices")
+    expect(
+      screen
+        .getByRole("link", { name: "products.page.blockers.noPrice.action" })
+        .getAttribute("href")
+    ).toBe("/prices")
 
-    screen.getByRole("button", { name: "products.page.blockers.draft.action" }).click()
-    await vi.waitFor(() => expect(mutateAsync).toHaveBeenCalledWith({ status: "published" }, expect.anything()))
+    screen
+      .getByRole("button", { name: "products.page.blockers.draft.action" })
+      .click()
+    await vi.waitFor(() =>
+      expect(mutateAsync).toHaveBeenCalledWith(
+        { status: "published" },
+        expect.anything()
+      )
+    )
   })
 })
