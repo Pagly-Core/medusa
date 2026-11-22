@@ -45,6 +45,11 @@ describe("OrderGeneralSection as the header", () => {
     ).toBeTruthy()
   })
 
+  it("lets the badges wrap below the date on a narrow screen", () => {
+    const { container } = renderHeader()
+    expect(container.firstElementChild?.className).toContain("flex-wrap")
+  })
+
   it("leaves the customer out when the order has none", () => {
     renderHeader(makeOrder({ customer: null, email: null }))
     expect(

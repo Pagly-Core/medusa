@@ -1,4 +1,4 @@
-import { Buildings, FlyingBox, XCircle } from "@medusajs/icons"
+import { Buildings, CheckCircle, FlyingBox, XCircle } from "@medusajs/icons"
 import {
   Button,
   Container,
@@ -324,6 +324,20 @@ const Fulfillment = ({
             groups={[
               {
                 actions: [
+                  // Pagly: marking delivered is the next step's button; here it waits in the menu.
+                  ...(showDeliveryButton
+                    ? [
+                        {
+                          label: t(
+                            isPickUpFulfillment
+                              ? "orders.fulfillment.markAsPickedUp"
+                              : "orders.fulfillment.markAsDelivered"
+                          ),
+                          icon: <CheckCircle />,
+                          onClick: handleMarkAsDelivered,
+                        },
+                      ]
+                    : []),
                   {
                     label: t("actions.cancel"),
                     icon: <XCircle />,
@@ -451,18 +465,8 @@ const Fulfillment = ({
       </div>
       )}
 
-      {(showShippingButton || showDeliveryButton) && (
+      {showShippingButton && (
         <div className="flex items-center justify-end gap-x-2 px-6 py-4">
-          {showDeliveryButton && (
-            <Button onClick={handleMarkAsDelivered} variant="secondary">
-              {t(
-                isPickUpFulfillment
-                  ? "orders.fulfillment.markAsPickedUp"
-                  : "orders.fulfillment.markAsDelivered"
-              )}
-            </Button>
-          )}
-
           {showShippingButton && (
             <Button
               onClick={() => navigate(`./${fulfillment.id}/create-shipment`)}

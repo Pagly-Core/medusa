@@ -124,6 +124,13 @@ describe("OrderFulfillmentSection as Envío", () => {
     expect(screen.queryByText(/orders\.shipping\.shipmentOf/)).toBeNull()
   })
 
+  it("leaves Mark as delivered to the next step, not a second button on the shipment", () => {
+    renderShipping(twoShipments())
+    expect(
+      screen.queryByRole("button", { name: "orders.fulfillment.markAsDelivered" })
+    ).toBeNull()
+  })
+
   it("puts plugin shipping parts inside the card, with the order", () => {
     const seen: string[] = []
     const Labels = ({ data }: any) => {

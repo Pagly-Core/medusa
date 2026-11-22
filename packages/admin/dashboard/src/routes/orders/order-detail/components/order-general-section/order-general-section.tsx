@@ -60,8 +60,8 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
   }
 
   return (
-    <Container className="flex items-center justify-between px-6 py-4">
-      <div>
+    <Container className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-6 py-4">
+      <div className="min-w-[240px] flex-1">
         <div className="flex items-center gap-x-1">
           <Heading>#{order.display_id}</Heading>
           <Copy content={`#${order.display_id}`} className="text-ui-fg-muted" />
