@@ -46,6 +46,8 @@ export const ProductSellingSection = ({
         label={t("products.page.selling.discounts")}
         action={
           <Switch
+            // Pagly: on reads in the text colour, never the interactive blue.
+            className="data-[state=checked]:bg-ui-fg-base"
             aria-label={t("products.page.selling.discountsLabel")}
             checked={!!product.discountable}
             disabled={isPending}
