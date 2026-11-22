@@ -54,7 +54,7 @@ import {
   getStylizedAmount,
   isAmountLessThenRoundingError,
 } from "../../../../../lib/money-amount-helpers"
-import { getTotalCaptured } from "../../../../../lib/payment"
+import { getTotalCaptured, getTotalPending } from "../../../../../lib/payment"
 import { getLoyaltyPlugin } from "../../../../../lib/plugins"
 import { getReturnableQuantity } from "../../../../../lib/rma"
 import { getCreditKind } from "./credit-kinds"
@@ -584,8 +584,11 @@ const CostBreakdown = ({
 
   const hasTaxes = !!Object.keys(taxCodes).length
   const showTaxes = !!order.original_tax_total
+  // Included only when every line and every shipping method includes them.
   const taxIncluded =
-    order.items.length > 0 && order.items.every((item) => item.is_tax_inclusive)
+    order.items.length > 0 &&
+    order.items.every((item) => item.is_tax_inclusive) &&
+    (order.shipping_methods ?? []).every((sm) => sm.is_tax_inclusive)
   const hasCreditLines = creditLines.length > 0
 
   const taxRow = (
@@ -682,7 +685,7 @@ const CostBreakdown = ({
                 <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
               </div>
               <span className="txt-small text-ui-fg-muted">
-                {getLocaleAmount(discount.amount, order.currency_code)}
+                −{getLocaleAmount(discount.amount, order.currency_code)}
               </span>
             </div>
           ))}
@@ -699,7 +702,7 @@ const CostBreakdown = ({
                 <div className="bottom-[calc(50% - 2px)] absolute h-[1px] w-full border-b border-dashed" />
               </div>
               <span className="txt-small text-ui-fg-muted">
-                {getLocaleAmount(total, order.currency_code)}
+                −{getLocaleAmount(total, order.currency_code)}
               </span>
             </div>
           ))}
@@ -1171,6 +1174,11 @@ const Total = ({ order }: { order: AdminOrder }) => {
     pending,
     order.currency_code
   )
+  // Authorized but not captured yet: the payment card's old "Total pending".
+  const toCapture =
+    order.status === "canceled"
+      ? 0
+      : getTotalPending(order.payment_collections || [])
 
   return (
     <div className="text-ui-fg-subtle flex flex-col gap-y-2 px-6 py-4">
@@ -1196,6 +1204,17 @@ const Total = ({ order }: { order: AdminOrder }) => {
               getTotalCreditLines(order.credit_lines ?? []),
               order.currency_code
             )}
+          </Text>
+        </div>
+      )}
+
+      {toCapture > 0 && (
+        <div className="flex items-center justify-between">
+          <Text size="small" leading="compact">
+            {t("orders.summary.toCapture")}
+          </Text>
+          <Text size="small" leading="compact" className="tabular-nums">
+            {getLocaleAmount(toCapture, order.currency_code)}
           </Text>
         </div>
       )}

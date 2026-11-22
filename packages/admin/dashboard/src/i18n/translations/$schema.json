@@ -5084,6 +5084,9 @@
             },
             "pending": {
               "type": "string"
+            },
+            "toCapture": {
+              "type": "string"
             }
           },
           "required": [
@@ -5109,7 +5112,8 @@
             "tax",
             "taxIncluded",
             "paid",
-            "pending"
+            "pending",
+            "toCapture"
           ],
           "additionalProperties": false
         },

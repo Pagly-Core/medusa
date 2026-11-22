@@ -1374,7 +1374,8 @@
       "tax": "Impuestos",
       "taxIncluded": "Impuestos incluidos",
       "paid": "Pagado",
-      "pending": "Pendiente"
+      "pending": "Pendiente",
+      "toCapture": "Por cobrar"
     },
     "transfer": {
       "title": "Transferir propiedad",

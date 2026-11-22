@@ -11,6 +11,9 @@ import { ComponentType, ReactNode, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 
+import { ArrowLongRight } from "@medusajs/icons"
+
+import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useMarkOrderFulfillmentAsDelivered } from "../../../../../hooks/api/orders"
 import { useMarkPaymentCollectionAsPaid } from "../../../../../hooks/api/payment-collections"
 import { useReturns } from "../../../../../hooks/api/returns"
@@ -69,12 +72,21 @@ export const OrderNextStep = ({ order, orderPreview }: OrderNextStepProps) => {
       {parts.map((Part, index) => (
         <Part key={index} data={order} claim={claimers[index]} />
       ))}
-      {!claimed && <OwnStep order={order} orderPreview={orderPreview} />}
+      <OwnStep order={order} orderPreview={orderPreview} claimed={claimed} />
     </>
   )
 }
 
-const OwnStep = ({ order, orderPreview }: OrderNextStepProps) => {
+/**
+ * The page's own step. An open change stands alone. Money and returns (a
+ * return to receive, a payment owed) always show, even while a plugin part
+ * holds the slot; preparing and marking delivered only when nothing else waits.
+ */
+const OwnStep = ({
+  order,
+  orderPreview,
+  claimed,
+}: OrderNextStepProps & { claimed: boolean }) => {
   const { returns = [] } = useReturns({
     status: "requested",
     order_id: order.id,
@@ -98,28 +110,46 @@ const OwnStep = ({ order, orderPreview }: OrderNextStepProps) => {
   }
 
   const receivable = returns.filter((r) => !r.canceled_at)
-  if (receivable.length) {
-    return <ReceiveStep order={order} returnId={receivable[0].id} />
-  }
-
   const unpaid = order.payment_collections?.find(
     (collection) => collection.status === "not_paid"
   )
   const pending = order.summary?.pending_difference || 0
-  if (
-    unpaid &&
+  const owes =
+    !!unpaid &&
     pending > 0 &&
     !isAmountLessThenRoundingError(pending, order.currency_code)
-  ) {
-    return <UnpaidStep order={order} collection={unpaid} />
+
+  if (receivable.length || owes) {
+    return (
+      <>
+        {!!receivable.length && (
+          <ReceiveStep order={order} returns={receivable} />
+        )}
+        {owes && <UnpaidStep order={order} collection={unpaid!} />}
+      </>
+    )
   }
 
-  const toPrepare = order.items.filter(
-    (item) =>
-      item.requires_shipping && item.detail.fulfilled_quantity < item.quantity
-  )
-  if (toPrepare.length) {
-    return <PrepareStep order={order} items={toPrepare} />
+  if (claimed) {
+    return null
+  }
+
+  const unprepared = (requiresShipping: boolean) =>
+    order.items.filter(
+      (item) =>
+        !!item.requires_shipping === requiresShipping &&
+        item.detail.fulfilled_quantity < item.quantity
+    )
+  const toShip = unprepared(true)
+  const toHand = toShip.length ? [] : unprepared(false)
+  if (toShip.length || toHand.length) {
+    return (
+      <PrepareStep
+        order={order}
+        items={toShip.length ? toShip : toHand}
+        requiresShipping={!!toShip.length}
+      />
+    )
   }
 
   const onItsWay = (order.fulfillments ?? []).find(
@@ -168,18 +198,22 @@ const Step = ({
 const PrepareStep = ({
   order,
   items,
+  requiresShipping,
 }: {
   order: HttpTypes.AdminOrder
   items: HttpTypes.AdminOrderLineItem[]
+  requiresShipping: boolean
 }) => {
   const { t } = useTranslation()
   const count = items.reduce(
     (sum, item) => sum + item.quantity - item.detail.fulfilled_quantity,
     0
   )
-  const method = order.shipping_methods?.find(
-    (shippingMethod) => !shippingMethod.detail?.return_id
-  )?.name
+  const method = requiresShipping
+    ? order.shipping_methods?.find(
+        (shippingMethod) => !shippingMethod.detail?.return_id
+      )?.name
+    : undefined
 
   return (
     <Step
@@ -191,7 +225,9 @@ const PrepareStep = ({
       }
       action={
         <Button size="small" asChild>
-          <Link to={`/orders/${order.id}/fulfillment?requires_shipping=true`}>
+          <Link
+            to={`/orders/${order.id}/fulfillment?requires_shipping=${requiresShipping}`}
+          >
             {t("orders.nextStep.prepare.action")}
           </Link>
         </Button>
@@ -260,10 +296,10 @@ const ShippedStep = ({
 
 const ReceiveStep = ({
   order,
-  returnId,
+  returns,
 }: {
   order: HttpTypes.AdminOrder
-  returnId: string
+  returns: HttpTypes.AdminReturn[]
 }) => {
   const { t } = useTranslation()
 
@@ -272,11 +308,38 @@ const ReceiveStep = ({
       title={t("orders.nextStep.receive.title")}
       detail={t("orders.nextStep.receive.detail")}
       action={
-        <Button size="small" asChild>
-          <Link to={`/orders/${order.id}/returns/${returnId}/receive`}>
-            {t("orders.returns.receive.action")}
-          </Link>
-        </Button>
+        returns.length === 1 ? (
+          <Button size="small" asChild>
+            <Link to={`/orders/${order.id}/returns/${returns[0].id}/receive`}>
+              {t("orders.returns.receive.action")}
+            </Link>
+          </Button>
+        ) : (
+          // Several on their way back (a return and an exchange's, say): one menu, each by its id.
+          <ActionMenu
+            groups={[
+              {
+                actions: returns.map((r) => {
+                  const [id, returnType] = r.exchange_id
+                    ? [r.exchange_id, "Exchange"]
+                    : r.claim_id
+                    ? [r.claim_id, "Claim"]
+                    : [r.id, "Return"]
+                  return {
+                    label: t("orders.returns.receive.receiveItems", {
+                      id: `#${id.slice(-7)}`,
+                      returnType,
+                    }),
+                    icon: <ArrowLongRight />,
+                    to: `/orders/${order.id}/returns/${r.id}/receive`,
+                  }
+                }),
+              },
+            ]}
+          >
+            <Button size="small">{t("orders.returns.receive.action")}</Button>
+          </ActionMenu>
+        )
       }
     />
   )

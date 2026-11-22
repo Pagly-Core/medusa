@@ -33,20 +33,26 @@ export const getLineState = (
     return { key: "orders.lineState.returned", color: "grey" }
   }
 
-  if (detail.delivered_quantity >= quantity) {
+  // A line that doesn't ship is done once it is prepared.
+  if (
+    detail.delivered_quantity >= quantity ||
+    (!item.requires_shipping && detail.fulfilled_quantity >= quantity)
+  ) {
     return { key: "orders.lineState.delivered", color: "green" }
   }
 
   if (detail.shipped_quantity >= quantity) {
-    const shipments = (order.fulfillments ?? []).filter(
-      (fulfillment) => fulfillment.shipped_at && !fulfillment.canceled_at
-    )
+    // Numbered as Envío numbers its shipments: every fulfillment, in order.
+    const fulfillments = order.fulfillments ?? []
 
-    if (shipments.length > 1) {
-      const index = shipments.findIndex((fulfillment) =>
-        (fulfillment as ExtendedOrderFulfillment).items?.some(
-          (line) => line.line_item_id === item.id
-        )
+    if (fulfillments.length > 1) {
+      const index = fulfillments.findIndex(
+        (fulfillment) =>
+          fulfillment.shipped_at &&
+          !fulfillment.canceled_at &&
+          (fulfillment as ExtendedOrderFulfillment).items?.some(
+            (line) => line.line_item_id === item.id
+          )
       )
 
       if (index > -1) {

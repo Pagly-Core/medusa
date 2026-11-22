@@ -1308,7 +1308,8 @@
       "tax": "Taxes",
       "taxIncluded": "Taxes included",
       "paid": "Paid",
-      "pending": "Pending"
+      "pending": "Pending",
+      "toCapture": "To capture"
     },
     "transfer": {
       "title": "Transfer ownership",
