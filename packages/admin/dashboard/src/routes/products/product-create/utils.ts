@@ -156,3 +156,50 @@ export const withRequestAlts = <T extends object>(
   requests: { alt?: string }[]
 ): (T & { alt?: string })[] =>
   files.map((file, index) => ({ ...file, alt: requests[index]?.alt }))
+
+/** Pagly: a product's main photo is always its first photo. */
+export const firstPhotoIsMain = <T extends { isThumbnail: boolean }>(
+  media: T[]
+): T[] =>
+  media.map((item, index) => ({ ...item, isThumbnail: index === 0 }))
+
+type StoredMedia = { url: string; isThumbnail: boolean; alt?: string }
+
+/**
+ * Pagly: the form's photos in the form's order once their files are
+ * uploaded: an uploaded main photo and the other uploads (each in the order
+ * they were sent) take the places of the files they came from, and photos
+ * picked from the media library keep theirs.
+ */
+export const mediaInFormOrder = <
+  T extends {
+    url: string
+    isThumbnail: boolean
+    file?: File | null
+    alt?: string
+  },
+  U
+>(
+  media: T[],
+  thumbnailUploads: U[],
+  otherUploads: U[]
+): (U | StoredMedia)[] => {
+  let thumbnail = 0
+  let other = 0
+
+  return media.flatMap((m): (U | StoredMedia)[] => {
+    if (!m.file) {
+      return [
+        m.alt === undefined
+          ? { url: m.url, isThumbnail: m.isThumbnail }
+          : { url: m.url, isThumbnail: m.isThumbnail, alt: m.alt },
+      ]
+    }
+
+    const uploaded = m.isThumbnail
+      ? thumbnailUploads[thumbnail++]
+      : otherUploads[other++]
+
+    return uploaded === undefined ? [] : [uploaded]
+  })
+}

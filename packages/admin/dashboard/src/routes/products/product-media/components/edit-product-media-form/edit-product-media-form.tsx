@@ -38,6 +38,7 @@ import { sdk } from "../../../../../lib/client"
 import { saveChangedAlts, useMediaAlts } from "../../../../../lib/media-alt"
 import { MediaAltInput } from "../../../common/components/media-alt-input"
 import { UploadMediaFormItem } from "../../../common/components/upload-media-form-item"
+import { imagesByRank } from "../../../common/images-by-rank"
 import {
   EditProductMediaSchema,
   MediaSchema,
@@ -62,7 +63,7 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
     resolver: zodResolver(EditProductMediaSchema),
   })
 
-  const { fields, append, remove, update, move } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     name: "media",
     control: form.control,
     keyName: "field_id",
@@ -146,12 +147,11 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
       return entry
     })
 
-    const thumbnail = withUpdatedUrls.find((m) => m.isThumbnail)?.url
-
     try {
+      // Pagly: the main photo is always the first photo.
       await mutateAsync({
         images: withUpdatedUrls.map((file) => ({ url: file.url, id: file.id })),
-        thumbnail: thumbnail || null,
+        thumbnail: withUpdatedUrls[0]?.url ?? null,
       })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error))
@@ -197,21 +197,13 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
       return
     }
 
-    const currentThumbnailIndex = fields.findIndex((m) => m.isThumbnail)
-
-    if (currentThumbnailIndex > -1) {
-      update(currentThumbnailIndex, {
-        ...form.getValues(`media.${currentThumbnailIndex}`),
-        isThumbnail: false,
-      })
-    }
-
+    // Pagly: the main photo is the first photo, so making one main moves it
+    // to the front.
     const index = fields.findIndex((m) => m.id === ids[0])
 
-    update(index, {
-      ...form.getValues(`media.${index}`),
-      isThumbnail: true,
-    })
+    if (index > 0) {
+      move(index, 0)
+    }
 
     setSelection({})
   }
@@ -254,6 +246,7 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
                           checked={!!selection[m.id!]}
                           key={m.field_id}
                           media={m}
+                          isMain={index === 0}
                           alt={media[index]?.alt ?? alts[m.url] ?? undefined}
                           altField={
                             altEnabled && (!!m.file || m.url in alts) ? (
@@ -287,6 +280,10 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
                     {activeId ? (
                       <MediaGridItemOverlay
                         media={fields.find((m) => m.field_id === activeId)!}
+                        isMain={
+                          fields.findIndex((m) => m.field_id === activeId) ===
+                          0
+                        }
                         alt={
                           media[
                             fields.findIndex((m) => m.field_id === activeId)
@@ -355,7 +352,7 @@ const getDefaultValues = (
   thumbnail: string | null | undefined
 ) => {
   const media: Media[] =
-    images?.map((image) => ({
+    imagesByRank(images).map((image) => ({
       id: image.id!,
       url: image.url!,
       isThumbnail: image.url === thumbnail,
@@ -399,12 +396,15 @@ interface MediaGridItemProps {
   onCheckedChange: (value: boolean) => void
   /** Pagly: the photo's words, read by screen readers. */
   alt?: string
+  /** Pagly: the first photo is the product's main photo. */
+  isMain: boolean
   /** Pagly: the photo's alt field, under it, when the store keeps alt text. */
   altField?: ReactNode
 }
 
 const MediaGridItem = ({
   media,
+  isMain,
   checked,
   onCheckedChange,
   alt,
@@ -442,7 +442,7 @@ const MediaGridItem = ({
           "shadow-elevation-card-rest hover:shadow-elevation-card-hover focus-visible:shadow-borders-focus bg-ui-bg-subtle-hover group relative aspect-square h-auto max-w-full overflow-hidden rounded-lg outline-none"
         )}
       >
-        {media.isThumbnail && (
+        {isMain && (
           <div className="absolute left-2 top-2">
             <Tooltip content={t("products.media.thumbnailTooltip")}>
               <ThumbnailBadge />
@@ -488,16 +488,18 @@ const MediaGridItem = ({
 
 export const MediaGridItemOverlay = ({
   media,
+  isMain,
   checked,
   alt,
 }: {
   media: MediaView
+  isMain: boolean
   checked: boolean
   alt?: string
 }) => {
   return (
     <div className="shadow-elevation-card-rest hover:shadow-elevation-card-hover focus-visible:shadow-borders-focus bg-ui-bg-subtle-hover group relative aspect-square h-auto max-w-full cursor-grabbing overflow-hidden rounded-lg outline-none">
-      {media.isThumbnail && (
+      {isMain && (
         <div className="absolute left-2 top-2">
           <ThumbnailBadge />
         </div>

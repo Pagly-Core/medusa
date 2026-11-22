@@ -17,6 +17,10 @@ import { Link, useNavigate } from "react-router-dom"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useUpdateProduct } from "../../../../../hooks/api/products"
 import { useMediaAlts } from "../../../../../lib/media-alt"
+import {
+  imagesByRank,
+  photosAfterDelete,
+} from "../../../common/images-by-rank"
 import { HttpTypes } from "@medusajs/types"
 
 type ProductMedisaSectionProps = {
@@ -71,15 +75,12 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
       return
     }
 
-    const mediaToKeep = product.images
-      ?.filter((i) => !ids.includes(i.id))
-      .map((i) => ({ id: i.id, url: i.url }))
-
+    // Pagly: the main photo is always the first photo; one kept apart from
+    // the photos stays in front unless it is deleted.
     await mutateAsync(
-      {
-        images: mediaToKeep,
-        thumbnail: includingThumbnail ? "" : undefined,
-      },
+      photosAfterDelete(product.images, product.thumbnail, ids, {
+        mainDeleted: ids.includes(OUTSIDE_THUMBNAIL_ID),
+      }),
       {
         onSuccess: () => {
           setSelection({})
@@ -211,23 +212,25 @@ type Media = {
   isThumbnail: boolean
 }
 
+const OUTSIDE_THUMBNAIL_ID = "img_thumbnail"
+
 const getMedia = (product: HttpTypes.AdminProduct) => {
   const { images = [], thumbnail } = product
 
-  const media: Media[] =
-    images?.map((image) => ({
-      id: image.id,
-      url: image.url,
-      isThumbnail: image.url === thumbnail,
-    })) || []
+  const media: Media[] = imagesByRank(images).map((image) => ({
+    id: image.id,
+    url: image.url,
+    isThumbnail: image.url === thumbnail,
+  }))
 
   if (thumbnail && !media.some((mediaItem) => mediaItem.url === thumbnail)) {
     media.unshift({
-      id: "img_thumbnail",
+      id: OUTSIDE_THUMBNAIL_ID,
       url: thumbnail,
       isThumbnail: true,
     })
   }
 
-  return media
+  // Pagly: the main photo is always the first photo.
+  return media.map((item, index) => ({ ...item, isThumbnail: index === 0 }))
 }

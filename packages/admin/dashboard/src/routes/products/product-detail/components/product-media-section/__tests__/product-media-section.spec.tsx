@@ -1,6 +1,24 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor } from "@testing-library/react"
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
+
+vi.hoisted(() => {
+  // jsdom has no ResizeObserver; the command bar asks for one.
+  const g = globalThis as Record<string, unknown>
+  g.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+})
+
+const { mutateAsync } = vi.hoisted(() => ({ mutateAsync: vi.fn() }))
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -18,7 +36,7 @@ vi.mock("@medusajs/ui", async (importOriginal) => {
   return {
     ...actual,
     Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-    usePrompt: () => vi.fn(),
+    usePrompt: () => async () => true,
   }
 })
 
@@ -27,7 +45,7 @@ vi.mock("../../../../../../components/common/action-menu", () => ({
 }))
 
 vi.mock("../../../../../../hooks/api/products", () => ({
-  useUpdateProduct: () => ({ mutateAsync: vi.fn() }),
+  useUpdateProduct: () => ({ mutateAsync }),
 }))
 
 import {
@@ -83,5 +101,50 @@ describe("ProductMediaSection alt text", () => {
     render(<ProductMediaSection product={product} />)
 
     expect(screen.queryByText("products.media.altMissing")).toBeNull()
+  })
+})
+
+// Pagly: a product's main photo is always its first photo.
+describe("ProductMediaSection main photo", () => {
+  it("makes the next photo the main one when the first is deleted", async () => {
+    mutateAsync.mockReset()
+    render(<ProductMediaSection product={product} />)
+
+    fireEvent.click(screen.getAllByRole("checkbox")[0])
+    fireEvent.click(screen.getByRole("button", { name: /actions\.delete/ }))
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(mutateAsync.mock.calls[0][0]).toEqual({
+      images: [{ id: "img_b", url: B }],
+      thumbnail: B,
+    })
+  })
+
+  it("deletes from the photos as ranked, keeping the next one main", async () => {
+    mutateAsync.mockReset()
+    render(
+      <ProductMediaSection
+        product={
+          {
+            id: "prod_1",
+            title: "Taza",
+            thumbnail: B,
+            images: [
+              { id: "img_b", url: B, rank: 1 },
+              { id: "img_a", url: A, rank: 0 },
+            ],
+          } as never
+        }
+      />
+    )
+
+    fireEvent.click(screen.getAllByRole("checkbox")[0])
+    fireEvent.click(screen.getByRole("button", { name: /actions\.delete/ }))
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(mutateAsync.mock.calls[0][0]).toEqual({
+      images: [{ id: "img_b", url: B }],
+      thumbnail: B,
+    })
   })
 })

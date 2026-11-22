@@ -23,6 +23,25 @@ vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
 
+// The item menu, as plain buttons.
+vi.mock("../../../../../../../../components/common/action-menu", () => ({
+  ActionMenu: ({
+    groups,
+  }: {
+    groups: { actions: { label: string; onClick?: () => void }[] }[]
+  }) => (
+    <>
+      {groups
+        .flatMap((group) => group.actions)
+        .map((action) => (
+          <button key={action.label} type="button" onClick={action.onClick}>
+            {action.label}
+          </button>
+        ))}
+    </>
+  ),
+}))
+
 vi.mock("../../../../../../common/components/upload-media-form-item", () => ({
   UploadMediaFormItem: () => null,
 }))
@@ -150,6 +169,29 @@ describe("ProductCreateMediaSection", () => {
 
     expect(values()).toEqual([
       expect.objectContaining({ id: "f1", alt: "Taza azul, de costado" }),
+    ])
+  })
+})
+
+// Pagly: a product's main photo is always its first photo.
+describe("ProductCreateMediaSection main photo", () => {
+  it("moves the photo made main to the front", () => {
+    render(
+      <Harness
+        media={[
+          { id: "p1", url: "http://localhost:9000/static/a.png", isThumbnail: false, file: null },
+          { id: "p2", url: "http://localhost:9000/static/b.png", isThumbnail: false, file: null },
+        ]}
+      />
+    )
+
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "products.media.makeThumbnail" })[1]
+    )
+
+    expect((values() as { id: string }[]).map((m) => m.id)).toEqual([
+      "p2",
+      "p1",
     ])
   })
 })

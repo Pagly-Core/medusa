@@ -13,6 +13,10 @@ import { Link, useLocation } from "react-router-dom"
 import { HttpTypes } from "@medusajs/types"
 import { RouteFocusModal } from "../../../../../components/modals"
 import { useUpdateProduct } from "../../../../../hooks/api/products"
+import {
+  imagesByRank,
+  photosAfterDelete,
+} from "../../../common/images-by-rank"
 
 type ProductMediaGalleryProps = {
   product: HttpTypes.AdminProduct
@@ -91,19 +95,17 @@ export const ProductMediaGallery = ({ product }: ProductMediaGalleryProps) => {
       return
     }
 
-    const mediaToKeep =
-      product.images
-        ?.filter((i) => i.id !== current.id)
-        .map((i) => ({ id: i.id, url: i.url })) || []
-
     if (curr === media.length - 1) {
       setCurr((prev) => Math.max(0, prev - 1))
     }
 
-    await mutateAsync({
-      images: mediaToKeep,
-      thumbnail: current.isThumbnail ? "" : undefined,
-    })
+    // Pagly: the main photo is always the first photo; one kept apart from
+    // the photos stays in front unless it is deleted.
+    await mutateAsync(
+      photosAfterDelete(product.images, product.thumbnail, [current.id], {
+        mainDeleted: current.id === OUTSIDE_THUMBNAIL_ID,
+      })
+    )
   }
 
   useEffect(() => {
@@ -312,24 +314,26 @@ type Media = {
   isThumbnail: boolean
 }
 
+const OUTSIDE_THUMBNAIL_ID = "thumbnail_only"
+
 const getMedia = (
   images: HttpTypes.AdminProductImage[] | null,
   thumbnail: string | null
 ) => {
-  const media: Media[] =
-    images?.map((image) => ({
-      id: image.id,
-      url: image.url,
-      isThumbnail: image.url === thumbnail,
-    })) || []
+  const media: Media[] = imagesByRank(images).map((image) => ({
+    id: image.id,
+    url: image.url,
+    isThumbnail: image.url === thumbnail,
+  }))
 
   if (thumbnail && !media.some((mediaItem) => mediaItem.isThumbnail)) {
     media.unshift({
-      id: "thumbnail_only",
+      id: OUTSIDE_THUMBNAIL_ID,
       url: thumbnail,
       isThumbnail: true,
     })
   }
 
-  return media
+  // Pagly: the main photo is always the first photo.
+  return media.map((item, index) => ({ ...item, isThumbnail: index === 0 }))
 }

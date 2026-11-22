@@ -217,3 +217,85 @@ describe("EditProductMediaForm alt text", () => {
     expect(handleSuccess).toHaveBeenCalled()
   })
 })
+
+// Pagly: a product's main photo is always its first photo.
+describe("EditProductMediaForm main photo", () => {
+  const select = (index: number) =>
+    fireEvent.click(screen.getAllByRole("checkbox")[index])
+
+  it("makes the next photo the main one when the first is deleted", async () => {
+    render(<EditProductMediaForm product={product} />)
+
+    select(0)
+    fireEvent.click(screen.getByRole("button", { name: /actions\.delete/ }))
+    save()
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(mutateAsync).toHaveBeenCalledWith(
+      { images: [{ id: "img_b", url: B }], thumbnail: B }
+    )
+  })
+
+  it("saves no main photo once every photo is gone", async () => {
+    render(<EditProductMediaForm product={product} />)
+
+    select(0)
+    select(1)
+    fireEvent.click(screen.getByRole("button", { name: /actions\.delete/ }))
+    save()
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(mutateAsync).toHaveBeenCalledWith(
+      { images: [], thumbnail: null }
+    )
+  })
+
+  it("lists the photos by rank, and keeps the first as main on save", async () => {
+    render(
+      <EditProductMediaForm
+        product={
+          {
+            id: "prod_1",
+            thumbnail: B,
+            images: [
+              { id: "img_b", url: B, rank: 1 },
+              { id: "img_a", url: A, rank: 0 },
+            ],
+          } as never
+        }
+      />
+    )
+
+    save()
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(mutateAsync).toHaveBeenCalledWith({
+      images: [
+        { id: "img_a", url: A },
+        { id: "img_b", url: B },
+      ],
+      thumbnail: A,
+    })
+  })
+
+  it("moves the photo made main to the front", async () => {
+    render(<EditProductMediaForm product={product} />)
+
+    select(1)
+    fireEvent.click(
+      screen.getByRole("button", { name: /products\.media\.makeThumbnail/ })
+    )
+    save()
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled())
+    expect(mutateAsync).toHaveBeenCalledWith(
+      {
+        images: [
+          { id: "img_b", url: B },
+          { id: "img_a", url: A },
+        ],
+        thumbnail: B,
+      }
+    )
+  })
+})

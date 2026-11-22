@@ -70,6 +70,7 @@ import {
   applyPublishedProductsContext,
   computeOptionLinkChanges,
   eventBuilders,
+  firstPhotoThumbnail,
 } from "../utils"
 import { joinerConfig } from "./../joiner-config"
 import { buildOptionValueFilterQuery } from "../utils/build-option-value-filter-query"
@@ -3255,8 +3256,32 @@ export default class ProductModuleService
 
     await (sharedContext.transactionManager as any).flush()
 
+    // Pagly: the main photo is always the first photo. A new main photo
+    // alone reorders the stored photos, so only those products load them.
+    const mainPhotoOnlyIds = data
+      .filter((d) => d.thumbnail !== undefined && !d.images)
+      .map((d) => d.id)
+    const withStoredImages = mainPhotoOnlyIds.length
+      ? await this.productService_.list(
+          { id: mainPhotoOnlyIds },
+          { relations: ["images"] },
+          sharedContext
+        )
+      : []
+    const storedImagesById = new Map(
+      withStoredImages.map((product) => [
+        product.id,
+        [...(product.images ?? [])]
+          .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+          .map((image) => ({ id: image.id, url: image.url })),
+      ])
+    )
+    const withMainPhoto = data.map((product) =>
+      firstPhotoThumbnail(product, storedImagesById.get(product.id))
+    )
+
     const normalizedProducts = (await this.normalizeUpdateProductInput(
-      data
+      withMainPhoto
     )) as UpdateProductInput[]
 
     for (const product of normalizedProducts) {
@@ -3518,9 +3543,11 @@ export default class ProductModuleService
         productData.status = ProductStatus.DRAFT
       }
 
-      if (!productData.thumbnail && productData.images?.length) {
-        productData.thumbnail = productData.images[0].url
-      }
+      // Pagly: the main photo is always the first photo.
+      Object.assign(
+        productData,
+        firstPhotoThumbnail(productData, undefined, { byRank: true })
+      )
 
       if (productData.images?.length) {
         productData.images = productData.images.map((image, index) =>
