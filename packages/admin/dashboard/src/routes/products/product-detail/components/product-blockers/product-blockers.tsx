@@ -8,7 +8,10 @@ import { Blocker, BlockerId, getBlockers } from "../../product-facts"
 import { ProductPageFacts } from "../../use-product-page-facts"
 
 /** Where each blocker's fix opens; publishing happens here. */
-const FIX_ROUTES: Record<Exclude<BlockerId, "draft">, string> = {
+const FIX_ROUTES: Record<
+  Exclude<BlockerId, "draft" | "unpublished">,
+  string
+> = {
   noPrice: "prices",
   noPhotos: "media?view=edit",
   noStock: "stock",
@@ -42,6 +45,11 @@ const COPY = {
     title: "products.page.blockers.draft.title",
     detail: "products.page.blockers.draft.detail",
     action: "products.page.blockers.draft.action",
+  },
+  unpublished: {
+    title: "products.page.blockers.unpublished.title",
+    detail: "products.page.blockers.unpublished.detail",
+    action: "products.page.blockers.unpublished.action",
   },
   noChannel: {
     title: "products.page.blockers.noChannel.title",
@@ -157,7 +165,7 @@ const BlockerRow = ({
           {detail}
         </Text>
       </div>
-      {blocker.id === "draft" ? (
+      {blocker.id === "draft" || blocker.id === "unpublished" ? (
         <Button
           size="small"
           variant={variant}

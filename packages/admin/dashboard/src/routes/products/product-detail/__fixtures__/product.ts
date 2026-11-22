@@ -74,8 +74,13 @@ export const makeVariant = (
   ...over,
 })
 
-export const makeFacts = (over: Partial<ProductPageFacts> = {}): ProductPageFacts => ({
-  variants: [makeVariant("Negro", "M"), makeVariant("Negro", "XL", { inventory_quantity: 0 })],
+export const makeFacts = (
+  over: Partial<ProductPageFacts> = {}
+): ProductPageFacts => ({
+  variants: [
+    makeVariant("Negro", "M"),
+    makeVariant("Negro", "XL", { inventory_quantity: 0 }),
+  ],
   currency: "uyu",
   places: 1,
   sales: new Map(),

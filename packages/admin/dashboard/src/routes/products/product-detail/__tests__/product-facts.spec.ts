@@ -336,7 +336,15 @@ describe("the header's line", () => {
   it("prices by what the shopper pays during an offer", () => {
     const vs = [variant("Negro", "M")]
     const sales = new Map([
-      ["variant_Negro_M", { amount: 1032, offer: "Black Week", ends_at: null, type: "sale" as const }],
+      [
+        "variant_Negro_M",
+        {
+          amount: 1032,
+          offer: "Black Week",
+          ends_at: null,
+          type: "sale" as const,
+        },
+      ],
     ])
     expect(
       getSummary({
@@ -409,42 +417,99 @@ describe("offer prices", () => {
 describe("review fixes", () => {
   it("says nothing about prices until the store's currency is known", () => {
     const vs = [variant(null, "M", { prices: [] })]
-    expect(getBlockers({ product: product({ options: [SIZE] }), variants: vs, currency: "", cover: null }).map((b) => b.id)).not.toContain("noPrice")
+    expect(
+      getBlockers({
+        product: product({ options: [SIZE] }),
+        variants: vs,
+        currency: "",
+        cover: null,
+      }).map((b) => b.id)
+    ).not.toContain("noPrice")
   })
 
   it("reads a price set with a rule when the variant has no plain one", () => {
-    const v = variant("Negro", "M", { prices: [{ amount: 990, currency_code: "uyu", rules: { region_id: "reg_1" } }] })
+    const v = variant("Negro", "M", {
+      prices: [
+        { amount: 990, currency_code: "uyu", rules: { region_id: "reg_1" } },
+      ],
+    })
     expect(variantPrice(v, "uyu")).toBe(990)
   })
 
   it("calls only a draft a draft, and says a proposed or rejected product isn't published", () => {
     const ids = (status: string) =>
-      getBlockers({ product: product({ status: status as any }), variants: [variant("Negro", "M")], currency: "uyu", cover: null }).map((b) => b.id)
+      getBlockers({
+        product: product({ status: status as any }),
+        variants: [variant("Negro", "M")],
+        currency: "uyu",
+        cover: null,
+      }).map((b) => b.id)
     expect(ids("draft")).toEqual(["draft"])
     expect(ids("proposed")).toEqual(["unpublished"])
     expect(ids("rejected")).toEqual(["unpublished"])
   })
 
   it("counts the places the product is stocked in, not the store's", () => {
-    const at = (...ids: string[]) => ({ inventory_items: [{ inventory: { location_levels: ids.map((location_id) => ({ location_id })) } }] })
-    expect(stockPlaces([variant("Negro", "M", at("sloc_1")), variant("Negro", "XL", at("sloc_1", "sloc_2"))])).toBe(2)
+    const at = (...ids: string[]) => ({
+      inventory_items: [
+        {
+          inventory: {
+            location_levels: ids.map((location_id) => ({ location_id })),
+          },
+        },
+      ],
+    })
+    expect(
+      stockPlaces([
+        variant("Negro", "M", at("sloc_1")),
+        variant("Negro", "XL", at("sloc_1", "sloc_2")),
+      ])
+    ).toBe(2)
     expect(stockPlaces([variant("Negro", "M", at("sloc_1"))])).toBe(1)
     expect(stockPlaces([variant("Negro", "M")])).toBe(1)
   })
 
   it("prices a variant by what the shopper pays: a lower sale, or any override", () => {
     const v = variant("Negro", "M")
-    const sale = (amount: number, type: "sale" | "override") => new Map([[v.id, { amount, offer: "Lista", ends_at: null, type }]])
-    expect(shopperPrice(v, "uyu", sale(990, "sale"))).toEqual({ amount: 990, was: 1290, offer: "Lista" })
+    const sale = (amount: number, type: "sale" | "override") =>
+      new Map([[v.id, { amount, offer: "Lista", ends_at: null, type }]])
+    expect(shopperPrice(v, "uyu", sale(990, "sale"))).toEqual({
+      amount: 990,
+      was: 1290,
+      offer: "Lista",
+    })
     expect(shopperPrice(v, "uyu", sale(1500, "sale"))).toEqual({ amount: 1290 })
-    expect(shopperPrice(v, "uyu", sale(1500, "override"))).toEqual({ amount: 1500, offer: "Lista" })
-    expect(shopperPrice(v, "uyu", sale(990, "override"))).toEqual({ amount: 990, was: 1290, offer: "Lista" })
-    expect(shopperPrice(variant("Negro", "M", { prices: [] }), "uyu", new Map())).toBeNull()
+    expect(shopperPrice(v, "uyu", sale(1500, "override"))).toEqual({
+      amount: 1500,
+      offer: "Lista",
+    })
+    expect(shopperPrice(v, "uyu", sale(990, "override"))).toEqual({
+      amount: 990,
+      was: 1290,
+      offer: "Lista",
+    })
+    expect(
+      shopperPrice(variant("Negro", "M", { prices: [] }), "uyu", new Map())
+    ).toBeNull()
   })
 
   it("puts what the shopper pays in the header line", () => {
     const v = variant("Negro", "M")
-    const sales = new Map([[v.id, { amount: 1500, offer: "Lista", ends_at: null, type: "sale" as const }]])
-    expect(getSummary({ product: product(), variants: [v], currency: "uyu", cover: null, places: 1, sales }).price).toEqual({ min: 1290, max: 1290 })
+    const sales = new Map([
+      [
+        v.id,
+        { amount: 1500, offer: "Lista", ends_at: null, type: "sale" as const },
+      ],
+    ])
+    expect(
+      getSummary({
+        product: product(),
+        variants: [v],
+        currency: "uyu",
+        cover: null,
+        places: 1,
+        sales,
+      }).price
+    ).toEqual({ min: 1290, max: 1290 })
   })
 })

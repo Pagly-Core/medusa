@@ -166,7 +166,13 @@ describe("ProductMediaSection as Fotos", () => {
   })
 
   it("says the first photo is the one the store shows when there are none", () => {
-    render(<ProductMediaSection product={{ id: "prod_1", title: "Taza", thumbnail: null, images: [] } as never} />)
+    render(
+      <ProductMediaSection
+        product={
+          { id: "prod_1", title: "Taza", thumbnail: null, images: [] } as never
+        }
+      />
+    )
 
     expect(screen.getByText("products.page.photos.empty.title")).toBeTruthy()
     expect(screen.getByText("products.page.photos.empty.detail")).toBeTruthy()

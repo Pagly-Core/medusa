@@ -50,7 +50,8 @@ export const ProductDetail = () => {
     throw error
   }
 
-  return <ProductPage product={product} />
+  // Keyed by product: a part's stock cover never carries over to the next.
+  return <ProductPage key={product.id} product={product} />
 }
 
 /**

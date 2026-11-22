@@ -917,6 +917,11 @@
           "title": "No está en la tienda online",
           "detail": "Está publicado, pero no en el canal de venta de la tienda.",
           "action": "Agregarlo"
+        },
+        "unpublished": {
+          "title": "No está publicado",
+          "detail": "La tienda no lo muestra hasta que lo publiques.",
+          "action": "Publicar"
         }
       },
       "photos": {
@@ -960,7 +965,8 @@
         "variants": "Variantes",
         "oneVersionHint": "¿Viene en colores o talles?",
         "addOptions": "Agregar opciones",
-        "more": "Más: stock, variantes y opciones"
+        "more": "Más: stock, variantes y opciones",
+        "search": "Buscar variante o SKU"
       },
       "description": {
         "title": "Descripción",

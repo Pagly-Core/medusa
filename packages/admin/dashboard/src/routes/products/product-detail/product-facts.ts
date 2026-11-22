@@ -25,6 +25,13 @@ export type FactVariant = Pick<
     | null
   options?: { option_id?: string | null; value?: string | null }[] | null
   inventory_quantity?: number | null
+  inventory_items?:
+    | {
+        inventory?: {
+          location_levels?: { location_id?: string | null }[] | null
+        } | null
+      }[]
+    | null
 }
 
 export type FactProduct = Pick<
@@ -58,11 +65,15 @@ export type StockCover = {
 export const isCovered = (variant: FactVariant, cover: StockCover): boolean =>
   !!cover && (!cover.variant_ids || cover.variant_ids.includes(variant.id))
 
-/** A variant's sale price from a running offer (price list). */
+/**
+ * A variant's price in a running offer (price list). A `sale` price applies
+ * only when it is lower than the variant's own; an `override` always does.
+ */
 export type SalePrice = {
   amount: number
   offer: string
   ends_at: string | null
+  type: "sale" | "override"
 }
 
 export type BlockerId =
@@ -71,6 +82,7 @@ export type BlockerId =
   | "noStock"
   | "someOut"
   | "draft"
+  | "unpublished"
   | "noChannel"
 
 export type Blocker = {
@@ -84,16 +96,24 @@ export type Blocker = {
 /** Up to this many variants, the groups start open. */
 const OPEN_GROUPS_UP_TO = 8
 
-/** A variant's own price in the store's currency: none from a rule (region, quantity). */
+/**
+ * A variant's own price in the store's currency: the one with no rule
+ * (region, quantity) first, else one with a rule. None while the currency
+ * isn't known.
+ */
 export const variantPrice = (
   variant: FactVariant,
   currency: string
 ): number | null => {
-  const price = variant.prices?.find(
-    (p) =>
-      p.currency_code?.toLowerCase() === currency.toLowerCase() &&
-      !Object.keys(p.rules ?? {}).length
+  if (!currency) {
+    return null
+  }
+
+  const inCurrency = (variant.prices ?? []).filter(
+    (p) => p.currency_code?.toLowerCase() === currency.toLowerCase()
   )
+  const price =
+    inCurrency.find((p) => !Object.keys(p.rules ?? {}).length) ?? inCurrency[0]
 
   return price ? price.amount : null
 }
@@ -193,7 +213,10 @@ export const getBlockers = ({
 }): Blocker[] => {
   const blockers: Blocker[] = []
 
-  const unpriced = variants.filter((v) => variantPrice(v, currency) === null)
+  // Until the store's currency is known, nothing is said about prices.
+  const unpriced = currency
+    ? variants.filter((v) => variantPrice(v, currency) === null)
+    : []
   if (unpriced.length) {
     blockers.push({ id: "noPrice", count: unpriced.length })
   }
@@ -216,8 +239,10 @@ export const getBlockers = ({
     }
   }
 
-  if (product.status !== "published") {
+  if (product.status === "draft") {
     blockers.push({ id: "draft" })
+  } else if (product.status !== "published") {
+    blockers.push({ id: "unpublished" })
   } else if (
     Array.isArray(product.sales_channels) &&
     !product.sales_channels.length
@@ -254,7 +279,9 @@ export const getSummary = ({
   sales?: Map<string, SalePrice>
 }): Summary => {
   const price = priceRange(
-    variants.map((v) => sales?.get(v.id)?.amount ?? variantPrice(v, currency))
+    variants.map(
+      (v) => shopperPrice(v, currency, sales ?? new Map())?.amount ?? null
+    )
   )
 
   const tracked = variants.filter(isTracked)
@@ -284,6 +311,7 @@ export const getSummary = ({
 export const salePrices = (
   lists: {
     title: string
+    type?: string | null
     ends_at?: string | null
     prices?:
       | { variant_id?: string | null; amount: number; currency_code: string }[]
@@ -308,6 +336,7 @@ export const salePrices = (
           amount: price.amount,
           offer: list.title,
           ends_at: list.ends_at ?? null,
+          type: list.type === "override" ? "override" : "sale",
         })
       }
     }
@@ -316,12 +345,46 @@ export const salePrices = (
   return sales
 }
 
-/** How many stock locations hold this product's units. */
-export const stockPlaces = (_variants: FactVariant[]): number => 0
+/** How many stock locations hold this product's units, at least one. */
+export const stockPlaces = (variants: FactVariant[]): number => {
+  const places = new Set<string>()
 
-/** What the shopper pays for a variant: its price, or a running offer's. */
+  for (const variant of variants) {
+    for (const item of variant.inventory_items ?? []) {
+      for (const level of item.inventory?.location_levels ?? []) {
+        if (level.location_id) {
+          places.add(level.location_id)
+        }
+      }
+    }
+  }
+
+  return Math.max(1, places.size)
+}
+
+/**
+ * What the shopper pays for a variant: a running sale that is lower than its
+ * price, or an override whatever it is, with the variant's own price as
+ * `was` when the shopper pays less. Null with no price.
+ */
 export const shopperPrice = (
-  _variant: FactVariant,
-  _currency: string,
-  _sales: Map<string, SalePrice>
-): { amount: number; was?: number; offer?: string } | null => null
+  variant: FactVariant,
+  currency: string,
+  sales: Map<string, SalePrice>
+): { amount: number; was?: number; offer?: string } | null => {
+  const own = variantPrice(variant, currency)
+  const sale = sales.get(variant.id)
+
+  if (own === null) {
+    return null
+  }
+  if (!sale || (sale.type === "sale" && sale.amount >= own)) {
+    return { amount: own }
+  }
+
+  return {
+    amount: sale.amount,
+    ...(sale.amount < own ? { was: own } : {}),
+    offer: sale.offer,
+  }
+}

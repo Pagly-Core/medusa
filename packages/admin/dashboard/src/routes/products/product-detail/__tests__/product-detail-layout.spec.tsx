@@ -39,14 +39,17 @@ vi.mock("../../../../hooks/api/products", () => ({
 }))
 
 vi.mock("../use-product-page-facts", () => ({
-  useProductPageFacts: (_product: unknown, cover: unknown) => (covers.push(cover), {
-    variants: [],
-    currency: "uyu",
-    places: 1,
-    sales: new Map(),
-    cover: null,
-    isPending: false,
-  }),
+  useProductPageFacts: (_product: unknown, cover: unknown) => (
+    covers.push(cover),
+    {
+      variants: [],
+      currency: "uyu",
+      places: 1,
+      sales: new Map(),
+      cover: null,
+      isPending: false,
+    }
+  ),
 }))
 
 vi.mock("../../../../providers/extension-provider", async (importOriginal) => ({
@@ -185,7 +188,10 @@ describe("ProductDetail", () => {
   it("forgets a part's stock cover when it moves to another product", () => {
     current.id = "prod_1"
     const view = render(<ProductDetail />)
-    expect(covers.at(-1)).toEqual({ row: "En preventa", summary: "En preventa" })
+    expect(covers.at(-1)).toEqual({
+      row: "En preventa",
+      summary: "En preventa",
+    })
 
     current.id = "prod_2"
     view.rerender(<ProductDetail />)

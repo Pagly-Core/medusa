@@ -3422,6 +3422,22 @@
                   },
                   "required": ["title", "detail", "action"],
                   "additionalProperties": false
+                },
+                "unpublished": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "detail": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "detail", "action"],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -3431,7 +3447,8 @@
                 "noStock",
                 "someOut",
                 "draft",
-                "noChannel"
+                "noChannel",
+                "unpublished"
               ],
               "additionalProperties": false
             },
@@ -3575,6 +3592,9 @@
                 },
                 "more": {
                   "type": "string"
+                },
+                "search": {
+                  "type": "string"
                 }
               },
               "required": [
@@ -3600,7 +3620,8 @@
                 "variants",
                 "oneVersionHint",
                 "addOptions",
-                "more"
+                "more",
+                "search"
               ],
               "additionalProperties": false
             },

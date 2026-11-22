@@ -870,6 +870,11 @@
           "title": "Not in the online store",
           "detail": "It's published, but not in the store's sales channel.",
           "action": "Add it"
+        },
+        "unpublished": {
+          "title": "Not published",
+          "detail": "The store won't show it until you publish it.",
+          "action": "Publish"
         }
       },
       "photos": {
@@ -913,7 +918,8 @@
         "variants": "Variants",
         "oneVersionHint": "Does it come in colors or sizes?",
         "addOptions": "Add options",
-        "more": "More: stock, variants and options"
+        "more": "More: stock, variants and options",
+        "search": "Find a variant or SKU"
       },
       "description": {
         "title": "Description",

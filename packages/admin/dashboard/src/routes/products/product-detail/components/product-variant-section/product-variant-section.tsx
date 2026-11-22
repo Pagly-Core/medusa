@@ -13,6 +13,7 @@ import {
   Container,
   Heading,
   IconButton,
+  Input,
   Text,
   clx,
   usePrompt,
@@ -28,6 +29,7 @@ import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
 import { useFeatureFlag } from "../../../../../providers/feature-flag-provider"
 import {
   FactVariant,
+  SalePrice,
   groupVariants,
   groupsStartOpen,
   isCovered,
@@ -35,8 +37,8 @@ import {
   isTracked,
   priceRange,
   realOptions,
+  shopperPrice,
   variantName,
-  variantPrice,
 } from "../../product-facts"
 import { ProductPageFacts } from "../../use-product-page-facts"
 
@@ -46,6 +48,9 @@ type Props = {
 }
 
 /** A row's cells by area: one line on a wide screen, name/SKU over price/stock on a phone. */
+/** Past this many variants, the card offers a search by name or SKU. */
+const SEARCH_FROM = 20
+
 const ROW =
   "grid items-center gap-x-3 px-6 py-2.5 grid-cols-[minmax(0,1fr)_auto_28px] [grid-template-areas:'name_price_act'_'sku_stock_act'] md:grid-cols-[minmax(0,1fr)_120px_140px_132px_28px] md:[grid-template-areas:'name_sku_price_stock_act']"
 
@@ -63,8 +68,22 @@ export const ProductVariantSection = ({ product, facts }: Props) => {
     return <OneVersion product={product} facts={facts} />
   }
 
-  const groups = groupVariants(product, facts.variants)
-  const sale = [...facts.sales.values()][0]
+  const [query, setQuery] = useState("")
+  const searchable = facts.variants.length > SEARCH_FROM
+  const needle = query.trim().toLowerCase()
+  const shown = needle
+    ? facts.variants.filter((variant) =>
+        [variantName(product, variant), variant.sku ?? ""].some((text) =>
+          text.toLowerCase().includes(needle)
+        )
+      )
+    : facts.variants
+  const groups = groupVariants(product, shown)
+  const offers = [
+    ...new Map(
+      [...facts.sales.values()].map((sale) => [sale.offer, sale])
+    ).values(),
+  ]
 
   return (
     <Container className="divide-y p-0">
@@ -88,7 +107,18 @@ export const ProductVariantSection = ({ product, facts }: Props) => {
             </Text>
           ))}
         </div>
-        {sale && <SaleNote name={sale.offer} endsAt={sale.ends_at} />}
+        {offers.length > 0 && <SaleNote offers={offers} />}
+        {searchable && (
+          <Input
+            type="search"
+            size="small"
+            className="mt-2 md:max-w-[280px]"
+            aria-label={t("products.page.variants.search")}
+            placeholder={t("products.page.variants.search")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        )}
       </div>
       <div className="divide-y">
         <div
@@ -113,15 +143,15 @@ export const ProductVariantSection = ({ product, facts }: Props) => {
         {groups
           ? groups.map((group) => (
               <VariantGroup
-                key={group.value}
+                key={`${group.value}-${needle}`}
                 product={product}
                 facts={facts}
                 value={group.value}
                 variants={group.variants}
-                startOpen={groupsStartOpen(facts.variants)}
+                startOpen={!!needle || groupsStartOpen(facts.variants)}
               />
             ))
-          : facts.variants.map((variant) => (
+          : shown.map((variant) => (
               <VariantRow
                 key={variant.id}
                 product={product}
@@ -226,14 +256,18 @@ const CardTools = ({
   )
 }
 
-const SaleNote = ({
-  name,
-  endsAt,
-}: {
-  name: string
-  endsAt: string | null
-}) => {
+/** The running offers on this product, each named once; the date when there's one offer with an end. */
+const SaleNote = ({ offers }: { offers: SalePrice[] }) => {
   const { t, i18n } = useTranslation()
+  const { ListFormat } = Intl as unknown as {
+    ListFormat: new (locale: string, options: { type: "conjunction" }) => {
+      format: (items: string[]) => string
+    }
+  }
+  const name = new ListFormat(i18n.language, { type: "conjunction" }).format(
+    offers.map((offer) => offer.offer)
+  )
+  const endsAt = offers.length === 1 ? offers[0].ends_at : null
   const date = endsAt
     ? new Intl.DateTimeFormat(i18n.language, {
         day: "numeric",
@@ -268,23 +302,22 @@ const usePrice = (facts: ProductPageFacts) => {
     getLocaleAmount(amount, facts.currency, { wholeWithoutCents: true })
 
   return (variant: FactVariant): ReactNode => {
-    const price = variantPrice(variant, facts.currency)
-    const sale = facts.sales.get(variant.id)
+    const price = shopperPrice(variant, facts.currency, facts.sales)
 
-    if (price === null || !facts.currency) {
+    if (!price) {
       return null
     }
 
-    if (sale && sale.amount < price) {
+    if (price.was !== undefined) {
       return (
         <>
-          <span>{money(sale.amount)}</span>{" "}
-          <s className="text-ui-fg-muted">{money(price)}</s>
+          <span>{money(price.amount)}</span>{" "}
+          <s className="text-ui-fg-muted">{money(price.was)}</s>
         </>
       )
     }
 
-    return money(price)
+    return money(price.amount)
   }
 }
 
@@ -416,7 +449,7 @@ const VariantGroup = ({
   const [open, setOpen] = useState(startOpen)
   const range = priceRange(
     variants.map(
-      (v) => facts.sales.get(v.id)?.amount ?? variantPrice(v, facts.currency)
+      (v) => shopperPrice(v, facts.currency, facts.sales)?.amount ?? null
     )
   )
   const money = (amount: number) =>
