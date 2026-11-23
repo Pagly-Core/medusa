@@ -133,3 +133,36 @@ describe("firstPhotoThumbnail", () => {
     })
   })
 })
+
+describe("firstPhotoThumbnail with videos", () => {
+  const v = { id: "img_v", url: "https://cdn.example/tenants/t/01J-clip.mp4" }
+
+  it("makes the first picture the main photo, past a video in front", () => {
+    expect(firstPhotoThumbnail({ images: [v, a, b] })).toEqual({
+      images: [v, a, b],
+      thumbnail: "a.jpg",
+    })
+  })
+
+  it("never makes a video the main photo, and leaves it where it is", () => {
+    expect(firstPhotoThumbnail({ images: [a, b, v], thumbnail: v.url })).toEqual({
+      images: [a, b, v],
+      thumbnail: "a.jpg",
+    })
+    expect(firstPhotoThumbnail({ thumbnail: v.url }, [a, v])).toEqual({
+      images: [a, v],
+      thumbnail: "a.jpg",
+    })
+  })
+
+  it("moves a chosen picture in front, keeping the videos in their order", () => {
+    expect(firstPhotoThumbnail({ images: [v, a, b], thumbnail: "b.jpg" })).toEqual({
+      images: [b, v, a],
+      thumbnail: "b.jpg",
+    })
+  })
+
+  it("leaves a product with only videos without a main photo", () => {
+    expect(firstPhotoThumbnail({ images: [v] })).toEqual({ images: [v], thumbnail: null })
+  })
+})
