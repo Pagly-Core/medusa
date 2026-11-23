@@ -1,3 +1,5 @@
+import { isVideoUrl } from "./is-video-url"
+
 type Photo = { id?: string; url: string; rank?: number | null }
 
 type PhotoFields = {
@@ -6,7 +8,9 @@ type PhotoFields = {
 }
 
 /**
- * Pagly: a product's main photo (`thumbnail`) is always its first photo.
+ * Pagly: a product's main photo (`thumbnail`) is always its first picture.
+ * A video (`isVideoUrl`) is never the main photo: it keeps its place among
+ * the photos, and the first picture after it is the main photo.
  *
  * - Photos given: the main photo becomes the first of them, or none when
  *   there are none.
@@ -44,7 +48,8 @@ export function firstPhotoThumbnail<T extends object>(
     images.sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
   }
 
-  const chosen = fields.thumbnail
+  // A video chosen as the main photo is not one: the first picture is.
+  const chosen = isVideoUrl(fields.thumbnail) ? null : fields.thumbnail
 
   if (chosen) {
     const index = images.findIndex((image) => image.url === chosen)
@@ -61,6 +66,6 @@ export function firstPhotoThumbnail<T extends object>(
   return {
     ...input,
     images,
-    thumbnail: images[0]?.url ?? null,
+    thumbnail: images.find((image) => !isVideoUrl(image.url))?.url ?? null,
   }
 }

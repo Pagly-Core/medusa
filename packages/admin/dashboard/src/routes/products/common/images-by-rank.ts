@@ -1,3 +1,5 @@
+import { firstPictureUrl } from "./is-video-url"
+
 /**
  * Pagly: a product's photos in the order shoppers see them. The product's
  * main photo is always the first of them.
@@ -32,5 +34,5 @@ export const photosAfterDelete = (
 
   const next = outside ? [{ url: thumbnail! }, ...kept] : kept
 
-  return { images: next, thumbnail: next[0]?.url ?? null }
+  return { images: next, thumbnail: firstPictureUrl(next) }
 }

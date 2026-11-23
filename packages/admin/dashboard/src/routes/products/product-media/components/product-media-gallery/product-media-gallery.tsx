@@ -1,3 +1,5 @@
+import { ProductMediaPreview } from "../../../common/components/product-media-preview/product-media-preview"
+import { isVideoUrl } from "../../../common/is-video-url"
 import {
   ArrowDownTray,
   ThumbnailBadge,
@@ -214,11 +216,22 @@ const Canvas = ({ media, curr }: { media: Media[]; curr: number }) => {
               </Tooltip>
             </div>
           )}
-          <img
-            src={media[curr].url}
-            alt=""
-            className="object-fit shadow-elevation-card-rest max-h-[calc(100vh-200px)] w-auto rounded-xl object-contain"
-          />
+          {isVideoUrl(media[curr].url) ? (
+            <video
+              key={media[curr].url}
+              src={media[curr].url}
+              controls
+              playsInline
+              preload="metadata"
+              className="shadow-elevation-card-rest max-h-[calc(100vh-200px)] w-auto rounded-xl"
+            />
+          ) : (
+            <img
+              src={media[curr].url}
+              alt=""
+              className="object-fit shadow-elevation-card-rest max-h-[calc(100vh-200px)] w-auto rounded-xl object-contain"
+            />
+          )}
         </div>
       </div>
     </div>
@@ -290,7 +303,7 @@ const Preview = ({
               )}
               key={item.id}
             >
-              <img src={item.url} alt="" className="size-full object-cover" />
+              <ProductMediaPreview url={item.url} className="size-full object-cover" />
             </button>
           )
         })}

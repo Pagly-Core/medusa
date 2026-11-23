@@ -1,3 +1,5 @@
+import { ProductMediaPreview } from "../../../common/components/product-media-preview/product-media-preview"
+import { firstPictureUrl, isVideoUrl } from "../../../common/is-video-url"
 import {
   defaultDropAnimationSideEffects,
   DndContext,
@@ -151,7 +153,7 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
       // Pagly: the main photo is always the first photo.
       await mutateAsync({
         images: withUpdatedUrls.map((file) => ({ url: file.url, id: file.id })),
-        thumbnail: withUpdatedUrls[0]?.url ?? null,
+        thumbnail: firstPictureUrl(withUpdatedUrls),
       })
     } catch (error) {
       toast.error(error instanceof Error ? error.message : String(error))
@@ -209,6 +211,10 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
   }
 
   const selectionCount = Object.keys(selection).length
+  // Pagly: a video is never the main photo.
+  const selectedIsVideo =
+    selectionCount === 1 &&
+    isVideoUrl(fields.find((m) => m.id === Object.keys(selection)[0])?.url)
 
   return (
     <RouteFocusModal.Form blockSearchParams form={form}>
@@ -313,7 +319,7 @@ export const EditProductMediaForm = ({ product }: ProductMediaViewProps) => {
               })}
             </CommandBar.Value>
             <CommandBar.Seperator />
-            {selectionCount === 1 && (
+            {selectionCount === 1 && !selectedIsVideo && (
               <Fragment>
                 <CommandBar.Command
                   action={handlePromoteToThumbnail}
@@ -475,11 +481,18 @@ const MediaGridItem = ({
             onCheckedChange={handleToggle}
           />
         </div>
-        <img
-          src={media.url}
-          alt={alt?.trim() ?? ""}
-          className="size-full object-cover object-center"
-        />
+        {isVideoUrl(media.url) ? (
+          <ProductMediaPreview
+            url={media.url}
+            className="size-full object-cover object-center"
+          />
+        ) : (
+          <img
+            src={media.url}
+            alt={alt?.trim() ?? ""}
+            className="size-full object-cover object-center"
+          />
+        )}
       </div>
       {altField}
     </div>
