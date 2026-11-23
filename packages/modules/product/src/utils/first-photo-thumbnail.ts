@@ -52,11 +52,15 @@ export function firstPhotoThumbnail<T extends object>(
   const chosen = isVideoUrl(fields.thumbnail) ? null : fields.thumbnail
 
   if (chosen) {
+    // The chosen picture takes the first picture's place: videos in front
+    // of it stay in front.
     const index = images.findIndex((image) => image.url === chosen)
-    images =
-      index > -1
-        ? [images[index], ...images.filter((_, i) => i !== index)]
-        : [{ url: chosen }, ...images]
+    const photo = index > -1 ? images[index] : { url: chosen }
+    const rest = images.filter((_, i) => i !== index)
+    const at = rest.findIndex((image) => !isVideoUrl(image.url))
+    const slot = at > -1 ? at : rest.length
+
+    images = [...rest.slice(0, slot), photo, ...rest.slice(slot)]
   }
 
   if (ranked) {

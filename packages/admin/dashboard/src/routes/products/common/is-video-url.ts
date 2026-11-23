@@ -27,5 +27,13 @@ export const firstPictureUrl = (
  */
 export const markMainPhoto = <T extends { url: string }>(
   media: T[]
-): (T & { isThumbnail: boolean })[] =>
-  media.map((item) => ({ ...item, isThumbnail: false }))
+): (T & { isThumbnail: boolean })[] => {
+  const main = firstPictureUrl(media)
+  let marked = false
+
+  return media.map((item) => {
+    const isThumbnail = !marked && item.url === main
+    marked ||= isThumbnail
+    return { ...item, isThumbnail }
+  })
+}

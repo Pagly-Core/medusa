@@ -1,5 +1,5 @@
 import { ProductMediaPreview } from "../../../common/components/product-media-preview/product-media-preview"
-import { isVideoUrl } from "../../../common/is-video-url"
+import { isVideoUrl, markMainPhoto } from "../../../common/is-video-url"
 import { PencilSquare, Plus } from "@medusajs/icons"
 import {
   Badge,
@@ -236,5 +236,5 @@ const getMedia = (product: HttpTypes.AdminProduct) => {
   }
 
   // Pagly: the main photo is always the first photo.
-  return media.map((item, index) => ({ ...item, isThumbnail: index === 0 }))
+  return markMainPhoto(media)
 }
