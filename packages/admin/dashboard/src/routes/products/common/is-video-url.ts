@@ -21,3 +21,11 @@ export const isVideoUrl = (url: string | null | undefined): boolean => {
 export const firstPictureUrl = (
   media: { url: string }[] | null | undefined
 ): string | null => (media ?? []).find((item) => !isVideoUrl(item.url))?.url ?? null
+
+/**
+ * Pagly: a product's photos with the main photo marked: the first picture.
+ */
+export const markMainPhoto = <T extends { url: string }>(
+  media: T[]
+): (T & { isThumbnail: boolean })[] =>
+  media.map((item) => ({ ...item, isThumbnail: false }))

@@ -155,10 +155,17 @@ describe("firstPhotoThumbnail with videos", () => {
     })
   })
 
-  it("moves a chosen picture in front, keeping the videos in their order", () => {
+  it("moves a chosen picture to the first picture's place, behind the videos in front", () => {
     expect(firstPhotoThumbnail({ images: [v, a, b], thumbnail: "b.jpg" })).toEqual({
-      images: [b, v, a],
+      images: [v, b, a],
       thumbnail: "b.jpg",
+    })
+  })
+
+  it("keeps a video first when the main photo chosen is already the first picture", () => {
+    expect(firstPhotoThumbnail({ images: [v, a, b], thumbnail: "a.jpg" })).toEqual({
+      images: [v, a, b],
+      thumbnail: "a.jpg",
     })
   })
 

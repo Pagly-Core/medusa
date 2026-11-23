@@ -43,3 +43,17 @@ describe("photosAfterDelete with a video", () => {
     })
   })
 })
+
+describe("markMainPhoto", () => {
+  it("marks the first picture as the main photo, never a video", async () => {
+    const { markMainPhoto } = await import("../is-video-url")
+
+    expect(markMainPhoto([{ url: "v.mp4" }, { url: "a.jpg" }, { url: "b.jpg" }]).map((m) => m.isThumbnail)).toEqual([
+      false,
+      true,
+      false,
+    ])
+    expect(markMainPhoto([{ url: "a.jpg" }, { url: "b.jpg" }]).map((m) => m.isThumbnail)).toEqual([true, false])
+    expect(markMainPhoto([{ url: "v.mp4" }]).map((m) => m.isThumbnail)).toEqual([false])
+  })
+})
