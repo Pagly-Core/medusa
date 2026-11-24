@@ -38,6 +38,18 @@ type MediaPickerProps = {
 
 const MEDIA_PICKER_KEY = "__paglyMediaPicker"
 
+/**
+ * Pagly: what the store's media library offers for a product's photos:
+ * pictures, and videos, which the library sends straight to storage. Files
+ * dropped on the box itself stay pictures (SUPPORTED_FORMATS).
+ */
+const LIBRARY_FORMATS = [
+  ...SUPPORTED_FORMATS,
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]
+
 const getMediaPicker = () =>
   (globalThis as Record<string, unknown>)[MEDIA_PICKER_KEY] as
     | ComponentType<MediaPickerProps>
@@ -177,7 +189,7 @@ export const UploadMediaFormItem = ({
                   open={isPickerOpen}
                   onOpenChange={setIsPickerOpen}
                   multiple
-                  accept={SUPPORTED_FORMATS}
+                  accept={LIBRARY_FORMATS}
                   onSelect={onPicked}
                 />
               )}

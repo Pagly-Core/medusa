@@ -1,3 +1,5 @@
+import { ProductMediaPreview } from "../../../common/components/product-media-preview/product-media-preview"
+import { isVideoUrl, markMainPhoto } from "../../../common/is-video-url"
 import { PencilSquare, Plus } from "@medusajs/icons"
 import {
   Badge,
@@ -134,11 +136,15 @@ export const ProductMediaSection = ({ product }: ProductMedisaSectionProps) => {
                   </div>
                 )}
                 <Link to={`media`} state={{ curr: index }}>
-                  <img
-                    src={i.url}
-                    alt={alts[i.url]?.trim() || `${product.title} image`}
-                    className="size-full object-cover"
-                  />
+                  {isVideoUrl(i.url) ? (
+                    <ProductMediaPreview url={i.url} className="size-full object-cover" />
+                  ) : (
+                    <img
+                      src={i.url}
+                      alt={alts[i.url]?.trim() || `${product.title} image`}
+                      className="size-full object-cover"
+                    />
+                  )}
                 </Link>
                 {altEnabled && i.url in alts && !alts[i.url]?.trim() && (
                   <div className="pointer-events-none absolute left-1.5 top-1.5">
@@ -230,5 +236,5 @@ const getMedia = (product: HttpTypes.AdminProduct) => {
   }
 
   // Pagly: the main photo is always the first photo.
-  return media.map((item, index) => ({ ...item, isThumbnail: index === 0 }))
+  return markMainPhoto(media)
 }

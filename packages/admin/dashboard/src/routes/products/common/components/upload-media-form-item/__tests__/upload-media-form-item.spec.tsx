@@ -122,6 +122,9 @@ describe("UploadMediaFormItem with a media library registered", () => {
         "image/webp",
         "image/heic",
         "image/svg+xml",
+        "video/mp4",
+        "video/webm",
+        "video/quicktime",
       ],
     })
   })

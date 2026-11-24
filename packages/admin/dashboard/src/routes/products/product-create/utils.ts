@@ -1,3 +1,4 @@
+import { markMainPhoto } from "../common/is-video-url"
 import { HttpTypes } from "@medusajs/types"
 import { castNumber } from "../../../lib/cast-number"
 import { ProductCreateSchemaType } from "./types"
@@ -9,9 +10,9 @@ export const normalizeProductFormValues = (
   }
 ): HttpTypes.AdminCreateProduct => {
   const thumbnail = values.media?.find((media) => media.isThumbnail)?.url
-  const images = values.media
-    ?.filter((media) => !media.isThumbnail)
-    .map((media) => ({ url: media.url }))
+  // Pagly: every photo and video, in the merchant's order; the product
+  // module puts the main photo in the first picture's place.
+  const images = values.media?.map((media) => ({ url: media.url }))
 
   const options = values.options.filter((o) => o.title) // clean temp. values
 
@@ -158,10 +159,9 @@ export const withRequestAlts = <T extends object>(
   files.map((file, index) => ({ ...file, alt: requests[index]?.alt }))
 
 /** Pagly: a product's main photo is always its first photo. */
-export const firstPhotoIsMain = <T extends { isThumbnail: boolean }>(
+export const firstPhotoIsMain = <T extends { url: string; isThumbnail: boolean }>(
   media: T[]
-): T[] =>
-  media.map((item, index) => ({ ...item, isThumbnail: index === 0 }))
+): T[] => markMainPhoto(media)
 
 type StoredMedia = { url: string; isThumbnail: boolean; alt?: string }
 
