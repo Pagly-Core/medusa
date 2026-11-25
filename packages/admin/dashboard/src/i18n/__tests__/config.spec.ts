@@ -6,14 +6,15 @@ import {
   createLanguageDetector,
   defaultI18nOptions,
   saveLanguage,
+  SUPPORTED_LANGUAGES,
 } from "../config"
 import translations from "../translations"
 
 /**
  * Pagly: a merchant who opens the admin in a browser that hasn't picked a
- * language yet sees it in their browser's language when Pagly keeps that
- * catalogue complete (Spanish, English), and in Spanish otherwise. Never
- * English by default. Only a choice made in Profile is remembered.
+ * language yet sees it in their browser's language when Pagly supports it
+ * (Spanish, English), and in Spanish otherwise. Never English by default.
+ * Only a choice made in Profile is remembered.
  */
 
 // The dashboard's own codes (`ptBR`, `enGB`, `zhCN`…); every catalogue but
@@ -43,7 +44,7 @@ const start = async (browserLanguages: string[]) => {
     ...defaultI18nOptions,
     debug: false,
     resources,
-    supportedLngs: Object.keys(resources),
+    supportedLngs: SUPPORTED_LANGUAGES,
   })
 
   return i18n
@@ -78,7 +79,7 @@ describe("the admin's first language", () => {
     expect((await start(["en-GB"])).resolvedLanguage).toBe("en")
   })
 
-  it("is Spanish for a browser in a language Pagly doesn't keep complete", async () => {
+  it("is Spanish for a browser in a language Pagly doesn't support", async () => {
     for (const browser of [
       ["de-DE", "de"],
       ["pt-BR", "pt"],
@@ -92,7 +93,7 @@ describe("the admin's first language", () => {
     }
   })
 
-  it("takes the first browser language Pagly keeps", async () => {
+  it("takes the first browser language Pagly supports", async () => {
     expect((await start(["de-DE", "en-US", "es"])).resolvedLanguage).toBe(
       "en"
     )
@@ -110,12 +111,21 @@ describe("the admin's first language", () => {
     expect(saved()).toEqual({ cookie: undefined, localStorage: null })
   })
 
-  it("keeps the language the merchant chose in Profile, any of the dashboard's", async () => {
+  it("keeps the language the merchant chose in Profile", async () => {
     const first = await start(["es-UY"])
-    await first.changeLanguage("ptBR")
-    saveLanguage(first, "ptBR")
+    await first.changeLanguage("en")
+    saveLanguage(first, "en")
 
-    expect(saved()).toEqual({ cookie: "ptBR", localStorage: "ptBR" })
-    expect((await start(["es-UY"])).resolvedLanguage).toBe("ptBR")
+    expect(saved()).toEqual({ cookie: "en", localStorage: "en" })
+    expect((await start(["es-UY"])).resolvedLanguage).toBe("en")
+  })
+
+  it("supports only Spanish and English, whatever was saved", async () => {
+    expect(SUPPORTED_LANGUAGES).toEqual(["es", "en"])
+
+    document.cookie = "lng=ptBR; path=/"
+    window.localStorage.setItem("lng", "ptBR")
+
+    expect((await start(["pt-BR"])).resolvedLanguage).toBe("es")
   })
 })
