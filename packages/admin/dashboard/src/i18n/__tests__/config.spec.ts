@@ -94,9 +94,7 @@ describe("the admin's first language", () => {
   })
 
   it("takes the first browser language Pagly supports", async () => {
-    expect((await start(["de-DE", "en-US", "es"])).resolvedLanguage).toBe(
-      "en"
-    )
+    expect((await start(["de-DE", "en-US", "es"])).resolvedLanguage).toBe("en")
   })
 
   it("still shows English for a text Spanish doesn't have yet", async () => {
