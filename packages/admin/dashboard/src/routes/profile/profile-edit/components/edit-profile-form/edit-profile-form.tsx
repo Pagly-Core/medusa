@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import * as zod from "zod"
 
 import { HttpTypes } from "@medusajs/types"
+import { saveLanguage, SUPPORTED_LANGUAGES } from "../../../../../i18n/config"
 import { Form } from "../../../../../components/common/form"
 import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
@@ -40,11 +41,14 @@ export const EditProfileForm = ({ user }: EditProfileProps) => {
 
   const changeLanguage = async (code: string) => {
     await i18n.changeLanguage(code)
+    // Pagly: only a language picked here is remembered (i18n/config).
+    saveLanguage(i18n, code)
   }
 
-  const sortedLanguages = languages.sort((a, b) =>
-    a.display_name.localeCompare(b.display_name)
-  )
+  // Pagly: only the admin's supported languages are offered.
+  const sortedLanguages = languages
+    .filter((language) => SUPPORTED_LANGUAGES.includes(language.code))
+    .sort((a, b) => a.display_name.localeCompare(b.display_name))
 
   const { mutateAsync, isPending } = useUpdateUser(user.id!)
 
@@ -129,7 +133,7 @@ export const EditProfileForm = ({ user }: EditProfileProps) => {
                           </Select.Value>
                         </Select.Trigger>
                         <Select.Content>
-                          {languages.map((language) => (
+                          {sortedLanguages.map((language) => (
                             <Select.Item
                               key={language.code}
                               value={language.code}
