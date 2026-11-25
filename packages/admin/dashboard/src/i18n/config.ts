@@ -18,3 +18,12 @@ export const defaultI18nOptions: InitOptions = {
     escapeValue: false,
   },
 }
+
+// Stand-ins with today's behaviour, replaced in the next commit.
+import LanguageDetector from "i18next-browser-languagedetector"
+import type { i18n as I18n } from "i18next"
+
+export const createLanguageDetector = () =>
+  new LanguageDetector(null, { lookupCookie: "lng", lookupLocalStorage: "lng" })
+
+export const saveLanguage = (_i18n: I18n, _code: string) => {}
