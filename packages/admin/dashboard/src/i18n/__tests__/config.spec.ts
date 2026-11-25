@@ -12,7 +12,7 @@ import { defaultI18nOptions } from "../config"
  */
 
 const resources = {
-  en: { translation: { hello: "Hello" } },
+  en: { translation: { hello: "Hello", onlyEnglish: "Not translated yet" } },
   es: { translation: { hello: "Hola" } },
   pt: { translation: { hello: "Olá" } },
 }
@@ -43,6 +43,10 @@ const start = async (browserLanguages: string[]) => {
   return i18n
 }
 
+// The dashboard types `t` to its own keys; a text no catalogue has reads "(missing)".
+const text = (i18n: Awaited<ReturnType<typeof start>>, key: string) =>
+  i18n.t(key, { defaultValue: "(missing)" })
+
 const clearChoice = () => {
   document.cookie = "lng=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/"
   window.localStorage.clear()
@@ -70,7 +74,13 @@ describe("the admin's first language", () => {
     const i18n = await start(["ja-JP"])
 
     expect(i18n.resolvedLanguage).toBe("es")
-    expect(i18n.t("hello")).toBe("Hola")
+    expect(text(i18n, "hello")).toBe("Hola")
+  })
+
+  it("still shows English for a text Spanish doesn't have yet", async () => {
+    const i18n = await start(["es-UY"])
+
+    expect(text(i18n, "onlyEnglish")).toBe("Not translated yet")
   })
 
   it("keeps the language the merchant chose in Profile", async () => {
