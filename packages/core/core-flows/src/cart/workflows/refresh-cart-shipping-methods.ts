@@ -24,7 +24,10 @@ export type RefreshCartShippingMethodsWorkflowInput = {
    */
   cart_id?: string
   /**
-   * The Cart reference.
+   * The Cart reference. It is used as given when it carries `items` (with
+   * `requires_shipping` and `variant.product.shipping_profile.id`) and its
+   * `shipping_methods` (with `shipping_option_id` and `data`); otherwise the
+   * cart is read again.
    */
   cart?: any
 }
@@ -73,13 +76,31 @@ export const refreshCartShippingMethodsWorkflow = createWorkflow(
       return input.cart_id ?? input.cart?.id
     })
 
-    // Pagly: a cart that was handed in is used as it is. It was read anew for
-    // every cart that has a shipping method.
+    // Pagly: a cart that was handed in with the fields this refresh judges by
+    // is used as it is. It was read anew for every cart that has a shipping
+    // method.
     const fetchCart = when(
       "fetch-cart",
       { shouldExecute, input },
       ({ shouldExecute, input }) => {
-        return shouldExecute && !input.cart
+        const cart = input.cart
+        const handedInFull =
+          !!cart &&
+          Array.isArray(cart.items) &&
+          cart.items.every(
+            (item) =>
+              !item ||
+              ("requires_shipping" in item &&
+                (!item.variant ||
+                  item.variant.product?.shipping_profile !== undefined))
+          ) &&
+          Array.isArray(cart.shipping_methods) &&
+          cart.shipping_methods.every(
+            (method) =>
+              !method || ("shipping_option_id" in method && "data" in method)
+          )
+
+        return shouldExecute && !handedInFull
       }
     ).then(() => {
       const { data: cart } = useQueryGraphStep({
