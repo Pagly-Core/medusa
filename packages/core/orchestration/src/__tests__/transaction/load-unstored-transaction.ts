@@ -64,6 +64,27 @@ describe("Beginning a transaction", () => {
     expect(get).toHaveBeenCalledTimes(1)
   })
 
+  it("still looks up a flow whose shared options say it is stored", async () => {
+    const plain = new TransactionOrchestrator({
+      id: "stored-elsewhere",
+      definition: flow,
+    })
+    // Built last, so the shared options for this id say it is stored, and
+    // its runs' checkpoints are saved through them.
+    new TransactionOrchestrator({
+      id: "stored-elsewhere",
+      definition: flow,
+      options: { retentionTime: 60 },
+    })
+
+    await plain.beginTransaction({
+      transactionId: "trx_stored_elsewhere",
+      handler,
+    })
+
+    expect(get).toHaveBeenCalledTimes(1)
+  })
+
   it("still looks up a flow with an async step", async () => {
     const orchestrator = new TransactionOrchestrator({
       id: "stored-async",
