@@ -34,16 +34,20 @@ export const refreshLoyaltyCreditLines = async (data, stepContext) => {
 
   // Pagly: a cart with neither builds nothing, so the refresh (two cart
   // reads with totals and four nested workflows) is skipped. Its result is
-  // not read by core.
-  const { data: carts } = await container
-    .resolve(ContainerRegistrationKeys.QUERY)
-    .graph({
-      entity: "cart",
-      fields: ["id", "gift_cards.id", "credit_lines.reference"],
-      filters: { id: data.input.cart_id },
-    });
+  // not read by core. With no cart id the filter would match every cart, so
+  // that refresh is left to fail as it always did.
+  const cartId = data.input.cart_id;
+  const carts = cartId
+    ? (
+        await container.resolve(ContainerRegistrationKeys.QUERY).graph({
+          entity: "cart",
+          fields: ["id", "gift_cards.id", "credit_lines.reference"],
+          filters: { id: cartId },
+        })
+      ).data
+    : [];
 
-  if (!holdsLoyalty(carts[0])) {
+  if (cartId && !holdsLoyalty(carts[0])) {
     // null, not undefined: StepResponse would hand the output to compensate.
     return new StepResponse([], null);
   }
