@@ -1,5 +1,9 @@
 import type { AdditionalData } from "@medusajs/framework/types"
-import { isDefined, PromotionActions } from "@medusajs/framework/utils"
+import {
+  isDefined,
+  PromotionActions,
+  PromotionStatus,
+} from "@medusajs/framework/utils"
 import {
   createHook,
   createWorkflow,
@@ -239,13 +243,54 @@ export const refreshCartItemsWorkflow = createWorkflow(
       }
     )
 
-    updateCartPromotionsWorkflow.runAsStep({
-      input: {
-        cart_id: input.cart_id,
-        promo_codes: cartPromoCodes,
-        action: PromotionActions.REPLACE,
-        force_refresh_payment_collection: false,
-      },
+    // Pagly: discounts are recalculated only when one can be on the cart: a
+    // code given or on the cart, an adjustment to drop or keep, or a live
+    // automatic promotion in the store. Otherwise the recalculation (a full
+    // cart read with totals) computes nothing.
+    const cartHoldsPromotions = transform(
+      { refetchedCart, cartPromoCodes },
+      ({ refetchedCart, cartPromoCodes }) => {
+        const hasAdjustments = (lines?: any[] | null) =>
+          !!lines?.some((line) => !!line?.adjustments?.length)
+
+        return (
+          !!cartPromoCodes?.length ||
+          !!refetchedCart.promotions?.length ||
+          hasAdjustments(refetchedCart.items) ||
+          hasAdjustments(refetchedCart.shipping_methods)
+        )
+      }
+    )
+
+    const automaticPromotions = when(
+      "should-look-up-automatic-promotions",
+      { cartHoldsPromotions },
+      ({ cartHoldsPromotions }) => !cartHoldsPromotions
+    ).then(() => {
+      const { data } = useQueryGraphStep({
+        entity: "promotion",
+        fields: ["id"],
+        filters: { is_automatic: true, status: PromotionStatus.ACTIVE },
+        pagination: { take: 1 },
+      }).config({ name: "get-automatic-promotion" })
+
+      return data
+    })
+
+    when(
+      "should-update-cart-promotions",
+      { cartHoldsPromotions, automaticPromotions },
+      ({ cartHoldsPromotions, automaticPromotions }) =>
+        cartHoldsPromotions || !!automaticPromotions?.length
+    ).then(() => {
+      updateCartPromotionsWorkflow.runAsStep({
+        input: {
+          cart_id: input.cart_id,
+          promo_codes: cartPromoCodes,
+          action: PromotionActions.REPLACE,
+          force_refresh_payment_collection: false,
+        },
+      })
     })
 
     when("should-update-item-translations", { input }, ({ input }) => {

@@ -73,11 +73,13 @@ export const refreshCartShippingMethodsWorkflow = createWorkflow(
       return input.cart_id ?? input.cart?.id
     })
 
+    // Pagly: a cart that was handed in is used as it is. It was read anew for
+    // every cart that has a shipping method.
     const fetchCart = when(
       "fetch-cart",
-      { shouldExecute },
-      ({ shouldExecute }) => {
-        return shouldExecute
+      { shouldExecute, input },
+      ({ shouldExecute, input }) => {
+        return shouldExecute && !input.cart
       }
     ).then(() => {
       const { data: cart } = useQueryGraphStep({

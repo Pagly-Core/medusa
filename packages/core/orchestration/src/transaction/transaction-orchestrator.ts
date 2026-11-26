@@ -1734,8 +1734,12 @@ export class TransactionOrchestrator extends EventEmitter {
     context?: Context
     onLoad?: (transaction: DistributedTransactionType) => Promise<void> | void
   }): Promise<DistributedTransactionType> {
-    const existingTransaction =
-      await TransactionOrchestrator.loadTransactionById(this.id, transactionId)
+    // Pagly: a flow that is never stored never saved a checkpoint, so there is
+    // nothing to load. The lookup is a database read (and a Redis read on the
+    // Redis engine) for every workflow and nested workflow run.
+    const existingTransaction = this.getOptions().store
+      ? await TransactionOrchestrator.loadTransactionById(this.id, transactionId)
+      : null
 
     let newTransaction = false
     let modelFlow: TransactionFlow
