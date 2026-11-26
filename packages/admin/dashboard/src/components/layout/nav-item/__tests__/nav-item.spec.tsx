@@ -118,7 +118,7 @@ describe("NavItem for a tab group", () => {
   const isHighlighted = (name: string) =>
     screen
       .getAllByRole("link", { name })
-      .some((link) => link.className.includes("shadow-elevation-card-rest"))
+      .some((link) => link.classList.contains("bg-ui-bg-base"))
 
   it.each(["/categories", "/product-options", "/product-types/ptyp_01", "/product-tags"])(
     "highlights Organization, not Products, on %s",
@@ -129,4 +129,52 @@ describe("NavItem for a tab group", () => {
       expect(isHighlighted("Collections")).toBe(false)
     }
   )
+})
+
+const renderOrdersAt = (pathname: string) =>
+  render(
+    <MemoryRouter initialEntries={[pathname]}>
+      <TooltipProvider>
+        <LayoutEditContext.Provider
+          value={{
+            editMode: false,
+            orderChildren: (children) => children,
+            setChildrenOrder: () => {},
+            isHidden: () => false,
+            toggleHidden: () => {},
+          }}
+        >
+          <NavItem label="Orders" to="/orders" />
+        </LayoutEditContext.Provider>
+      </TooltipProvider>
+    </MemoryRouter>
+  )
+
+/**
+ * Pagly: on the sidebar's grey frame the current page is a white pill with a
+ * hairline edge and no drop shadow, and rows are 32px with 8px corners.
+ */
+describe("NavItem on the sidebar's frame", () => {
+  it("marks the current page with a white pill and no drop shadow", () => {
+    renderOrdersAt("/orders")
+    const link = screen.getByRole("link", { name: "Orders" })
+    expect(link.classList).toContain("bg-ui-bg-base")
+    expect(link.classList).toContain("text-ui-fg-base")
+    expect(link.classList).not.toContain("shadow-elevation-card-rest")
+  })
+
+  it("is a 32px row with 8px corners", () => {
+    renderOrdersAt("/products")
+    const link = screen.getByRole("link", { name: "Orders" })
+    expect(link.classList).toContain("h-8")
+    expect(link.classList).toContain("rounded-lg")
+  })
+
+  it("darkens on hover by a step the frame can show", () => {
+    renderOrdersAt("/products")
+    const link = screen.getByRole("link", { name: "Orders" })
+    // The old hover was the frame's own grey, so it showed nothing.
+    expect(link.classList).toContain("hover:bg-ui-bg-subtle-pressed")
+    expect(link.classList).not.toContain("hover:bg-ui-bg-subtle-hover")
+  })
 })

@@ -55,7 +55,13 @@ vi.mock("../../../layout-composer", async () => {
   }) => <SettingsSidebarLayoutComponent sections={sections} />
   return { LayoutComposer: Object.assign(LayoutComposer, { Entry }) }
 })
-vi.mock("../../user-menu", () => ({ UserMenu: () => null }))
+vi.mock("../../user-menu", () => ({
+  UserMenu: () => <div data-testid="user-menu" />,
+}))
+const sidebar = { desktop: true, mobile: false, toggle: vi.fn() }
+vi.mock("../../../../providers/sidebar-provider", () => ({
+  useSidebar: () => sidebar,
+}))
 vi.mock("../../shell", () => ({ Shell: () => null }))
 
 import { LayoutEditContext } from "../../../../providers/layout-edit-provider/layout-edit-context"
@@ -177,5 +183,35 @@ describe("the settings sidebar", () => {
 
     expect((search as HTMLInputElement).value).toBe("")
     expect(screen.getByText("app.nav.settings.store")).toBeTruthy()
+  })
+})
+
+/**
+ * Pagly: the settings sidebar sits on the same grey frame as the main one,
+ * hides itself from its own header, and draws no dashed lines.
+ */
+describe("the settings sidebar on the frame", () => {
+  it("hides the desktop sidebar from a button beside Settings", () => {
+    renderSidebar()
+    const button = screen.getByRole("button", { name: "app.nav.sidebar.hide" })
+    fireEvent.click(button)
+    expect(sidebar.toggle).toHaveBeenCalledWith("desktop")
+    sidebar.toggle.mockReset()
+  })
+
+  it("draws no dashed lines under its header, between its groups or above the user", () => {
+    const { container } = renderSidebar()
+    expect(container.querySelectorAll('[role="separator"]')).toHaveLength(0)
+  })
+
+  it("keeps its header and its user row on the frame's colour", () => {
+    renderSidebar()
+    const header = screen
+      .getByRole("link", { name: "app.nav.settings.header" })
+      .closest(".sticky") as HTMLElement
+    expect(header.classList).toContain("bg-[#F4F4F5]")
+    expect(header.classList).toContain("dark:bg-[#111113]")
+    const foot = screen.getByTestId("user-menu").closest(".sticky") as HTMLElement
+    expect(foot.classList).toContain("bg-[#F4F4F5]")
   })
 })
