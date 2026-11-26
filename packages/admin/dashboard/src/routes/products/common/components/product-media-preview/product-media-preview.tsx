@@ -1,5 +1,4 @@
 import { PlaySolid } from "@medusajs/icons"
-import { clx } from "@medusajs/ui"
 
 import { isVideoUrl } from "../../is-video-url"
 
