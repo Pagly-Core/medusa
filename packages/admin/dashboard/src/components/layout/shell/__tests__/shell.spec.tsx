@@ -1,10 +1,17 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react"
-import { PropsWithChildren } from "react"
+import { act, cleanup, render, screen, within } from "@testing-library/react"
+import { PropsWithChildren, ReactNode } from "react"
 import { RouterProvider, createMemoryRouter } from "react-router-dom"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-const sidebar = { desktop: true, mobile: false, toggle: vi.fn() }
+/** The sidebar's state, held outside React so a spec can change it mid-render. */
+let sidebarState = { desktop: true, mobile: false }
+const listeners = new Set<() => void>()
+const setSidebar = (patch: Partial<typeof sidebarState>) => {
+  sidebarState = { ...sidebarState, ...patch }
+  listeners.forEach((listener) => listener())
+}
+const toggle = vi.fn()
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -15,9 +22,21 @@ vi.mock("../../../../providers/keybind-provider", () => ({
 vi.mock("../../../../providers/keybind-provider/hooks", () => ({
   useGlobalShortcuts: () => [],
 }))
-vi.mock("../../../../providers/sidebar-provider", () => ({
-  useSidebar: () => sidebar,
-}))
+vi.mock("../../../../providers/sidebar-provider", async () => {
+  const { useSyncExternalStore } = await import("react")
+  const subscribe = (listener: () => void) => {
+    listeners.add(listener)
+    return () => {
+      listeners.delete(listener)
+    }
+  }
+  return {
+    useSidebar: () => ({
+      ...useSyncExternalStore(subscribe, () => sidebarState),
+      toggle,
+    }),
+  }
+})
 vi.mock("../../../../hooks/use-document-title", () => ({
   DocumentTitle: () => null,
 }))
@@ -36,19 +55,19 @@ vi.mock("../../../layout-composer", () => ({
   LayoutComposer: Object.assign(() => null, { Entry: () => null }),
 }))
 
+import { SidebarCollapseButton } from "../../sidebar-collapse-button"
 import { Shell } from "../shell"
 
-const renderShell = () => {
+const renderShell = (
+  sidebar: ReactNode = <aside data-testid="sidebar" />,
+  page: ReactNode = <div data-testid="page" />
+) => {
   const router = createMemoryRouter(
     [
       {
         path: "/",
-        element: (
-          <Shell>
-            <aside data-testid="sidebar" />
-          </Shell>
-        ),
-        children: [{ index: true, element: <div data-testid="page" /> }],
+        element: <Shell>{sidebar}</Shell>,
+        children: [{ index: true, element: page }],
       },
     ],
     { initialEntries: ["/"] }
@@ -79,11 +98,14 @@ const frame = () => screen.getByRole("main").closest(".isolate") as HTMLElement
 const showSidebarButtons = () =>
   screen.queryAllByRole("button", { name: "app.nav.sidebar.show" })
 
+/** The top bar's desktop button, there only while the sidebar is hidden. */
+const desktopShowButton = () =>
+  showSidebarButtons().find((button) => button.classList.contains("lg:flex"))
+
 afterEach(() => {
   cleanup()
-  sidebar.desktop = true
-  sidebar.mobile = false
-  sidebar.toggle.mockReset()
+  sidebarState = { desktop: true, mobile: false }
+  toggle.mockReset()
 })
 
 describe("the shell", () => {
@@ -131,7 +153,7 @@ describe("the frame and the sheet", () => {
   })
 
   it("insets the sheet from the window's left edge too once the sidebar is hidden", () => {
-    sidebar.desktop = false
+    setSidebar({ desktop: false })
     renderShell()
     expect(sheet().classList).toContain("lg:ms-2")
   })
@@ -156,13 +178,90 @@ describe("the top bar's sidebar button", () => {
   })
 
   it("brings the desktop sidebar back while it is hidden", () => {
-    sidebar.desktop = false
+    setSidebar({ desktop: false })
     renderShell()
-    const desktop = showSidebarButtons().find((button) =>
-      button.classList.contains("lg:flex")
-    )
+    const desktop = desktopShowButton()
     expect(desktop).toBeTruthy()
     desktop!.click()
-    expect(sidebar.toggle).toHaveBeenCalledWith("desktop")
+    expect(toggle).toHaveBeenCalledWith("desktop")
+  })
+
+  // An empty wrapper is still a flex item, so the cell's gap pushed the
+  // breadcrumbs 6px off the page's edge while the sidebar was shown.
+  it("puts its buttons straight in the top bar's cell, with no wrapper before the breadcrumbs", () => {
+    renderShell()
+    const phone = showSidebarButtons()[0]
+    expect(phone.parentElement?.classList).toContain("gap-x-1.5")
+  })
+})
+
+/**
+ * Pagly: the button that hides the sidebar lives in the sidebar and the one
+ * that brings it back in the top bar, so focus follows from one to the other
+ * instead of falling to the page's body.
+ */
+describe("focus as the sidebar hides and comes back", () => {
+  const renderWithHideButton = () =>
+    renderShell(
+      <aside data-testid="sidebar">
+        <button type="button" data-sidebar-collapse="">
+          hide
+        </button>
+      </aside>,
+      <button type="button">page action</button>
+    )
+
+  it("moves to the top bar's button when the sidebar hides with focus in it", () => {
+    renderWithHideButton()
+    screen.getByRole("button", { name: "hide" }).focus()
+
+    act(() => setSidebar({ desktop: false }))
+
+    expect(document.activeElement).toBe(desktopShowButton())
+  })
+
+  it("moves to the sidebar's hide button when the top bar's button brings it back", () => {
+    setSidebar({ desktop: false })
+    renderWithHideButton()
+    desktopShowButton()!.focus()
+
+    act(() => setSidebar({ desktop: true }))
+
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", { name: "hide" })
+    )
+  })
+
+  it("stays where it is when it is elsewhere on the page", () => {
+    renderWithHideButton()
+    const action = screen.getByRole("button", { name: "page action" })
+    action.focus()
+
+    act(() => setSidebar({ desktop: false }))
+
+    expect(document.activeElement).toBe(action)
+  })
+})
+
+/**
+ * Pagly: the phone's sheet closes with its own button. The desktop hide button
+ * stays out of it, or a window widened while the sheet is open would show a
+ * button that hides the sidebar behind the sheet instead of closing it.
+ */
+describe("the hide button and the phone's sheet", () => {
+  it("is left out of the phone's sheet and kept in the desktop sidebar", () => {
+    setSidebar({ mobile: true })
+    renderShell(<SidebarCollapseButton />)
+
+    const dialog = screen.getByRole("dialog")
+    expect(
+      within(dialog).queryByRole("button", { name: "app.nav.sidebar.hide" })
+    ).toBeNull()
+    expect(
+      screen.getAllByRole("button", {
+        name: "app.nav.sidebar.hide",
+        hidden: true,
+      })
+    ).toHaveLength(1)
   })
 })

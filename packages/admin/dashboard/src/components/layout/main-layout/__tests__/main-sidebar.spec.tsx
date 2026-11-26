@@ -86,7 +86,7 @@ const renderSidebar = () =>
     </MemoryRouter>
   )
 
-const storeTrigger = () => screen.getByRole("button", { name: /Tits/ })
+const storeTrigger = () => screen.getByRole("button", { name: "Tits" })
 
 const hideButton = () =>
   screen.getByRole("button", { name: "app.nav.sidebar.hide" })
@@ -104,8 +104,10 @@ afterEach(() => {
 describe("the main sidebar's header", () => {
   it("shows the Pagly logo and the store's name as the store menu's trigger", () => {
     renderSidebar()
+    // Named by the store alone: the logo beside the name is decoration.
     const trigger = storeTrigger()
-    expect(within(trigger).getByRole("img", { name: "Pagly" })).toBeTruthy()
+    expect(trigger.querySelector("[data-pagly-logo]")).toBeTruthy()
+    expect(within(trigger).queryByRole("img")).toBeNull()
     expect(within(trigger).getByText("Tits")).toBeTruthy()
     expect(trigger.getAttribute("aria-haspopup")).toBe("menu")
     // The store's initial in a grey square is gone.
@@ -117,7 +119,7 @@ describe("the main sidebar's header", () => {
     fireEvent.keyDown(storeTrigger(), { key: "ArrowDown" })
 
     const menu = await screen.findByRole("menu")
-    expect(within(menu).getByRole("img", { name: "Pagly" })).toBeTruthy()
+    expect(menu.querySelector("[data-pagly-logo]")).toBeTruthy()
     expect(
       within(menu).getByRole("menuitem", { name: "app.nav.main.storeSettings" })
     ).toBeTruthy()
@@ -141,6 +143,13 @@ describe("the main sidebar's header", () => {
     renderSidebar()
     expect(screen.queryByRole("button", { name: /Tits/ })).toBeNull()
     expect(hideButton()).toBeTruthy()
+  })
+
+  it("shows hover and open states a step below the current page in dark mode", () => {
+    renderSidebar()
+    const classes = storeTrigger().classList
+    expect(classes).toContain("dark:hover:bg-white/[0.05]")
+    expect(classes).toContain("dark:data-[state=open]:bg-white/[0.05]")
   })
 
   it("stays on the frame's colour while the list scrolls under it", () => {

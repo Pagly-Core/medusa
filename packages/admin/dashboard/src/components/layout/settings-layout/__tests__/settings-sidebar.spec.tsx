@@ -89,7 +89,10 @@ const renderSidebar = (pathname = "/settings/store") =>
 const links = () =>
   screen.getAllByRole("link").map((link) => link.textContent?.trim())
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  sidebar.toggle.mockReset()
+})
 
 describe("the settings sidebar", () => {
   it("shows Store, Selling, Customers and Advanced, in that order", () => {
@@ -196,7 +199,12 @@ describe("the settings sidebar on the frame", () => {
     const button = screen.getByRole("button", { name: "app.nav.sidebar.hide" })
     fireEvent.click(button)
     expect(sidebar.toggle).toHaveBeenCalledWith("desktop")
-    sidebar.toggle.mockReset()
+  })
+
+  it("hovers the way back a step below the current page in dark mode", () => {
+    renderSidebar()
+    const back = screen.getByRole("link", { name: "app.nav.settings.header" })
+    expect(back.classList).toContain("dark:hover:bg-white/[0.05]")
   })
 
   it("draws no dashed lines under its header, between its groups or above the user", () => {
@@ -211,7 +219,9 @@ describe("the settings sidebar on the frame", () => {
       .closest(".sticky") as HTMLElement
     expect(header.classList).toContain("bg-[#F4F4F5]")
     expect(header.classList).toContain("dark:bg-[#111113]")
-    const foot = screen.getByTestId("user-menu").closest(".sticky") as HTMLElement
+    const foot = screen
+      .getByTestId("user-menu")
+      .closest(".sticky") as HTMLElement
     expect(foot.classList).toContain("bg-[#F4F4F5]")
   })
 })

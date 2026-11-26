@@ -178,3 +178,55 @@ describe("NavItem on the sidebar's frame", () => {
     expect(link.classList).not.toContain("hover:bg-ui-bg-subtle-hover")
   })
 })
+
+/**
+ * Pagly: in dark mode the frame is #111113 and the current page's pill
+ * #212124, so hover takes a fill between the two rather than a brighter one.
+ */
+describe("NavItem hover in dark mode", () => {
+  it("keeps a hovered row below the current page's fill", () => {
+    renderOrdersAt("/products")
+    const link = screen.getByRole("link", { name: "Orders" })
+    expect(link.classList).toContain("dark:hover:bg-white/[0.05]")
+  })
+
+  it("keeps the current page's pill on hover", () => {
+    renderOrdersAt("/orders")
+    const link = screen.getByRole("link", { name: "Orders" })
+    expect(link.classList).toContain("dark:hover:bg-ui-bg-base")
+  })
+})
+
+/**
+ * Pagly: a settings entry has no icon, so its nested pages indent from the
+ * entry's 8px start; the setting padding used to win and set them flush.
+ */
+describe("NavItem nested settings pages", () => {
+  it("indents a settings entry's nested pages under it", () => {
+    render(
+      <MemoryRouter initialEntries={["/settings/store/locations"]}>
+        <TooltipProvider>
+          <LayoutEditContext.Provider
+            value={{
+              editMode: false,
+              orderChildren: (children) => children,
+              setChildrenOrder: () => {},
+              isHidden: () => false,
+              toggleHidden: () => {},
+            }}
+          >
+            <NavItem
+              type="setting"
+              label="Store"
+              to="/settings/store"
+              items={[{ label: "Locations", to: "/settings/store/locations" }]}
+            />
+          </LayoutEditContext.Provider>
+        </TooltipProvider>
+      </MemoryRouter>
+    )
+    const nested = screen.getByRole("link", { name: "Locations" })
+    expect(nested.classList).toContain("pl-6")
+    expect(nested.classList).not.toContain("pl-2")
+  })
+})
