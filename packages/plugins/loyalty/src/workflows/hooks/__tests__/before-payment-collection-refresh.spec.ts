@@ -94,6 +94,15 @@ describe("refreshing a cart's gift cards and saldo before its payment collection
     expect(run).toHaveBeenCalledTimes(1)
   })
 
+  it("leaves a refresh with no cart id to the rebuild, without reading any cart", async () => {
+    const { graph, context } = contextWith({ id: "cart_other", gift_cards: [], credit_lines: [] })
+
+    await refreshLoyaltyCreditLines({ input: {} }, context)
+
+    expect(graph).not.toHaveBeenCalled()
+    expect(run).toHaveBeenCalledTimes(1)
+  })
+
   it("leaves a cart it cannot read to the rebuild, which says it was not found", async () => {
     await refresh(undefined)
 
