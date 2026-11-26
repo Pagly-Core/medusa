@@ -13,6 +13,7 @@ const ORDER_PART_ZONES = [
   "order.details.shipping",
   "order.details.payment",
   "order.details.customer",
+  "order.details.discount",
 ]
 
 const NEW_KEYS = [
