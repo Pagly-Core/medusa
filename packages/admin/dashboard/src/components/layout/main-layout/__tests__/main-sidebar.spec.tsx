@@ -168,7 +168,9 @@ describe("the main sidebar's body", () => {
 
   it("keeps the user's row at the foot, on the frame's colour", () => {
     renderSidebar()
-    const band = screen.getByTestId("user-menu").closest(".sticky") as HTMLElement
+    const band = screen
+      .getByTestId("user-menu")
+      .closest(".sticky") as HTMLElement
     expect(band).toBeTruthy()
     expect(band.classList).toContain("bg-[#F4F4F5]")
   })

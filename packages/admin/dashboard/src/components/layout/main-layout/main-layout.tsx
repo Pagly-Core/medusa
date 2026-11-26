@@ -1,21 +1,24 @@
 import {
   BuildingStorefront,
+  ChevronUpDown,
   CogSixTooth,
-  EllipsisHorizontal,
   MagnifyingGlass,
   OpenRectArrowOut,
   SquaresPlus,
 } from "@medusajs/icons"
 import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
-import { Avatar, clx, Divider, DropdownMenu, Text } from "@medusajs/ui"
+import { clx, DropdownMenu, Text } from "@medusajs/ui"
 import { useTranslation } from "react-i18next"
 
 import { useStore } from "../../../hooks/api/store"
 import { LayoutComposer } from "../../layout-composer"
+import { PaglyLogo } from "../../common/pagly-logo"
 import { PermissionGuard } from "../../common/permission-guard"
 import { Skeleton } from "../../common/skeleton"
 import { NavItem } from "../../layout/nav-item"
 import { Shell } from "../../layout/shell"
+import { SHELL_FRAME_BG } from "../../layout/shell/frame"
+import { SidebarCollapseButton } from "../sidebar-collapse-button"
 
 import { Link, useLocation } from "react-router-dom"
 import { useSignOut } from "../../../hooks/use-sign-out"
@@ -36,25 +39,31 @@ export const MainLayout = () => {
   )
 }
 
+// Pagly: the sidebar sits on the shell's grey frame with no dashed lines; its
+// sticky bands take the frame's colour so the list scrolls under them.
 const MainSidebar = () => {
   return (
     <aside className="flex flex-1 flex-col justify-between overflow-y-auto">
       <div className="flex flex-1 flex-col">
-        <PermissionGuard resource="store" operation="read">
-          <div className="bg-ui-bg-subtle sticky top-0">
+        <div
+          className={clx(
+            "sticky top-0 z-[1] flex items-center justify-end gap-x-0.5 p-2",
+            SHELL_FRAME_BG
+          )}
+        >
+          <PermissionGuard resource="store" operation="read">
             <Header />
-            <div className="px-3">
-              <Divider variant="dashed" />
-            </div>
-          </div>
-        </PermissionGuard>
+          </PermissionGuard>
+          {/* Outside the guard: everyone can hide the sidebar. */}
+          <SidebarCollapseButton />
+        </div>
         <div className="flex flex-1 flex-col justify-between">
           <div className="flex flex-1 flex-col">
             <SidebarRoutes />
           </div>
           <UtilitySection />
         </div>
-        <div className="bg-ui-bg-subtle sticky bottom-0">
+        <div className={clx("sticky bottom-0", SHELL_FRAME_BG)}>
           <UserSection />
         </div>
       </div>
@@ -89,24 +98,21 @@ const Header = () => {
     throw error
   }
 
+  // Pagly: the Pagly logo where the store's initial was, then the store's name.
   return (
-    <div className="w-full p-3">
+    <div className="min-w-0 flex-1">
       <DropdownMenu dir={direction}>
         <DropdownMenu.Trigger
           disabled={!isLoaded}
           className={clx(
-            "bg-ui-bg-subtle transition-fg grid w-full grid-cols-[24px_1fr_15px] items-center gap-x-3 rounded-md p-0.5 pe-2 outline-none",
-            "hover:bg-ui-bg-subtle-hover",
-            "data-[state=open]:bg-ui-bg-subtle-hover",
+            "transition-fg flex h-12 w-full items-center gap-x-2.5 rounded-lg pe-2 ps-1.5 outline-none",
+            "hover:bg-ui-bg-subtle-pressed",
+            "data-[state=open]:bg-ui-bg-subtle-pressed",
             "focus-visible:shadow-borders-focus"
           )}
         >
-          {fallback ? (
-            <Avatar variant="squared" size="xsmall" fallback={fallback} />
-          ) : (
-            <Skeleton className="h-6 w-6 rounded-md" />
-          )}
-          <div className="block overflow-hidden text-start">
+          <PaglyLogo />
+          <div className="block min-w-0 flex-1 overflow-hidden text-start">
             {name ? (
               <Text
                 size="small"
@@ -120,12 +126,12 @@ const Header = () => {
               <Skeleton className="h-[9px] w-[120px]" />
             )}
           </div>
-          <EllipsisHorizontal className="text-ui-fg-muted" />
+          <ChevronUpDown className="text-ui-fg-muted flex-none" />
         </DropdownMenu.Trigger>
         {isLoaded && (
-          <DropdownMenu.Content className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-0">
+          <DropdownMenu.Content className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[224px]">
             <div className="flex items-center gap-x-3 px-2 py-1">
-              <Avatar variant="squared" size="small" fallback={fallback} />
+              <PaglyLogo size="small" />
               <div className="flex flex-col overflow-hidden">
                 <Text
                   size="small"
@@ -164,19 +170,22 @@ const Searchbar = () => {
   const { t } = useTranslation()
   const { toggleSearch } = useSearch()
 
+  // Pagly: search reads as a white field on the frame.
   return (
-    <div>
+    <div className="pb-2">
       <button
         onClick={toggleSearch}
         className={clx(
-          "bg-ui-bg-subtle text-ui-fg-subtle flex w-full items-center gap-x-2.5 rounded-md px-2 py-1 outline-none",
-          "hover:bg-ui-bg-subtle-hover",
+          "bg-ui-bg-base border-ui-border-base text-ui-fg-muted transition-fg flex h-8 w-full items-center gap-x-2 rounded-lg border pe-2 ps-[5px] outline-none",
+          "hover:border-ui-border-strong",
           "focus-visible:shadow-borders-focus"
         )}
       >
-        <MagnifyingGlass />
+        <div className="flex size-6 items-center justify-center">
+          <MagnifyingGlass />
+        </div>
         <div className="flex-1 text-start">
-          <Text size="small" leading="compact" weight="plus">
+          <Text size="small" leading="compact">
             {t("app.search.label")}
           </Text>
         </div>
@@ -193,7 +202,7 @@ const SalesChannelsHeading = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="text-ui-fg-muted mt-3 flex h-7 items-center px-2">
+    <div className="text-ui-fg-muted mt-4 flex h-7 items-center px-2">
       <Text size="small" leading="compact">
         {t("app.nav.salesChannels")}
       </Text>
@@ -250,8 +259,8 @@ export const SidebarRoutes = () => {
   )
 
   return (
-    <nav className="py-3">
-      <div className="px-3">
+    <nav className="pb-3 pt-1">
+      <div className="px-2">
         <LayoutComposer
           widgetsZonePrefix="sidebar"
           preferredLayoutId={CORE_LAYOUT_IDS.SINGLE_COLUMN}
@@ -260,7 +269,7 @@ export const SidebarRoutes = () => {
           customizeId={CUSTOMIZE_IDS.MAIN_SIDEBAR}
           controlSize="small"
           layoutProps={{
-            className: "gap-y-1",
+            className: "gap-y-0.5",
           }}
           sections={{
             main: (
@@ -294,7 +303,7 @@ const UtilitySection = () => {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col gap-y-0.5 px-3 py-3">
+    <div className="flex flex-col gap-y-0.5 p-2">
       <NavItem
         label={t("app.nav.settings.header")}
         to="/settings"
@@ -306,12 +315,5 @@ const UtilitySection = () => {
 }
 
 const UserSection = () => {
-  return (
-    <div>
-      <div className="px-3">
-        <Divider variant="dashed" />
-      </div>
-      <UserMenu />
-    </div>
-  )
+  return <UserMenu />
 }

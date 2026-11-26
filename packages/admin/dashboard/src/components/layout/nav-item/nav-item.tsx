@@ -47,11 +47,15 @@ export type INavItem = {
   translationNs?: string
 }
 
+// Pagly: 32px rows with 8px corners on the sidebar's grey frame. Hover is a
+// step darker than the frame, and the current page is a white pill with a
+// hairline edge instead of a drop shadow.
 const BASE_NAV_LINK_CLASSES =
-  "text-ui-fg-subtle transition-fg hover:bg-ui-bg-subtle-hover flex items-center gap-x-2 rounded-md py-0.5 pl-0.5 pr-2 outline-none [&>svg]:text-ui-fg-subtle focus-visible:shadow-borders-focus"
+  "text-ui-fg-subtle transition-fg hover:bg-ui-bg-subtle-pressed flex h-8 items-center gap-x-2 rounded-lg pl-1.5 pr-2 outline-none [&>svg]:text-ui-fg-subtle focus-visible:shadow-borders-focus"
 const ACTIVE_NAV_LINK_CLASSES =
-  "bg-ui-bg-base shadow-elevation-card-rest text-ui-fg-base hover:bg-ui-bg-base"
-const NESTED_NAV_LINK_CLASSES = "pl-[34px] pr-2 py-1 w-full text-ui-fg-muted"
+  "bg-ui-bg-base text-ui-fg-base hover:bg-ui-bg-base shadow-[0_0_0_1px_rgba(24,24,27,0.07)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+const NESTED_NAV_LINK_CLASSES =
+  "h-7 pl-[38px] pr-2 py-1 w-full text-ui-fg-muted"
 const SETTING_NAV_LINK_CLASSES = "pl-2 py-1"
 
 /**
@@ -404,7 +408,7 @@ export const NavItem = ({
         <RadixCollapsible.Root open={editMode || open} onOpenChange={setOpen}>
           <RadixCollapsible.Trigger
             className={clx(
-              "text-ui-fg-subtle hover:text-ui-fg-base transition-fg hover:bg-ui-bg-subtle-hover flex w-full items-center gap-x-2 rounded-md py-0.5 pl-0.5 pr-2 outline-none lg:hidden",
+              "text-ui-fg-subtle hover:text-ui-fg-base transition-fg hover:bg-ui-bg-subtle-pressed flex h-8 w-full items-center gap-x-2 rounded-lg pl-1.5 pr-2 outline-none lg:hidden",
               { "pl-2": isSetting }
             )}
           >

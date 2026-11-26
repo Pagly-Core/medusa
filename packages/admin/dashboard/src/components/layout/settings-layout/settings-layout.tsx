@@ -1,6 +1,6 @@
 import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
 import { ArrowUturnLeft } from "@medusajs/icons"
-import { clx, Divider, Input, Text } from "@medusajs/ui"
+import { clx, Input, Text } from "@medusajs/ui"
 import { ReactNode, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "react-router-dom"
@@ -13,6 +13,8 @@ import { LayoutComposer } from "../../layout-composer"
 import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
 import { INavItem, NavItem } from "../nav-item"
 import { Shell } from "../shell"
+import { SHELL_FRAME_BG } from "../shell/frame"
+import { SidebarCollapseButton } from "../sidebar-collapse-button"
 import { UserMenu } from "../user-menu"
 import {
   filterSettingsSections,
@@ -143,10 +145,11 @@ export const SettingsSidebar = () => {
     : []
 
   return (
+    // Pagly: on the shell's grey frame like the main sidebar, with no dashed lines.
     <aside className="relative flex flex-1 flex-col justify-between overflow-y-auto">
-      <div className="bg-ui-bg-subtle sticky top-0 z-[1]">
+      <div className={clx("sticky top-0 z-[1]", SHELL_FRAME_BG)}>
         <Header />
-        <div className="px-3 pb-3">
+        <div className="px-2 pb-2">
           <Input
             type="search"
             size="small"
@@ -156,14 +159,11 @@ export const SettingsSidebar = () => {
             aria-label={t("app.nav.settings.search")}
           />
         </div>
-        <div className="flex items-center justify-center px-3">
-          <Divider variant="dashed" />
-        </div>
       </div>
       <div className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col overflow-y-auto">
           {searching ? (
-            <div className="flex flex-col gap-y-0.5 p-3">
+            <div className="flex flex-col gap-y-0.5 p-2">
               {matches.map((item) => (
                 <NavItem key={item.to} type="setting" {...item} />
               ))}
@@ -187,7 +187,7 @@ export const SettingsSidebar = () => {
             />
           )}
         </div>
-        <div className="bg-ui-bg-subtle sticky bottom-0">
+        <div className={clx("sticky bottom-0", SHELL_FRAME_BG)}>
           <UserSection />
         </div>
       </div>
@@ -207,19 +207,20 @@ const Header = () => {
     }
   }, [location])
 
+  // Pagly: the way back and the button that hides the sidebar, side by side.
   return (
-    <div className="bg-ui-bg-subtle p-3">
+    <div className="flex items-center gap-x-0.5 p-2">
       <Link
         to={from}
         replace
         className={clx(
-          "bg-ui-bg-subtle transition-fg flex items-center rounded-md outline-none",
-          "hover:bg-ui-bg-subtle-hover",
+          "transition-fg flex h-8 min-w-0 flex-1 items-center rounded-lg outline-none",
+          "hover:bg-ui-bg-subtle-pressed",
           "focus-visible:shadow-borders-focus"
         )}
       >
-        <div className="flex items-center gap-x-2.5 px-2 py-1">
-          <div className="flex items-center justify-center">
+        <div className="flex items-center gap-x-2 pl-1.5 pr-2">
+          <div className="flex size-6 items-center justify-center">
             <ArrowUturnLeft className="text-ui-fg-subtle" />
           </div>
           <Text leading="compact" weight="plus" size="small">
@@ -227,17 +228,11 @@ const Header = () => {
           </Text>
         </div>
       </Link>
+      <SidebarCollapseButton />
     </div>
   )
 }
 
 const UserSection = () => {
-  return (
-    <div>
-      <div className="px-3">
-        <Divider variant="dashed" />
-      </div>
-      <UserMenu />
-    </div>
-  )
+  return <UserMenu />
 }

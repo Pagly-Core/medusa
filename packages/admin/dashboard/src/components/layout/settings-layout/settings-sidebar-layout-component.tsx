@@ -1,5 +1,5 @@
 import { MinusMini, PlusMini } from "@medusajs/icons"
-import { clx, Divider, IconButton, Text } from "@medusajs/ui"
+import { clx, IconButton, Text } from "@medusajs/ui"
 import { Collapsible as RadixCollapsible } from "radix-ui"
 import { Fragment, ReactNode, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -39,8 +39,8 @@ const CollapsibleGroup = ({
   const Icon = open ? MinusMini : PlusMini
 
   return (
-    <RadixCollapsible.Root open={open} onOpenChange={setOpen} className="py-3">
-      <div className="px-3">
+    <RadixCollapsible.Root open={open} onOpenChange={setOpen} className="py-2">
+      <div className="px-2">
         <div className="text-ui-fg-muted flex h-7 items-center justify-between px-2">
           <Text size="small" leading="compact">
             {label}
@@ -58,17 +58,11 @@ const CollapsibleGroup = ({
         </div>
       </div>
       <RadixCollapsible.Content>
-        <div className="flex flex-col gap-y-0.5 px-3 pt-0.5">{children}</div>
+        <div className="flex flex-col gap-y-0.5 px-2 pt-0.5">{children}</div>
       </RadixCollapsible.Content>
     </RadixCollapsible.Root>
   )
 }
-
-const GroupDivider = () => (
-  <div className="flex items-center justify-center px-3">
-    <Divider variant="dashed" />
-  </div>
-)
 
 /**
  * Pagly: the settings sidebar's groups, in `SETTINGS_NAV_GROUPS` order, then
@@ -100,9 +94,9 @@ export const SettingsSidebarLayoutComponent = ({
 
   return (
     <div className={clx("flex flex-1 flex-col", className)}>
-      {groups.map((group, index) => (
+      {groups.map((group) => (
         <Fragment key={group.id}>
-          {index > 0 && <GroupDivider />}
+          {/* Pagly: groups are set apart by space and their labels, not dashed lines. */}
           <CollapsibleGroup
             label={group.label}
             defaultOpen={!group.collapsed}
