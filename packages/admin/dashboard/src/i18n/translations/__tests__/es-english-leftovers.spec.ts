@@ -109,8 +109,7 @@ const HARDCODED = [
   ["routes/translations/translations-edit/components/translations-edit-form/translations-edit-form.tsx", ["Failed to save translations"]],
   ["components/filtering/filter-group/filter-group.tsx", ["Add filter"]],
   ["components/table/data-table/data-table-filter/select-filter.tsx", ['placeholder="Search"']],
-  ["routes/customers/customer-detail/components/customer-address-section/customer-address-section.tsx", ["            Add
-"]],
+  ["routes/customers/customer-detail/components/customer-address-section/customer-address-section.tsx", ["            Add\n"]],
   ["routes/orders/order-request-transfer/components/create-order-transfer-form/create-order-transfer-form.tsx", ['"Invalid email"', 'message: "Required"']],
   ["routes/price-lists/price-list-prices-edit/price-list-prices-edit.tsx", ["Edit Prices for", "Update prices for products in the price list"]],
 ] as const
@@ -119,9 +118,7 @@ describe("no hardcoded English", () => {
   const src = path.join(__dirname, "../../..")
 
   test.each(HARDCODED)("%s", (file, literals) => {
-    const code = fs.readFileSync(path.join(src, file), "utf8").replace(/
-/g, "
-")
+    const code = fs.readFileSync(path.join(src, file), "utf8").replace(/\r\n/g, "\n")
     expect(literals.filter((literal) => code.includes(literal))).toEqual([])
   })
 })
