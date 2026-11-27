@@ -4,6 +4,7 @@ import { StatusBadge } from "@medusajs/ui"
 import { ListSummary } from "../../../components/common/list-summary"
 import { PlaceholderCell } from "../../../components/table/table-cells/common/placeholder-cell"
 import { defineCellRenderer } from "../../../lib/table/cell-renderers"
+import { seededName } from "../../../lib/seeded-names"
 import { FulfillmentSetType } from "../common/constants"
 
 /**
@@ -35,7 +36,7 @@ defineCellRenderer(
 )
 
 defineCellRenderer("stock_location_sales_channels", {
-  render: (_value, row) => {
+  render: (_value, row, _column, t) => {
     const location = row as HttpTypes.AdminStockLocation
     const salesChannels = location.sales_channels
 
@@ -45,7 +46,11 @@ defineCellRenderer("stock_location_sales_channels", {
 
     return (
       <div className="flex items-center">
-        <ListSummary inline n={1} list={salesChannels.map((s) => s.name)} />
+        <ListSummary
+          inline
+          n={1}
+          list={salesChannels.map((s) => seededName(t, s.name))}
+        />
       </div>
     )
   },

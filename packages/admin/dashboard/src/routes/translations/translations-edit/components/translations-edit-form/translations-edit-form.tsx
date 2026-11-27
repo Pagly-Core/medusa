@@ -557,11 +557,11 @@ export const TranslationsEditForm = ({
       return true
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to save translations"
+        error instanceof Error ? error.message : t("translations.edit.errorToast")
       )
       return false
     }
-  }, [form, entityType, selectedLocale, mutateAsync])
+  }, [form, entityType, selectedLocale, mutateAsync, t])
 
   const switchToLocale = useCallback(
     async (newLocale: string) => {

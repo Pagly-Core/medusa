@@ -16,6 +16,7 @@ import {
 } from "../../../../../hooks/api"
 import { sdk } from "../../../../../lib/client"
 import { TransferHeader } from "./transfer-header"
+import { i18n } from "../../../../../components/utilities/i18n"
 
 type CreateOrderTransferFormProps = {
   order: HttpTypes.AdminOrder
@@ -33,7 +34,7 @@ const CreateOrderTransferSchema = zod
       ctx.addIssue({
         code: zod.ZodIssueCode.custom,
         path: ["customer_id"],
-        message: "Required",
+        message: i18n.t("validation.required"),
       })
     }
 
@@ -44,7 +45,7 @@ const CreateOrderTransferSchema = zod
       ctx.addIssue({
         code: zod.ZodIssueCode.custom,
         path: ["email"],
-        message: "Invalid email",
+        message: i18n.t("validation.invalidEmail"),
       })
     }
   })
@@ -93,9 +94,7 @@ export function CreateOrderTransferForm({
     try {
       if (data.type === "guest") {
         await transferToGuest({ email: data.email! })
-        toast.success(
-          t("orders.transfer.guestSuccess", { email: data.email })
-        )
+        toast.success(t("orders.transfer.guestSuccess", { email: data.email }))
       } else {
         await requestTransfer({ customer_id: data.customer_id! })
         toast.success(

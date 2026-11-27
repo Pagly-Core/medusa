@@ -2,6 +2,8 @@ import { HttpTypes } from "@medusajs/types"
 import { UIMatch } from "react-router-dom"
 
 import { useShippingOptionType } from "../../../hooks/api"
+import { i18n } from "../../../components/utilities/i18n"
+import { shippingOptionTypeLabel } from "../../../lib/seeded-names"
 
 type ShippingOptionTypeDetailBreadcrumbProps =
   UIMatch<HttpTypes.AdminShippingOptionTypeResponse>
@@ -26,5 +28,8 @@ export const ShippingOptionTypeDetailBreadcrumb = (
 export const seo = (
   match: UIMatch<HttpTypes.AdminShippingOptionTypeResponse>
 ) => ({
-  title: match.loaderData?.shipping_option_type?.label,
+  title: shippingOptionTypeLabel(
+    i18n.t,
+    match.loaderData?.shipping_option_type
+  ),
 })

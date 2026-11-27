@@ -1,6 +1,8 @@
 import { HttpTypes } from "@medusajs/types"
 import { UIMatch } from "react-router-dom"
 import { useSalesChannel } from "../../../hooks/api/sales-channels"
+import { i18n } from "../../../components/utilities/i18n"
+import { seededName } from "../../../lib/seeded-names"
 
 type SalesChannelDetailBreadcrumbProps =
   UIMatch<HttpTypes.AdminSalesChannelResponse>
@@ -23,5 +25,5 @@ export const SalesChannelDetailBreadcrumb = (
 }
 
 export const seo = (match: UIMatch<HttpTypes.AdminSalesChannelResponse>) => ({
-  title: match.loaderData?.sales_channel?.name,
+  title: seededName(i18n.t, match.loaderData?.sales_channel?.name),
 })

@@ -145,7 +145,7 @@ export const EditRolePermissionsForm = ({
 
       handleSuccess()
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : "Unknown error"
+      const errorMessage = e instanceof Error ? e.message : t("errorBoundary.defaultTitle")
       toast.error(errorMessage)
     }
   })

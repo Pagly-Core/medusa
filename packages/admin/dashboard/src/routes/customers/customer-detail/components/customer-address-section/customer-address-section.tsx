@@ -64,7 +64,7 @@ export const CustomerAddressSection = ({
         {/* Only show add link if user has update permission */}
         <PermissionGuard resource="customer" operation="update">
           <Link to={`create-address`} className="text-ui-fg-muted text-xs">
-            Add
+            {t("actions.add")}
           </Link>
         </PermissionGuard>
       </div>

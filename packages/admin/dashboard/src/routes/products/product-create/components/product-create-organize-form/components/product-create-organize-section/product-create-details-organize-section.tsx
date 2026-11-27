@@ -19,6 +19,7 @@ import { ProductCreateSchemaType } from "../../../../types"
 import { productTypesQueryKeys } from "../../../../../../../hooks/api/product-types"
 import { productTagsQueryKeys } from "../../../../../../../hooks/api/tags"
 import { shippingProfileQueryKeys } from "../../../../../../../hooks/api/shipping-profiles"
+import { seededName } from "../../../../../../../lib/seeded-names"
 
 type ProductCreateOrganizationSectionProps = {
   form: UseFormReturn<ProductCreateSchemaType>
@@ -55,7 +56,7 @@ export const ProductCreateOrganizationSection = ({
     queryFn: (params) => sdk.admin.shippingProfile.list(params),
     getOptions: (data) =>
       data.shipping_profiles.map((shippingProfile) => ({
-        label: shippingProfile.name,
+        label: seededName(t, shippingProfile.name),
         value: shippingProfile.id,
       })),
   })

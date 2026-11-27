@@ -21,6 +21,7 @@ import {
 } from "../../../common/constants"
 import { formatProvider } from "../../../../../lib/format-provider"
 import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
+import { seededName, shippingOptionTypeLabel } from "../../../../../lib/seeded-names"
 
 type EditShippingOptionFormProps = {
   locationId: string
@@ -52,7 +53,7 @@ export const EditShippingOptionForm = ({
     queryKey: ["shipping_profiles"],
     getOptions: (data) =>
       data.shipping_profiles.map((profile) => ({
-        label: profile.name,
+        label: seededName(t, profile.name),
         value: profile.id,
       })),
     defaultValue: shippingOption.shipping_profile_id,
@@ -63,7 +64,7 @@ export const EditShippingOptionForm = ({
     queryKey: ["shipping_option_types"],
     getOptions: (data) =>
       data.shipping_option_types.map((type) => ({
-        label: type.label,
+        label: shippingOptionTypeLabel(t, type),
         value: type.id,
       })),
   })
