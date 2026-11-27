@@ -19,6 +19,7 @@ import {
   getOrderPaymentStatus,
 } from "../../../../../lib/order-helpers"
 import { ExtendedOrder } from "../../constants"
+import { orderNumber } from "../../../../../lib/order-number"
 
 type OrderGeneralSectionProps = {
   order: ExtendedOrder
@@ -39,7 +40,7 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
     const res = await prompt({
       title: t("general.areYouSure"),
       description: t("orders.cancelWarning", {
-        id: `#${order.display_id}` as string,
+        id: orderNumber(order) ?? "",
       }),
       confirmText: t("actions.continue"),
       cancelText: t("actions.cancel"),
@@ -63,8 +64,9 @@ export const OrderGeneralSection = ({ order }: OrderGeneralSectionProps) => {
     <Container className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-6 py-4">
       <div className="min-w-[240px] flex-1">
         <div className="flex items-center gap-x-1">
-          <Heading>#{order.display_id}</Heading>
-          <Copy content={`#${order.display_id}`} className="text-ui-fg-muted" />
+          {/* Pagly: the store's own number (custom_display_id) when the order has one. */}
+          <Heading>{orderNumber(order)}</Heading>
+          <Copy content={orderNumber(order) ?? ""} className="text-ui-fg-muted" />
         </div>
         <Text size="small" className="text-ui-fg-subtle">
           {/* Pagly: when, where and who, in one line. */}

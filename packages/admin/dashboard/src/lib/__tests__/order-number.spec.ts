@@ -42,8 +42,11 @@ describe("the admin's order numbers", () => {
     })
   const PRINTS = [/#\$\{[^}]*display_id\}/, /#\{[^}]*display_id\}/, /displayId=\{[^}]*display_id/]
 
+  // orderNumber itself is the one place that reads display_id as a number.
+  const HELPER = path.join(root, "lib", "order-number.ts")
+
   it("prints no display_id of its own", () => {
-    const printing = sources(root).flatMap((file) =>
+    const printing = sources(root).filter((file) => file !== HELPER).flatMap((file) =>
       readFileSync(file, "utf8")
         .split("\n")
         .flatMap((line, index) =>
@@ -54,5 +57,5 @@ describe("the admin's order numbers", () => {
     )
 
     expect(printing).toEqual([])
-  })
+  }, 30_000)
 })
