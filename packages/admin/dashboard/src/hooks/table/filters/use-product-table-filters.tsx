@@ -81,7 +81,8 @@ export const useProductTableFilters = (
   if (product_types && !isProductTypeExcluded) {
     const typeFilter: Filter = {
       key: "type_id",
-      label: t("fields.type"),
+      // Pagly: the product type, not the generic Tipo
+      label: t("products.fields.type.label"),
       type: "select",
       multiple: true,
       searchable: true,
