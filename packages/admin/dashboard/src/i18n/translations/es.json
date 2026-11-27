@@ -133,7 +133,9 @@
   },
   "validation": {
     "mustBeInt": "El valor debe ser un número entero.",
-    "mustBePositive": "El valor debe ser un número positivo."
+    "mustBePositive": "El valor debe ser un número positivo.",
+    "required": "Obligatorio",
+    "invalidEmail": "Email inválido"
   },
   "auth": {
     "login": {
@@ -3012,7 +3014,8 @@
         "successToast": "Precios actualizados exitosamente."
       },
       "alreadyInList": "Este producto ya está en la lista de precios",
-      "noVariants": "Este producto no tiene variantes"
+      "noVariants": "Este producto no tiene variantes",
+      "editDescription": "Actualizá los precios de los productos de la lista"
     },
     "quantityPricing": {
       "header": "Precios condicionales para {{name}}",

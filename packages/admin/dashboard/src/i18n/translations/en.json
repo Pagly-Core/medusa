@@ -111,7 +111,9 @@
   },
   "validation": {
     "mustBeInt": "The value must be a whole number.",
-    "mustBePositive": "The value must be a positive number."
+    "mustBePositive": "The value must be a positive number.",
+    "required": "Required",
+    "invalidEmail": "Invalid email"
   },
   "actions": {
     "save": "Save",
@@ -2903,7 +2905,8 @@
         "successToast": "Prices were successfully updated."
       },
       "alreadyInList": "This product is already in the price list",
-      "noVariants": "This product has no variants"
+      "noVariants": "This product has no variants",
+      "editDescription": "Update prices for products in the price list"
     },
     "quantityPricing": {
       "header": "Conditional Prices for {{name}}",

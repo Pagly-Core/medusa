@@ -487,9 +487,15 @@
         },
         "mustBePositive": {
           "type": "string"
+        },
+        "required": {
+          "type": "string"
+        },
+        "invalidEmail": {
+          "type": "string"
         }
       },
-      "required": ["mustBeInt", "mustBePositive"],
+      "required": ["mustBeInt", "mustBePositive", "required", "invalidEmail"],
       "additionalProperties": false
     },
     "actions": {
@@ -11190,6 +11196,9 @@
             },
             "noVariants": {
               "type": "string"
+            },
+            "editDescription": {
+              "type": "string"
             }
           },
           "required": [
@@ -11199,7 +11208,8 @@
             "add",
             "edit",
             "alreadyInList",
-            "noVariants"
+            "noVariants",
+            "editDescription"
           ],
           "additionalProperties": false
         },

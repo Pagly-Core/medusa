@@ -41,12 +41,13 @@ type AddFilterMenuProps = {
 }
 
 const AddFilterMenu = ({ availableKeys }: AddFilterMenuProps) => {
+  const { t } = useTranslation()
   const direction = useDocumentDirection()
   return (
     <DropdownMenu dir={direction}>
       <DropdownMenu.Trigger asChild>
         <Button variant="secondary" size="small">
-          Add filter
+          {t("filters.addFilter")}
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
