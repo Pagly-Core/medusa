@@ -107,13 +107,21 @@ const HARDCODED = [
   ["routes/reservations/reservation-detail/components/reservation-general-section/reservation-general-section.tsx", ["Loading..."]],
   ["routes/roles/role-permissions/components/edit-role-permissions-form/edit-role-permissions-form.tsx", ["Unknown error"]],
   ["routes/translations/translations-edit/components/translations-edit-form/translations-edit-form.tsx", ["Failed to save translations"]],
+  ["components/filtering/filter-group/filter-group.tsx", ["Add filter"]],
+  ["components/table/data-table/data-table-filter/select-filter.tsx", ['placeholder="Search"']],
+  ["routes/customers/customer-detail/components/customer-address-section/customer-address-section.tsx", ["            Add
+"]],
+  ["routes/orders/order-request-transfer/components/create-order-transfer-form/create-order-transfer-form.tsx", ['"Invalid email"', 'message: "Required"']],
+  ["routes/price-lists/price-list-prices-edit/price-list-prices-edit.tsx", ["Edit Prices for", "Update prices for products in the price list"]],
 ] as const
 
 describe("no hardcoded English", () => {
   const src = path.join(__dirname, "../../..")
 
   test.each(HARDCODED)("%s", (file, literals) => {
-    const code = fs.readFileSync(path.join(src, file), "utf8")
+    const code = fs.readFileSync(path.join(src, file), "utf8").replace(/
+/g, "
+")
     expect(literals.filter((literal) => code.includes(literal))).toEqual([])
   })
 })
