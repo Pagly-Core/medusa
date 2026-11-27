@@ -10,6 +10,10 @@ globalThis.ResizeObserver ??= class {
   unobserve() {}
   disconnect() {}
 } as any
+// Radix Select reads pointer capture and scrolls its items into view.
+Element.prototype.hasPointerCapture ??= () => false
+Element.prototype.releasePointerCapture ??= () => {}
+Element.prototype.scrollIntoView ??= () => {}
 
 const mocks = vi.hoisted(() => ({ refund: vi.fn(), creditLine: vi.fn() }))
 
@@ -102,6 +106,26 @@ describe.each([
 
     expect(await screen.findByText("orders.payment.refundAmountRequired")).toBeTruthy()
     expect(mocks.refund).not.toHaveBeenCalled()
+  })
+
+  // The issue's own steps: Guardar with nothing chosen, then a payment.
+  it("refunds a payment chosen after a first Guardar with nothing chosen, at the amount it brings", async () => {
+    open()
+
+    save()
+    expect(await screen.findByText("orders.payment.selectPaymentRequired")).toBeTruthy()
+
+    fireEvent.keyDown(screen.getByRole("combobox"), { key: "Enter" })
+    fireEvent.click(await screen.findByRole("option"))
+    // The payment brings what is left to refund: nothing to type.
+    // Guardar comes back once the form has nothing left to fix.
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "actions.save" }).hasAttribute("disabled")).toBe(false)
+    )
+    save()
+
+    await waitFor(() => expect(mocks.refund).toHaveBeenCalledTimes(1))
+    expect(mocks.refund.mock.calls[0][0]).toBe(PAYMENT_ID)
   })
 
   it("refunds the chosen payment", async () => {

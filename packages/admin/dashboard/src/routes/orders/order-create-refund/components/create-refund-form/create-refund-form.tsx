@@ -105,10 +105,16 @@ export const CreateRefundForm = ({ order }: CreateRefundFormProps) => {
     const normalizedAmount =
       pendingAmount < 0 ? pendingAmount * -1 : pendingAmount
 
-    form.setValue("amount", {
-      value: getRoundedAmount(normalizedAmount),
-      float: normalizedAmount,
-    })
+    form.setValue(
+      "amount",
+      {
+        value: getRoundedAmount(normalizedAmount),
+        float: normalizedAmount,
+      },
+      // Pagly: after a first Guardar, choosing the payment checks the amount
+      // it brings again, or its old error keeps Guardar disabled.
+      { shouldValidate: form.formState.isSubmitted }
+    )
   }, [payment?.id || ""])
 
   const { mutateAsync, isPending } = useRefundPayment(order.id, payment?.id!)
