@@ -143,6 +143,12 @@ describe("Organización", () => {
     ).toBe("/organization")
   })
 
+  it("names the type row as the product's type, not the generic Tipo", () => {
+    renderIn(<ProductOrganizationSection product={makeProduct()} />)
+    expect(screen.getByText("products.fields.type.label")).toBeTruthy()
+    expect(screen.queryByText("fields.type")).toBeNull()
+  })
+
   it("says when it has no category, type or tags", () => {
     renderIn(
       <ProductOrganizationSection
