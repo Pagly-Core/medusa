@@ -12,7 +12,8 @@ import {
 const tFor =
   (catalog: Record<string, any>) =>
   (key: string): string =>
-    key.split(".").reduce((node, part) => node?.[part], catalog) ?? key
+    (key.split(".").reduce<any>((node, part) => node?.[part], catalog) ??
+      key) as string
 
 const t = tFor(es)
 

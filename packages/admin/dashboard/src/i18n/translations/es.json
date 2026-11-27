@@ -678,7 +678,7 @@
       "status": "Estado",
       "thumbnail": "Miniatura",
       "title": "Título",
-      "handle": "Handle",
+      "handle": "Identificador",
       "created_at": "Creado",
       "updated_at": "Actualizado"
     },
@@ -693,8 +693,8 @@
         "placeholder": "Cálido y acogedor"
       },
       "handle": {
-        "label": "Manejador",
-        "tooltip": "El manejador se usa para hacer referencia al producto en tu tienda. Si no se especifica, el manejador será generado a partir del título del producto.",
+        "label": "Identificador",
+        "tooltip": "El identificador forma la dirección del producto en tu tienda. Si lo dejás vacío, se genera a partir del título.",
         "placeholder": "chaqueta-de-invierno"
       },
       "description": {
@@ -1186,7 +1186,7 @@
     "deleteWarning": "Estás a punto de eliminar un ítem de inventario. Esta acción no puede deshacerse.",
     "editItemDetails": "Editar detalles del ítem",
     "quantityAcrossLocations": "{{quantity}} en {{locations}} ubicaciones",
-    "unitOfMeasurePlaceholder": "lb",
+    "unitOfMeasurePlaceholder": "kg",
     "unitOfMeasureHint": "La unidad en la que se mantiene y cuenta el stock. Se muestra junto a las cantidades en el panel.",
     "levelDeleted": "Nivel de inventario eliminado correctamente.",
     "create": {
@@ -1197,7 +1197,8 @@
       "attributes": "Atributos",
       "requiresShipping": "Requiere envío",
       "requiresShippingHint": "¿El ítem de inventario requiere envío?",
-      "successToast": "Ítem de inventario creado correctamente."
+      "successToast": "Ítem de inventario creado correctamente.",
+      "descriptionPlaceholder": "Descripción del ítem"
     },
     "adjustInventory": {
       "errors": {
@@ -2064,7 +2065,7 @@
     },
     "fulfillmentSets": {
       "pickup": {
-        "header": "Pickup"
+        "header": "Retiro"
       },
       "shipping": {
         "header": "Envío"
@@ -2626,7 +2627,12 @@
         "successToast": "La campaña de la promoción se actualizó correctamente."
       },
       "actions": {
-        "goToCampaign": "Ir a la campaña"
+        "goToCampaign": "Ir a la campaña",
+        "addToCampaign": "Agregar a una campaña"
+      },
+      "empty": {
+        "heading": "No es parte de una campaña",
+        "description": "Agregá esta promoción a una campaña existente"
       }
     },
     "campaign_currency": {
@@ -2733,7 +2739,8 @@
       "limit": {
         "title": "Límite de uso",
         "description": "Número máximo de veces que esta promoción puede usarse en todos los pedidos. Dejalo vacío para uso ilimitado."
-      }
+      },
+      "selectOperator": "Elegí un operador"
     },
     "templates": {
       "amount_off_products": {
@@ -3003,7 +3010,9 @@
       },
       "edit": {
         "successToast": "Precios actualizados exitosamente."
-      }
+      },
+      "alreadyInList": "Este producto ya está en la lista de precios",
+      "noVariants": "Este producto no tiene variantes"
     },
     "quantityPricing": {
       "header": "Precios condicionales para {{name}}",
@@ -3308,7 +3317,8 @@
       "unsavedChanges": {
         "title": "Traducciones sin guardar",
         "description": "No pierdas tu trabajo. Tenés cambios que todavía no se guardaron"
-      }
+      },
+      "errorToast": "No se pudieron guardar las traducciones"
     },
     "activeLocales": {
       "heading": "Idiomas",
@@ -3928,7 +3938,7 @@
     "collection": "Colección",
     "discountable": "Descontable",
     "promotionCode": "Código de promoción",
-    "handle": "Manejo",
+    "handle": "Identificador",
     "subtitle": "Subtítulo",
     "item": "Artículo",
     "qty": "Cant.",
@@ -4231,6 +4241,14 @@
     "workflows": {
       "title": "Todavía no hay flujos de trabajo",
       "description": "Acá ves cada proceso que corre tu tienda, como crear un pedido, paso a paso."
+    }
+  },
+  "defaultNames": {
+    "shippingProfile": "Perfil general",
+    "salesChannel": "Canal de venta predeterminado",
+    "shippingOptionType": {
+      "label": "Estándar",
+      "description": "Entrega estándar"
     }
   }
 }

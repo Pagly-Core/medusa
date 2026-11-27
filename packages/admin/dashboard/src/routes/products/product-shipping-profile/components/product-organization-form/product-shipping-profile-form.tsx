@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect } from "react"
 import { shippingProfileQueryKeys } from "../../../../../hooks/api/shipping-profiles"
+import { seededName } from "../../../../../lib/seeded-names"
 
 type ProductShippingProfileFormProps = {
   product: HttpTypes.AdminProduct & {
@@ -36,7 +37,7 @@ export const ProductShippingProfileForm = ({
     queryFn: (params) => sdk.admin.shippingProfile.list(params),
     getOptions: (data) =>
       data.shipping_profiles.map((shippingProfile) => ({
-        label: shippingProfile.name,
+        label: seededName(t, shippingProfile.name),
         value: shippingProfile.id,
       })),
   })

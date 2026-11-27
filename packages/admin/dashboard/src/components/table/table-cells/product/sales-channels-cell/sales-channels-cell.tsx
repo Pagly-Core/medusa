@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { SalesChannelDTO } from "@medusajs/types"
 import { PlaceholderCell } from "../../common/placeholder-cell"
+import { seededName } from "../../../../../lib/seeded-names"
 
 type SalesChannelsCellProps = {
   salesChannels?: SalesChannelDTO[] | null
@@ -29,14 +30,14 @@ export const SalesChannelsCell = ({
         <span className="truncate">
           {validChannels
             .slice(0, 2)
-            .map((sc) => sc.name)
+            .map((sc) => seededName(t, sc.name))
             .join(", ")}
         </span>
         <Tooltip
           content={
             <ul>
               {validChannels.slice(2).map((sc) => (
-                <li key={sc.id}>{sc.name}</li>
+                <li key={sc.id}>{seededName(t, sc.name)}</li>
               ))}
             </ul>
           }
@@ -51,7 +52,7 @@ export const SalesChannelsCell = ({
     )
   }
 
-  const channels = validChannels.map((sc) => sc.name).join(", ")
+  const channels = validChannels.map((sc) => seededName(t, sc.name)).join(", ")
 
   return (
     <div className="flex h-full w-full max-w-[250px] items-center overflow-hidden">

@@ -4524,6 +4524,9 @@
             },
             "successToast": {
               "type": "string"
+            },
+            "descriptionPlaceholder": {
+              "type": "string"
             }
           },
           "required": [
@@ -4534,7 +4537,8 @@
             "attributes",
             "requiresShipping",
             "requiresShippingHint",
-            "successToast"
+            "successToast",
+            "descriptionPlaceholder"
           ],
           "additionalProperties": false
         },
@@ -9966,13 +9970,29 @@
               "properties": {
                 "goToCampaign": {
                   "type": "string"
+                },
+                "addToCampaign": {
+                  "type": "string"
                 }
               },
-              "required": ["goToCampaign"],
+              "required": ["goToCampaign", "addToCampaign"],
+              "additionalProperties": false
+            },
+            "empty": {
+              "type": "object",
+              "properties": {
+                "heading": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": ["heading", "description"],
               "additionalProperties": false
             }
           },
-          "required": ["header", "edit", "actions"],
+          "required": ["header", "edit", "actions", "empty"],
           "additionalProperties": false
         },
         "campaign_currency": {
@@ -10317,6 +10337,9 @@
               },
               "required": ["title", "description"],
               "additionalProperties": false
+            },
+            "selectOperator": {
+              "type": "string"
             }
           },
           "required": [
@@ -10333,7 +10356,8 @@
             "code",
             "value",
             "value_type",
-            "limit"
+            "limit",
+            "selectOperator"
           ],
           "additionalProperties": false
         },
@@ -11160,9 +11184,23 @@
               },
               "required": ["successToast"],
               "additionalProperties": false
+            },
+            "alreadyInList": {
+              "type": "string"
+            },
+            "noVariants": {
+              "type": "string"
             }
           },
-          "required": ["header", "actions", "delete", "add", "edit"],
+          "required": [
+            "header",
+            "actions",
+            "delete",
+            "add",
+            "edit",
+            "alreadyInList",
+            "noVariants"
+          ],
           "additionalProperties": false
         },
         "quantityPricing": {
@@ -12284,9 +12322,12 @@
               },
               "required": ["title", "description"],
               "additionalProperties": false
+            },
+            "errorToast": {
+              "type": "string"
             }
           },
-          "required": ["successToast", "unsavedChanges"],
+          "required": ["successToast", "unsavedChanges", "errorToast"],
           "additionalProperties": false
         },
         "bulk": {
@@ -16239,6 +16280,32 @@
         "workflows"
       ],
       "additionalProperties": false
+    },
+    "defaultNames": {
+      "type": "object",
+      "properties": {
+        "shippingProfile": {
+          "type": "string"
+        },
+        "salesChannel": {
+          "type": "string"
+        },
+        "shippingOptionType": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          },
+          "required": ["label", "description"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["shippingProfile", "salesChannel", "shippingOptionType"],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -16308,7 +16375,8 @@
     "permissions",
     "onlineStore",
     "home",
-    "emptyStates"
+    "emptyStates",
+    "defaultNames"
   ],
   "additionalProperties": false
 }

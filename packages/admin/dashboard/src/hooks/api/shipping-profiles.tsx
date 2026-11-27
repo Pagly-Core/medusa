@@ -11,6 +11,9 @@ import { HttpTypes } from "@medusajs/types"
 import { sdk } from "../../lib/client"
 import { queryClient } from "../../lib/query-client"
 import { queryKeysFactory } from "../../lib/query-key-factory"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { withSeededName } from "../../lib/seeded-names"
 
 const SHIPPING_PROFILE_QUERY_KEY = "shipping_profile" as const
 export const shippingProfileQueryKeys = queryKeysFactory(
@@ -55,8 +58,13 @@ export const useShippingProfile = (
     queryKey: shippingProfileQueryKeys.detail(id, query),
     ...options,
   })
+  const { t } = useTranslation()
+  const shipping_profile = useMemo(
+    () => data?.shipping_profile && withSeededName(t, data.shipping_profile),
+    [data?.shipping_profile, t]
+  )
 
-  return { ...data, ...rest }
+  return { ...data, shipping_profile, ...rest }
 }
 
 export const useShippingProfiles = (
@@ -76,8 +84,13 @@ export const useShippingProfiles = (
     queryKey: shippingProfileQueryKeys.list(query),
     ...options,
   })
+  const { t } = useTranslation()
+  const shipping_profiles = useMemo(
+    () => data?.shipping_profiles?.map((row) => withSeededName(t, row)),
+    [data?.shipping_profiles, t]
+  )
 
-  return { ...data, ...rest }
+  return { ...data, shipping_profiles, ...rest }
 }
 
 export const useUpdateShippingProfile = (

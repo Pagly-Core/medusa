@@ -1150,7 +1150,8 @@
       "attributes": "Attributes",
       "requiresShipping": "Requires shipping",
       "requiresShippingHint": "Does the inventory item require shipping?",
-      "successToast": "Inventory item was successfully created."
+      "successToast": "Inventory item was successfully created.",
+      "descriptionPlaceholder": "Item description"
     },
     "reservation": {
       "header": "Reservation of {{itemName}}",
@@ -2568,7 +2569,12 @@
         "successToast": "Successfully updated the campaign of the promotion."
       },
       "actions": {
-        "goToCampaign": "Go to campaign"
+        "goToCampaign": "Go to campaign",
+        "addToCampaign": "Add to campaign"
+      },
+      "empty": {
+        "heading": "Not part of a campaign",
+        "description": "Add this promotion to an existing campaign"
       }
     },
     "campaign_currency": {
@@ -2675,7 +2681,8 @@
       "limit": {
         "title": "Usage Limit",
         "description": "Maximum number of times this promotion can be used across all orders. Leave empty for unlimited usage."
-      }
+      },
+      "selectOperator": "Select operator"
     },
     "templates": {
       "amount_off_products": {
@@ -2894,7 +2901,9 @@
       },
       "edit": {
         "successToast": "Prices were successfully updated."
-      }
+      },
+      "alreadyInList": "This product is already in the price list",
+      "noVariants": "This product has no variants"
     },
     "quantityPricing": {
       "header": "Conditional Prices for {{name}}",
@@ -3193,7 +3202,8 @@
       "unsavedChanges": {
         "title": "Unsaved translations",
         "description": "Don't lose your work. You have changes that haven't been saved yet"
-      }
+      },
+      "errorToast": "Failed to save translations"
     },
     "bulk": {
       "header": "Translations Bulk Editor",
@@ -4214,6 +4224,14 @@
     "workflows": {
       "title": "No workflows yet",
       "description": "See each process your store runs, like creating an order, step by step."
+    }
+  },
+  "defaultNames": {
+    "shippingProfile": "General profile",
+    "salesChannel": "Default sales channel",
+    "shippingOptionType": {
+      "label": "Standard",
+      "description": "Standard delivery"
     }
   }
 }
