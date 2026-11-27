@@ -45,6 +45,15 @@ describe("OrderGeneralSection as the header", () => {
     ).toBeTruthy()
   })
 
+  // Pagly: each store numbers its own orders from 1001 (custom_display_id); Medusa's display_id is
+  // shared by every store.
+  it("heads the order with the store's own number, and copies that one", () => {
+    renderHeader(makeOrder({ display_id: 4562, custom_display_id: "1001" } as never))
+
+    expect(screen.getByRole("heading", { name: "#1001" })).toBeTruthy()
+    expect(screen.queryByText("#4562")).toBeNull()
+  })
+
   it("lets the badges wrap below the date on a narrow screen", () => {
     const { container } = renderHeader()
     expect(container.firstElementChild?.className).toContain("flex-wrap")
