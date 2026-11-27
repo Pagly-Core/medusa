@@ -104,6 +104,21 @@ describe("Combobox", () => {
     expect(screen.queryByText("Banana")).toBeNull()
   })
 
+  // Pagly-Core/pagly-app#356: an empty list offered to create "" before
+  // anything was typed.
+  it("offers to create an option only once something is typed", async () => {
+    const user = userEvent.setup()
+
+    render(<Combobox placeholder="Search..." options={[]} onCreateOption={vi.fn()} />)
+
+    const input = screen.getByPlaceholderText("Search...")
+    await user.click(input)
+    expect(screen.queryByText(/actions.create/)).toBeNull()
+
+    await user.type(input, "Tazas")
+    expect(screen.getByText(/actions.create/).textContent).toContain('"Tazas"')
+  })
+
   it("should clear search value upon value selection", async () => {
     const user = userEvent.setup()
 
