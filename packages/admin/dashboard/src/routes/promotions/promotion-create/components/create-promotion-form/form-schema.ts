@@ -1,3 +1,4 @@
+import i18n from "i18next"
 import { z } from "zod"
 import { CreateCampaignSchema } from "../../../../campaigns/campaign-create/components/create-campaign-form"
 
@@ -56,6 +57,18 @@ export const CreatePromotionSchema = z
     {
       path: ["application_method.max_quantity"],
       message: `required field`,
+    }
+  )
+
+  // Pagly: a percentage off takes up to 100 (Pagly-Core/pagly-app#356).
+  .refine(
+    (data) =>
+      data.application_method.type !== "percentage" ||
+      Number(data.application_method.value) <= 100,
+    {
+      path: ["application_method", "value"],
+      // Read when it is checked, so it is in the admin's language.
+      error: () => i18n.t("promotions.errors.percentageUpTo100"),
     }
   )
 

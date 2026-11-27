@@ -2546,7 +2546,8 @@
     },
     "errors": {
       "requiredField": "Required field",
-      "promotionTabError": "Fix errors in Promotion Tab before proceeding"
+      "promotionTabError": "Fix errors in Promotion Tab before proceeding",
+      "percentageUpTo100": "Enter a percentage up to 100."
     },
     "toasts": {
       "promotionCreateSuccess": "Promotion ({{code}}) was successfully created."
@@ -2817,7 +2818,8 @@
       },
       "edit": {
         "header": "Edit Campaign Budget"
-      }
+      },
+      "noLimit": "No limit"
     },
     "promotions": {
       "remove": {
