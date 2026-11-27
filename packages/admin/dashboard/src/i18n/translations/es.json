@@ -4248,7 +4248,7 @@
     "salesChannel": "Canal de venta predeterminado",
     "shippingOptionType": {
       "label": "Estándar",
-      "description": "Entrega estándar"
+      "description": "Envío o retiro con precio fijo"
     }
   }
 }

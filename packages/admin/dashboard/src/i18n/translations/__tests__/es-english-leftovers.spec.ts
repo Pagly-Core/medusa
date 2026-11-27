@@ -91,7 +91,7 @@ describe("es.json has no English left", () => {
       salesChannel: "Canal de venta predeterminado",
       shippingOptionType: {
         label: "Estándar",
-        description: "Entrega estándar",
+        description: "Envío o retiro con precio fijo",
       },
     })
   })

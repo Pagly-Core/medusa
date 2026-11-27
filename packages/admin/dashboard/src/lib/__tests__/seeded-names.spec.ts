@@ -42,7 +42,7 @@ describe("seeded names", () => {
       description: "Standard delivery",
     }
     expect(shippingOptionTypeLabel(t, type)).toBe("Estándar")
-    expect(shippingOptionTypeDescription(t, type)).toBe("Entrega estándar")
+    expect(shippingOptionTypeDescription(t, type)).toBe("Envío o retiro con precio fijo")
   })
 
   test("a shipping option type the merchant named stays as written", () => {
