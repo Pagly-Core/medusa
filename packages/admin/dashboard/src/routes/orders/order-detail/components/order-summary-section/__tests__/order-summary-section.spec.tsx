@@ -13,9 +13,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { OrderSummarySection } from "../order-summary-section"
 
 const fetch = vi.hoisted(() => vi.fn())
+const zones = vi.hoisted(() => ({ current: {} as Record<string, any[]> }))
 
 vi.mock("../../../../../../providers/extension-provider", () => ({
-  useExtension: () => ({ getWidgets: () => [] }),
+  useExtension: () => ({ getWidgets: (zone: string) => zones.current[zone] ?? [] }),
 }))
 
 vi.mock("../../../../../../lib/client", () => ({
@@ -169,6 +170,7 @@ const openDiscounts = () => {
 
 beforeEach(() => {
   fetch.mockReset()
+  zones.current = {}
 })
 
 afterEach(() => {
@@ -176,6 +178,28 @@ afterEach(() => {
 })
 
 describe("the order's discounts", () => {
+  // Pagly: a plugin part in `order.details.discount` goes before each named
+  // discount and gets it, as the bank's logo goes before "Itaú 20%" in the
+  // checkout (the user, 2026-11-26). The page never names a plugin.
+  it("puts a plugin's part before each named discount, with the discount", async () => {
+    const Mark = ({ discount }: { discount: { kind: string; code: string } }) =>
+      discount.kind === "bank" ? <img alt={`mark ${discount.code}`} /> : null
+    zones.current = { "order.details.discount": [Mark] }
+    fetch.mockResolvedValue({ discounts })
+
+    renderSummary()
+
+    const mark = await screen.findByAltText("mark SANTANDER25")
+    const rows = screen.getAllByTestId("order-discount-row")
+    expect(rows).toHaveLength(4)
+    expect(rows[3].contains(mark)).toBe(true)
+    expect(rows[3].textContent).toMatch(/^Santander 25%/)
+    expect(
+      mark.compareDocumentPosition(screen.getByText("Santander 25%")) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+    expect(rows.slice(0, 3).some((row) => row.querySelector("img"))).toBe(false)
+  })
+
   it("reads each discount by its name, with what it took off", async () => {
     fetch.mockResolvedValue({ discounts })
 

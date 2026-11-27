@@ -13,6 +13,7 @@ const ORDER_PART_ZONES = [
   "order.details.shipping",
   "order.details.payment",
   "order.details.customer",
+  "order.details.discount",
 ]
 
 const NEW_KEYS = [
@@ -60,7 +61,7 @@ const read = (catalog: Record<string, any>, key: string) =>
   key.split(".").reduce<any>((node, part) => node?.[part], catalog)
 
 describe("order page parts", () => {
-  it("lets plugins place parts in the five order page zones", () => {
+  it("lets plugins place parts in the six order page zones", () => {
     for (const zone of ORDER_PART_ZONES) {
       expect(INJECTION_ZONES, zone).toContain(zone)
     }

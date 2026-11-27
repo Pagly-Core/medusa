@@ -487,6 +487,13 @@ const Cost = ({
   </div>
 )
 
+/**
+ * What a plugin part in `order.details.discount` receives: the order and one
+ * of its named discounts. It goes before the discount's name (a bank's logo
+ * before "Itaú 20%"), or renders nothing for a discount that is not its own.
+ */
+type DiscountPartProps = { data: AdminOrder; discount: OrderDiscountLabel }
+
 // Pagly: the money in the order it is read: subtotal, each discount by name,
 // shipping, taxes (before the total when prices don't include them), saldo and
 // gift cards, the total, then taxes included. One block instead of a total
@@ -506,6 +513,10 @@ const CostBreakdown = ({
   const creditLines = order.credit_lines ?? []
   const loyaltyPlugin = getLoyaltyPlugin(plugins)
   const discountLabels = useOrderDiscountLabels(order.id)
+  const { getWidgets } = useExtension()
+  const discountParts = getWidgets(
+    "order.details.discount" as any
+  ) as ComponentType<DiscountPartProps>[]
 
   const taxCodes = useMemo(() => {
     const taxCodeMap: { [key: string]: { total: number; rate: number } } = {}
@@ -675,7 +686,10 @@ const CostBreakdown = ({
               data-testid="order-discount-row"
               className="flex items-center justify-between gap-x-2"
             >
-              <div className="flex gap-1">
+              <div className="flex items-center gap-1">
+                {discountParts.map((Part, partIndex) => (
+                  <Part key={partIndex} data={order} discount={discount} />
+                ))}
                 <span className="txt-small">{discount.label}</span>
                 {discount.code && shippingOnlyCodes.has(discount.code) && (
                   <span className="txt-small">({t("fields.shipping")})</span>
