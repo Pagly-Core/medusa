@@ -26,6 +26,7 @@ import {
 import { useTranslation } from "react-i18next"
 import { NavLink, To, useLocation } from "react-router-dom"
 import { useLayoutEdit } from "../../../hooks/use-layout-edit"
+import { SHELL_FRAME_HOVER } from "../shell/frame"
 import { getActivePaths } from "../section-tabs/tab-groups"
 
 type ItemType = "core" | "extension" | "setting"
@@ -47,12 +48,18 @@ export type INavItem = {
   translationNs?: string
 }
 
-const BASE_NAV_LINK_CLASSES =
-  "text-ui-fg-subtle transition-fg hover:bg-ui-bg-subtle-hover flex items-center gap-x-2 rounded-md py-0.5 pl-0.5 pr-2 outline-none [&>svg]:text-ui-fg-subtle focus-visible:shadow-borders-focus"
+// Pagly: 32px rows with 8px corners on the sidebar's grey frame. Hover is the
+// frame's row fill (`SHELL_FRAME_HOVER`), and the current page is a white pill
+// with a hairline edge instead of a drop shadow, kept on hover in both themes.
+const BASE_NAV_LINK_CLASSES = `text-ui-fg-subtle transition-fg ${SHELL_FRAME_HOVER} flex h-8 items-center gap-x-2 rounded-lg pl-1.5 pr-2 outline-none [&>svg]:text-ui-fg-subtle focus-visible:shadow-borders-focus`
 const ACTIVE_NAV_LINK_CLASSES =
-  "bg-ui-bg-base shadow-elevation-card-rest text-ui-fg-base hover:bg-ui-bg-base"
-const NESTED_NAV_LINK_CLASSES = "pl-[34px] pr-2 py-1 w-full text-ui-fg-muted"
+  "bg-ui-bg-base text-ui-fg-base hover:bg-ui-bg-base dark:hover:bg-ui-bg-base shadow-[0_0_0_1px_rgba(24,24,27,0.07)] dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+const NESTED_NAV_LINK_CLASSES =
+  "h-7 pl-[38px] pr-2 py-1 w-full text-ui-fg-muted"
 const SETTING_NAV_LINK_CLASSES = "pl-2 py-1"
+// Pagly: a settings entry has no icon, so its nested pages indent from the
+// entry's 8px start. The setting padding used to win and set them flush.
+const NESTED_SETTING_NAV_LINK_CLASSES = "pl-6"
 
 /**
  * Pagly: the global a plugin sets to the quick actions it shows on a nav item
@@ -338,7 +345,8 @@ export const NavItem = ({
       return clx(BASE_NAV_LINK_CLASSES, {
         [NESTED_NAV_LINK_CLASSES]: isNested,
         [ACTIVE_NAV_LINK_CLASSES]: isActive && !editMode,
-        [SETTING_NAV_LINK_CLASSES]: isSetting,
+        [SETTING_NAV_LINK_CLASSES]: isSetting && !isNested,
+        [NESTED_SETTING_NAV_LINK_CLASSES]: isSetting && isNested,
       })
     },
     [type, pathname, editMode, to, isNestedItemActive]
@@ -402,9 +410,10 @@ export const NavItem = ({
       </div>
       {items && items.length > 0 && (
         <RadixCollapsible.Root open={editMode || open} onOpenChange={setOpen}>
+          {/* Pagly: the frame's row height, corners and hover, like the links above. */}
           <RadixCollapsible.Trigger
             className={clx(
-              "text-ui-fg-subtle hover:text-ui-fg-base transition-fg hover:bg-ui-bg-subtle-hover flex w-full items-center gap-x-2 rounded-md py-0.5 pl-0.5 pr-2 outline-none lg:hidden",
+              `text-ui-fg-subtle hover:text-ui-fg-base transition-fg ${SHELL_FRAME_HOVER} flex h-8 w-full items-center gap-x-2 rounded-lg pl-1.5 pr-2 outline-none lg:hidden`,
               { "pl-2": isSetting }
             )}
           >

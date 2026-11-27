@@ -20,6 +20,7 @@ import { useMe } from "../../../hooks/api"
 import { useSignOut } from "../../../hooks/use-sign-out"
 import { useTheme } from "../../../providers/theme-provider"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
+import { SHELL_FRAME_HOVER, SHELL_FRAME_OPEN } from "../shell/frame"
 
 export const UserMenu = () => {
   const { t } = useTranslation()
@@ -73,14 +74,15 @@ const UserBadge = () => {
     throw error
   }
 
+  // Pagly: a 40px row on the sidebar's grey frame, its avatar in line with the nav icons.
   return (
-    <div className="p-3">
+    <div className="px-2 pb-2">
       <DropdownMenu.Trigger
         disabled={!user}
         className={clx(
-          "bg-ui-bg-subtle grid w-full cursor-pointer grid-cols-[24px_1fr_15px] items-center gap-2 rounded-md py-1 pe-2 ps-0.5 outline-none",
-          "hover:bg-ui-bg-subtle-hover",
-          "data-[state=open]:bg-ui-bg-subtle-hover",
+          "grid h-10 w-full cursor-pointer grid-cols-[24px_1fr_15px] items-center gap-2 rounded-lg pe-2 ps-1.5 outline-none",
+          SHELL_FRAME_HOVER,
+          SHELL_FRAME_OPEN,
           "focus-visible:shadow-borders-focus"
         )}
       >
@@ -94,10 +96,10 @@ const UserBadge = () => {
         <div className="flex items-center overflow-hidden">
           {displayName ? (
             <Text
-              size="xsmall"
+              size="small"
               weight="plus"
               leading="compact"
-              className="truncate"
+              className="text-ui-fg-subtle truncate"
             >
               {displayName}
             </Text>
