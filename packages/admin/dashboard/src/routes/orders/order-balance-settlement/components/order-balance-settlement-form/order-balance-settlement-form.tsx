@@ -8,10 +8,11 @@ import {
   Label,
   RadioGroup,
   Select,
+  Text,
   Textarea,
   toast,
 } from "@medusajs/ui"
-import { useEffect, useMemo, useState } from "react"
+import { BaseSyntheticEvent, useEffect, useMemo, useState } from "react"
 import { formatValue } from "react-currency-input-field"
 import { useForm } from "react-hook-form"
 import { useSearchParams } from "react-router-dom"
@@ -53,6 +54,16 @@ const OrderBalanceSettlementSchema = zod.object({
     .optional(),
 })
 
+// Pagly: a refund's amount must be above zero, said on the field
+// (Pagly-Core/pagly-app#255).
+const settlementSchemaOf = (amountRequired: string) =>
+  OrderBalanceSettlementSchema.superRefine((data, ctx) => {
+    const float = data.refund?.amount.float
+    if (data.settlement_type === "refund" && !(typeof float === "number" && float > 0)) {
+      ctx.addIssue({ code: "custom", path: ["refund", "amount"], message: amountRequired })
+    }
+  })
+
 export const OrderBalanceSettlementForm = ({
   order,
 }: {
@@ -88,8 +99,13 @@ export const OrderBalanceSettlementForm = ({
         },
       },
     },
-    resolver: zodResolver(OrderBalanceSettlementSchema),
+    resolver: zodResolver(
+      settlementSchemaOf(t("orders.payment.refundAmountRequired"))
+    ),
   })
+  // Pagly: no refund without a payment, which would post to
+  // /admin/payments/undefined/refund (Pagly-Core/pagly-app#255).
+  const [paymentMissing, setPaymentMissing] = useState(false)
 
   const { mutateAsync: createCreditLine, isPending: isCreditLinePending } =
     useCreateOrderCreditLine(order.id)
@@ -99,7 +115,7 @@ export const OrderBalanceSettlementForm = ({
 
   const settlementType = form.watch("settlement_type")
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const submitSettlement = form.handleSubmit(async (data) => {
     if (data.settlement_type === "credit_line") {
       if (!canSettleWithCreditLine || data.credit_line?.amount.float === null) {
         return
@@ -124,7 +140,7 @@ export const OrderBalanceSettlementForm = ({
     }
 
     if (data.settlement_type === "refund") {
-      if (data.refund?.amount.float === null) {
+      if (!activePayment || data.refund?.amount.float === null) {
         return
       }
       await createRefund(
@@ -152,6 +168,11 @@ export const OrderBalanceSettlementForm = ({
       )
     }
   })
+
+  const handleSubmit = (event?: BaseSyntheticEvent) => {
+    setPaymentMissing(form.getValues("settlement_type") === "refund" && !activePayment)
+    return submitSettlement(event)
+  }
 
   const currency = useMemo(
     () => currencies[order.currency_code.toUpperCase()],
@@ -248,6 +269,7 @@ export const OrderBalanceSettlementForm = ({
                   <Select
                     defaultValue={activePayment?.id}
                     onValueChange={(value) => {
+                      setPaymentMissing(false)
                       setActivePayment(payments.find((p) => p.id === value)!)
                     }}
                   >
@@ -292,6 +314,11 @@ export const OrderBalanceSettlementForm = ({
                       })}
                     </Select.Content>
                   </Select>
+                  {paymentMissing && (
+                    <Text size="small" leading="compact" className="text-ui-fg-error">
+                      {t("orders.payment.selectPaymentRequired")}
+                    </Text>
+                  )}
                 </div>
 
                 <Form.Field
