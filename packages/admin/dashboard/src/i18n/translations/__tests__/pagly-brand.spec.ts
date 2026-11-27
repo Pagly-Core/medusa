@@ -144,7 +144,9 @@ describe("Pagly brand in admin copy", () => {
   })
 
   // Links, file names and sample data are copy too, wherever they live.
-  test("no string in the dashboard's source names Medusa", () => {
+  // It reads every file of the dashboard's source: about 4.5 s on a quiet
+  // machine, past the 5 s default on a loaded one.
+  test("no string in the dashboard's source names Medusa", { timeout: 60_000 }, () => {
     const files = sourceFiles(src)
 
     expect(files.length).toBeGreaterThan(100)

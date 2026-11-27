@@ -97,10 +97,19 @@ vi.mock("../../../../../hooks/api/collections", () => ({
 
 vi.mock("../../../../../hooks/api/product-types", () => ({
   productTypesQueryKeys: { lists: () => ["product_types"] },
+  // The form creates a type or tag typed into its comboboxes
+  // (useCreateOrganizeOptions), so the mock answers those hooks too.
+  useCreateProductType: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}))
+
+vi.mock("../../../../../hooks/api/categories", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  useCreateProductCategory: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock("../../../../../hooks/api/tags", () => ({
   productTagsQueryKeys: { lists: () => ["product_tags"] },
+  useCreateProductTag: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 vi.mock("../../../../../hooks/use-combobox-data", () => ({
