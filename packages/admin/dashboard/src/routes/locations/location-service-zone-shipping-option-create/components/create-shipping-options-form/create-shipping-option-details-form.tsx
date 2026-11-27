@@ -16,6 +16,7 @@ import {
 } from "../../../common/constants"
 import { CreateShippingOptionSchema } from "./schema"
 import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
+import { seededName, shippingOptionTypeLabel } from "../../../../../lib/seeded-names"
 
 type CreateShippingOptionDetailsFormProps = {
   form: UseFormReturn<CreateShippingOptionSchema>
@@ -45,7 +46,7 @@ export const CreateShippingOptionDetailsForm = ({
     queryKey: ["shipping_profiles"],
     getOptions: (data) =>
       data.shipping_profiles.map((profile) => ({
-        label: profile.name,
+        label: seededName(t, profile.name),
         value: profile.id,
       })),
   })
@@ -55,7 +56,7 @@ export const CreateShippingOptionDetailsForm = ({
     queryKey: ["shipping_option_types"],
     getOptions: (data) =>
       data.shipping_option_types.map((type) => ({
-        label: type.label,
+        label: shippingOptionTypeLabel(t, type),
         value: type.id,
       })),
   })

@@ -1,6 +1,8 @@
 import { HttpTypes } from "@medusajs/types"
 import { UIMatch } from "react-router-dom"
 import { useShippingProfile } from "../../../hooks/api/shipping-profiles"
+import { i18n } from "../../../components/utilities/i18n"
+import { seededName } from "../../../lib/seeded-names"
 
 type ShippingProfileDetailBreadcrumbProps =
   UIMatch<HttpTypes.AdminShippingProfileResponse>
@@ -29,5 +31,5 @@ export const ShippingProfileDetailBreadcrumb = (
 export const seo = (
   match: UIMatch<HttpTypes.AdminShippingProfileResponse>
 ) => ({
-  title: match.loaderData?.shipping_profile?.name,
+  title: seededName(i18n.t, match.loaderData?.shipping_profile?.name),
 })

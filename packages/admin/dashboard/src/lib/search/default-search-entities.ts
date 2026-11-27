@@ -1,5 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import type { SearchEntityDefinition } from "./search-entities"
+import { i18n } from "../../components/utilities/i18n"
+import { seededName } from "../seeded-names"
 
 /**
  * Built-in admin search entities, including their "Jump to" shortcuts. The
@@ -222,7 +224,7 @@ export const DEFAULT_SEARCH_ENTITIES: Record<string, SearchEntityDefinition> = {
     },
     transform: (salesChannel: HttpTypes.AdminSalesChannel) => ({
       id: salesChannel.id,
-      title: salesChannel.name,
+      title: seededName(i18n.t, salesChannel.name),
       to: `/settings/sales-channels/${salesChannel.id}`,
       value: `salesChannel:${salesChannel.id}`,
     }),
@@ -265,7 +267,7 @@ export const DEFAULT_SEARCH_ENTITIES: Record<string, SearchEntityDefinition> = {
   shipping_profile: {
     transform: (shippingProfile: HttpTypes.AdminShippingProfile) => ({
       id: shippingProfile.id,
-      title: shippingProfile.name,
+      title: seededName(i18n.t, shippingProfile.name),
       to: `/settings/locations/shipping-profiles/${shippingProfile.id}`,
       value: `shippingProfile:${shippingProfile.id}`,
     }),

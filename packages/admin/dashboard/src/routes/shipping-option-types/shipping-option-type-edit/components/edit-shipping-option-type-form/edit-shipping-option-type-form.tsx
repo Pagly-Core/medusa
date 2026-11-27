@@ -39,11 +39,17 @@ export const EditShippingOptionTypeForm = ({
   )
 
   const handleSubmit = form.handleSubmit(async (data) => {
+    // Pagly: a seeded type is shown translated (lib/seeded-names); send its
+    // label and description only when the merchant changed them.
     await mutateAsync(
       {
-        label: data.label,
+        ...(data.label !== shippingOptionType.label
+          ? { label: data.label }
+          : {}),
         code: data.code,
-        description: data.description,
+        ...(data.description !== shippingOptionType.description
+          ? { description: data.description }
+          : {}),
       },
       {
         onSuccess: ({ shipping_option_type }) => {

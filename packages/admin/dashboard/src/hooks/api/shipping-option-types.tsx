@@ -10,6 +10,9 @@ import {
 import { sdk } from "../../lib/client"
 import { queryClient } from "../../lib/query-client"
 import { queryKeysFactory } from "../../lib/query-key-factory"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { withSeededOptionType } from "../../lib/seeded-names"
 
 const SHIPPING_OPTION_TYPES_QUERY_KEY = "shipping_option_types" as const
 export const shippingOptionTypesQueryKeys = queryKeysFactory(
@@ -34,8 +37,13 @@ export const useShippingOptionType = (
     queryKey: shippingOptionTypesQueryKeys.detail(id),
     ...options,
   })
+  const { t } = useTranslation()
+  const shipping_option_type = useMemo(
+    () => data?.shipping_option_type && withSeededOptionType(t, data.shipping_option_type),
+    [data?.shipping_option_type, t]
+  )
 
-  return { ...data, ...rest }
+  return { ...data, shipping_option_type, ...rest }
 }
 
 export const useShippingOptionTypes = (
@@ -55,8 +63,13 @@ export const useShippingOptionTypes = (
     queryKey: shippingOptionTypesQueryKeys.list(query),
     ...options,
   })
+  const { t } = useTranslation()
+  const shipping_option_types = useMemo(
+    () => data?.shipping_option_types?.map((row) => withSeededOptionType(t, row)),
+    [data?.shipping_option_types, t]
+  )
 
-  return { ...data, ...rest }
+  return { ...data, shipping_option_types, ...rest }
 }
 
 export const useCreateShippingOptionType = (
