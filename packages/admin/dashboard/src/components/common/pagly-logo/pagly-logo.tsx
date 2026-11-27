@@ -3,6 +3,11 @@ import { clx } from "@medusajs/ui"
 type PaglyLogoProps = {
   /** "base" for the sidebar's store row, "small" for the store menu. */
   size?: "base" | "small"
+  /**
+   * Hidden from assistive tech, for a logo beside a name that already says
+   * what the control is (the store switcher).
+   */
+  decorative?: boolean
 }
 
 /** The mark from `public/pagly.svg`, drawn in the current text colour. */
@@ -12,11 +17,16 @@ const MARK =
 /**
  * Pagly: the Pagly mark in its dark tile, where the store's initial used to be.
  */
-export const PaglyLogo = ({ size = "base" }: PaglyLogoProps) => {
+export const PaglyLogo = ({
+  size = "base",
+  decorative = false,
+}: PaglyLogoProps) => {
   return (
     <span
-      role="img"
-      aria-label="Pagly"
+      data-pagly-logo=""
+      {...(decorative
+        ? { "aria-hidden": true }
+        : { role: "img", "aria-label": "Pagly" })}
       className={clx(
         "bg-ui-contrast-bg-base text-ui-fg-on-color flex flex-none items-center justify-center",
         size === "base" ? "size-9 rounded-[10px]" : "size-7 rounded-lg"

@@ -38,6 +38,8 @@ const CollapsibleGroup = ({
 
   const Icon = open ? MinusMini : PlusMini
 
+  // Pagly: the frame's 8px sidebar padding; with no line between groups, their
+  // spacing and labels set them apart.
   return (
     <RadixCollapsible.Root open={open} onOpenChange={setOpen} className="py-2">
       <div className="px-2">

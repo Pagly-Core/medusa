@@ -17,7 +17,11 @@ import { PermissionGuard } from "../../common/permission-guard"
 import { Skeleton } from "../../common/skeleton"
 import { NavItem } from "../../layout/nav-item"
 import { Shell } from "../../layout/shell"
-import { SHELL_FRAME_BG } from "../../layout/shell/frame"
+import {
+  SHELL_FRAME_BG,
+  SHELL_FRAME_HOVER,
+  SHELL_FRAME_OPEN,
+} from "../../layout/shell/frame"
 import { SidebarCollapseButton } from "../sidebar-collapse-button"
 
 import { Link, useLocation } from "react-router-dom"
@@ -106,12 +110,13 @@ const Header = () => {
           disabled={!isLoaded}
           className={clx(
             "transition-fg flex h-12 w-full items-center gap-x-2.5 rounded-lg pe-2 ps-1.5 outline-none",
-            "hover:bg-ui-bg-subtle-pressed",
-            "data-[state=open]:bg-ui-bg-subtle-pressed",
+            SHELL_FRAME_HOVER,
+            SHELL_FRAME_OPEN,
             "focus-visible:shadow-borders-focus"
           )}
         >
-          <PaglyLogo />
+          {/* Decorative: the store's name says what the button is. */}
+          <PaglyLogo decorative />
           <div className="block min-w-0 flex-1 overflow-hidden text-start">
             {name ? (
               <Text
@@ -131,7 +136,7 @@ const Header = () => {
         {isLoaded && (
           <DropdownMenu.Content className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[224px]">
             <div className="flex items-center gap-x-3 px-2 py-1">
-              <PaglyLogo size="small" />
+              <PaglyLogo size="small" decorative />
               <div className="flex flex-col overflow-hidden">
                 <Text
                   size="small"
@@ -201,6 +206,7 @@ const Searchbar = () => {
 const SalesChannelsHeading = () => {
   const { t } = useTranslation()
 
+  // Pagly: 16px above, to set the group apart on the frame without a line.
   return (
     <div className="text-ui-fg-muted mt-4 flex h-7 items-center px-2">
       <Text size="small" leading="compact">
@@ -258,6 +264,7 @@ export const SidebarRoutes = () => {
     </LayoutComposer.Entry>
   )
 
+  // Pagly: the frame's 8px sidebar padding, and rows 2px apart.
   return (
     <nav className="pb-3 pt-1">
       <div className="px-2">
@@ -302,6 +309,7 @@ const UtilitySection = () => {
   const location = useLocation()
   const { t } = useTranslation()
 
+  // Pagly: the frame's 8px sidebar padding.
   return (
     <div className="flex flex-col gap-y-0.5 p-2">
       <NavItem

@@ -7,6 +7,7 @@ import {
   PropsWithChildren,
   ReactNode,
   useEffect,
+  useRef,
   useState,
 } from "react"
 import { useTranslation } from "react-i18next"
@@ -32,7 +33,30 @@ import {
   LAYOUT_CONTROLS_LOCATION,
 } from "../../layout-composer/constants"
 import { CORE_LAYOUT_IDS } from "@medusajs/admin-shared"
+import {
+  SIDEBAR_COLLAPSE_ATTRIBUTE,
+  SidebarPlacementProvider,
+} from "../sidebar-collapse-button"
 import { SHELL_FRAME_BG } from "./frame"
+
+/** Pagly: marks the desktop sidebar's container, for the focus handoff below. */
+const DESKTOP_SIDEBAR_ATTRIBUTE = "data-desktop-sidebar"
+
+/**
+ * Pagly: whether focus is on nothing, on something no longer in the page, or
+ * inside `hidden` (a container that was just hidden). The buttons that hide
+ * and show the sidebar each disappear as they act, so focus moves on from them
+ * only then, and never away from anything else the merchant is on.
+ */
+const isFocusLost = (hidden?: Element | null) => {
+  const active = document.activeElement
+  return (
+    !active ||
+    active === document.body ||
+    !active.isConnected ||
+    !!hidden?.contains(active)
+  )
+}
 
 /**
  * Pagly: the global a plugin sets to a component that wraps every signed-in
@@ -220,15 +244,30 @@ const Breadcrumbs = () => {
 }
 
 // Pagly: the desktop sidebar hides itself from its own header, so the top bar
-// offers the desktop button only while it is hidden.
+// offers the desktop button only while it is hidden, and takes the focus the
+// sidebar's button had. The buttons go straight into the top bar's cell: an
+// empty wrapper is still a flex item, and its gap pushed the breadcrumbs over.
 const ToggleSidebar = () => {
   const { t } = useTranslation()
   const { desktop, toggle } = useSidebar()
+  const showButton = useRef<HTMLButtonElement>(null)
+  const wasShown = useRef(desktop)
+
+  useEffect(() => {
+    if (wasShown.current && !desktop) {
+      const sidebar = document.querySelector(`[${DESKTOP_SIDEBAR_ATTRIBUTE}]`)
+      if (isFocusLost(sidebar)) {
+        showButton.current?.focus()
+      }
+    }
+    wasShown.current = desktop
+  }, [desktop])
 
   return (
-    <div>
+    <>
       {!desktop && (
         <IconButton
+          ref={showButton}
           className="hidden lg:flex"
           variant="transparent"
           onClick={() => toggle("desktop")}
@@ -247,7 +286,7 @@ const ToggleSidebar = () => {
       >
         <SidebarLeft className="text-ui-fg-muted rtl:rotate-180" />
       </IconButton>
-    </div>
+    </>
   )
 }
 
@@ -284,9 +323,24 @@ const Topbar = () => {
 
 const DesktopSidebarContainer = ({ children }: PropsWithChildren) => {
   const { desktop } = useSidebar()
+  const container = useRef<HTMLDivElement>(null)
+  const wasShown = useRef(desktop)
+
+  // Pagly: shown again from the top bar, whose button then goes away, the
+  // sidebar's own hide button takes the focus.
+  useEffect(() => {
+    if (!wasShown.current && desktop && isFocusLost()) {
+      container.current
+        ?.querySelector<HTMLElement>(`[${SIDEBAR_COLLAPSE_ATTRIBUTE}]`)
+        ?.focus()
+    }
+    wasShown.current = desktop
+  }, [desktop])
 
   return (
     <div
+      ref={container}
+      {...{ [DESKTOP_SIDEBAR_ATTRIBUTE]: "" }}
       // Pagly: 240px on the frame, with no rule beside it.
       className={clx("hidden h-screen w-[240px]", {
         "lg:flex": desktop,
@@ -335,7 +389,10 @@ const MobileSidebarContainer = ({ children }: PropsWithChildren) => {
               {t("app.nav.accessibility.description")}
             </RadixDialog.Description>
           </div>
-          {children}
+          {/* Pagly: the sheet closes with its own button, not the desktop hide button. */}
+          <SidebarPlacementProvider value="mobile">
+            {children}
+          </SidebarPlacementProvider>
         </RadixDialog.Content>
       </RadixDialog.Portal>
     </RadixDialog.Root>

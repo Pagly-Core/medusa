@@ -20,6 +20,7 @@ import { useMe } from "../../../hooks/api"
 import { useSignOut } from "../../../hooks/use-sign-out"
 import { useTheme } from "../../../providers/theme-provider"
 import { useDocumentDirection } from "../../../hooks/use-document-direction"
+import { SHELL_FRAME_HOVER, SHELL_FRAME_OPEN } from "../shell/frame"
 
 export const UserMenu = () => {
   const { t } = useTranslation()
@@ -80,8 +81,8 @@ const UserBadge = () => {
         disabled={!user}
         className={clx(
           "grid h-10 w-full cursor-pointer grid-cols-[24px_1fr_15px] items-center gap-2 rounded-lg pe-2 ps-1.5 outline-none",
-          "hover:bg-ui-bg-subtle-pressed",
-          "data-[state=open]:bg-ui-bg-subtle-pressed",
+          SHELL_FRAME_HOVER,
+          SHELL_FRAME_OPEN,
           "focus-visible:shadow-borders-focus"
         )}
       >

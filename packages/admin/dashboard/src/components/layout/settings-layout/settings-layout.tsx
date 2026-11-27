@@ -13,7 +13,7 @@ import { LayoutComposer } from "../../layout-composer"
 import { CUSTOMIZE_IDS } from "../../layout-composer/constants"
 import { INavItem, NavItem } from "../nav-item"
 import { Shell } from "../shell"
-import { SHELL_FRAME_BG } from "../shell/frame"
+import { SHELL_FRAME_BG, SHELL_FRAME_HOVER } from "../shell/frame"
 import { SidebarCollapseButton } from "../sidebar-collapse-button"
 import { UserMenu } from "../user-menu"
 import {
@@ -163,6 +163,7 @@ export const SettingsSidebar = () => {
       <div className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col overflow-y-auto">
           {searching ? (
+            // Pagly: the frame's 8px sidebar padding.
             <div className="flex flex-col gap-y-0.5 p-2">
               {matches.map((item) => (
                 <NavItem key={item.to} type="setting" {...item} />
@@ -215,7 +216,7 @@ const Header = () => {
         replace
         className={clx(
           "transition-fg flex h-8 min-w-0 flex-1 items-center rounded-lg outline-none",
-          "hover:bg-ui-bg-subtle-pressed",
+          SHELL_FRAME_HOVER,
           "focus-visible:shadow-borders-focus"
         )}
       >
