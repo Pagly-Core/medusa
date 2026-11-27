@@ -1098,6 +1098,19 @@
               "required": ["title", "description"],
               "additionalProperties": false
             },
+            "sidebar": {
+              "type": "object",
+              "properties": {
+                "hide": {
+                  "type": "string"
+                },
+                "show": {
+                  "type": "string"
+                }
+              },
+              "required": ["hide", "show"],
+              "additionalProperties": false
+            },
             "common": {
               "type": "object",
               "properties": {
@@ -1211,6 +1224,7 @@
           },
           "required": [
             "accessibility",
+            "sidebar",
             "common",
             "main",
             "salesChannels",

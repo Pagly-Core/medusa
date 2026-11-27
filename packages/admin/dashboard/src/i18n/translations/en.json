@@ -269,6 +269,10 @@
         "title": "Navigation",
         "description": "Navigation menu for the dashboard."
       },
+      "sidebar": {
+        "hide": "Hide sidebar",
+        "show": "Show sidebar"
+      },
       "common": {
         "extensions": "Extensions"
       },

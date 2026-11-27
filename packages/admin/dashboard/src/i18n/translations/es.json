@@ -316,6 +316,10 @@
         "title": "Navegación",
         "description": "Menú de navegación para el panel."
       },
+      "sidebar": {
+        "hide": "Ocultar barra lateral",
+        "show": "Mostrar barra lateral"
+      },
       "common": {
         "extensions": "Extensiones"
       },
