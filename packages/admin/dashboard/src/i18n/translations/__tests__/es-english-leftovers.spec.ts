@@ -71,7 +71,9 @@ describe("es.json has no English left", () => {
   test("no value is still the English one", () => {
     const leftovers = flatten(es)
       .filter(([key, value]) => flatEn.get(key) === value)
-      .filter(([key, value]) => !SAME_IN_BOTH.has(key) && !onlyPlaceholders(value))
+      .filter(
+        ([key, value]) => !SAME_IN_BOTH.has(key) && !onlyPlaceholders(value)
+      )
       .map(([key, value]) => `${key}: ${value}`)
 
     expect(leftovers).toEqual([])
@@ -100,25 +102,70 @@ describe("es.json has no English left", () => {
 // Literals that showed English on a Spanish admin, each now read from the
 // catalogs.
 const HARDCODED = [
-  ["routes/promotions/promotion-detail/components/campaign-section/campaign-section.tsx", ["Not part of a campaign", "Add this promotion to an existing campaign", "Add to Campaign"]],
-  ["routes/price-lists/price-list-prices-add/components/price-list-prices-add-form/price-list-prices-add-product-ids-form.tsx", ["This product is already in the price list", "This product has no variants"]],
-  ["routes/inventory/inventory-create/components/inventory-create-form/inventory-create-form.tsx", ["The item description"]],
-  ["routes/promotions/common/edit-rules/components/rules-form-field/rules-form-field.tsx", ["Select Operator"]],
-  ["routes/reservations/reservation-detail/components/reservation-general-section/reservation-general-section.tsx", ["Loading..."]],
-  ["routes/roles/role-permissions/components/edit-role-permissions-form/edit-role-permissions-form.tsx", ["Unknown error"]],
-  ["routes/translations/translations-edit/components/translations-edit-form/translations-edit-form.tsx", ["Failed to save translations"]],
+  [
+    "routes/promotions/promotion-detail/components/campaign-section/campaign-section.tsx",
+    [
+      "Not part of a campaign",
+      "Add this promotion to an existing campaign",
+      "Add to Campaign",
+    ],
+  ],
+  [
+    "routes/price-lists/price-list-prices-add/components/price-list-prices-add-form/price-list-prices-add-product-ids-form.tsx",
+    [
+      "This product is already in the price list",
+      "This product has no variants",
+    ],
+  ],
+  [
+    "routes/inventory/inventory-create/components/inventory-create-form/inventory-create-form.tsx",
+    ["The item description"],
+  ],
+  [
+    "routes/promotions/common/edit-rules/components/rules-form-field/rules-form-field.tsx",
+    ["Select Operator"],
+  ],
+  [
+    "routes/reservations/reservation-detail/components/reservation-general-section/reservation-general-section.tsx",
+    ["Loading..."],
+  ],
+  [
+    "routes/roles/role-permissions/components/edit-role-permissions-form/edit-role-permissions-form.tsx",
+    ["Unknown error"],
+  ],
+  [
+    "routes/translations/translations-edit/components/translations-edit-form/translations-edit-form.tsx",
+    ["Failed to save translations"],
+  ],
   ["components/filtering/filter-group/filter-group.tsx", ["Add filter"]],
-  ["components/table/data-table/data-table-filter/select-filter.tsx", ['placeholder="Search"']],
-  ["routes/customers/customer-detail/components/customer-address-section/customer-address-section.tsx", ["            Add\n"]],
-  ["routes/orders/order-request-transfer/components/create-order-transfer-form/create-order-transfer-form.tsx", ['"Invalid email"', 'message: "Required"']],
-  ["routes/price-lists/price-list-prices-edit/price-list-prices-edit.tsx", ["Edit Prices for", "Update prices for products in the price list"]],
+  [
+    "components/table/data-table/data-table-filter/select-filter.tsx",
+    [/placeholder=\{?["'`]Search["'`]\}?/],
+  ],
+  [
+    "routes/customers/customer-detail/components/customer-address-section/customer-address-section.tsx",
+    [/<Link[^>]*>\s*Add\s*<\/Link>/],
+  ],
+  [
+    "routes/orders/order-request-transfer/components/create-order-transfer-form/create-order-transfer-form.tsx",
+    ['"Invalid email"', 'message: "Required"'],
+  ],
+  [
+    "routes/price-lists/price-list-prices-edit/price-list-prices-edit.tsx",
+    ["Edit Prices for", "Update prices for products in the price list"],
+  ],
 ] as const
 
 describe("no hardcoded English", () => {
   const src = path.join(__dirname, "../../..")
 
   test.each(HARDCODED)("%s", (file, literals) => {
-    const code = fs.readFileSync(path.join(src, file), "utf8").replace(/\r\n/g, "\n")
-    expect(literals.filter((literal) => code.includes(literal))).toEqual([])
+    // Whitespace collapsed, so a reflow cannot hide a literal from the check.
+    const code = fs
+      .readFileSync(path.join(src, file), "utf8")
+      .replace(/\s+/g, " ")
+    const found = (literal: string | RegExp) =>
+      typeof literal === "string" ? code.includes(literal) : literal.test(code)
+    expect(literals.filter(found).map(String)).toEqual([])
   })
 })

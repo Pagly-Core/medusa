@@ -38,9 +38,11 @@ export const EditSalesChannelForm = ({
   const { mutateAsync, isPending } = useUpdateSalesChannel(salesChannel.id)
 
   const handleSubmit = form.handleSubmit(async (values) => {
+    // Pagly: a seeded name is shown translated (lib/seeded-names); send it
+    // only when the merchant changed it, so the stored name stays as seeded.
     await mutateAsync(
       {
-        name: values.name,
+        ...(values.name !== salesChannel.name ? { name: values.name } : {}),
         description: values.description ?? undefined,
         is_disabled: !values.is_active,
       },
