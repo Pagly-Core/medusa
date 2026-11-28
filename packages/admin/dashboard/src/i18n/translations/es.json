@@ -135,7 +135,14 @@
     "mustBeInt": "El valor debe ser un número entero.",
     "mustBePositive": "El valor debe ser un número positivo.",
     "required": "Obligatorio",
-    "invalidEmail": "Email inválido"
+    "invalidEmail": "Email inválido",
+    "invalid": "Ese valor no es válido.",
+    "atLeast": "Ingresá {{min}} o más.",
+    "above": "Ingresá un valor mayor que {{min}}.",
+    "atMost": "Ingresá {{max}} o menos.",
+    "below": "Ingresá un valor menor que {{max}}.",
+    "minLength": "Ingresá al menos {{min}} caracteres.",
+    "maxLength": "Usá {{max}} caracteres como máximo."
   },
   "auth": {
     "login": {

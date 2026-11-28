@@ -6,7 +6,11 @@ import {
   defaultI18nOptions,
   SUPPORTED_LANGUAGES,
 } from "../../../i18n/config"
+import { installZodErrorMap } from "../../../lib/zod-error-map"
 import { useExtension } from "../../../providers/extension-provider"
+
+// Pagly: validation messages in the admin's language (Pagly-Core/pagly-app#356).
+installZodErrorMap()
 
 export const I18n = () => {
   const { getI18nResources } = useExtension()

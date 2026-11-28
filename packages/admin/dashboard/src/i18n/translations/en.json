@@ -113,7 +113,14 @@
     "mustBeInt": "The value must be a whole number.",
     "mustBePositive": "The value must be a positive number.",
     "required": "Required",
-    "invalidEmail": "Invalid email"
+    "invalidEmail": "Invalid email",
+    "invalid": "That value isn't valid.",
+    "atLeast": "Enter {{min}} or more.",
+    "above": "Enter a value above {{min}}.",
+    "atMost": "Enter {{max}} or less.",
+    "below": "Enter a value below {{max}}.",
+    "minLength": "Enter at least {{min}} characters.",
+    "maxLength": "Use {{max}} characters or fewer."
   },
   "actions": {
     "save": "Save",
