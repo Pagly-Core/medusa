@@ -8,6 +8,7 @@ import { Form } from "../../../../../components/common/form"
 import { RouteDrawer, useRouteModal } from "../../../../../components/modals"
 import { KeyboundForm } from "../../../../../components/utilities/keybound-form"
 import { useUpdateCampaign } from "../../../../../hooks/api/campaigns"
+import { endOfDayPlaceholder } from "../../../common/utils/end-of-day"
 
 type EditCampaignFormProps = {
   campaign: AdminCampaign
@@ -157,6 +158,8 @@ export const EditCampaignForm = ({ campaign }: EditCampaignFormProps) => {
                     <Form.Control>
                       <DatePicker
                         granularity="minute"
+                        // Pagly: a day with no time ends at 23:59 (Pagly-Core/pagly-app#261).
+                        placeholderValue={endOfDayPlaceholder()}
                         shouldCloseOnSelect={false}
                         {...field}
                       />

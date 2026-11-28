@@ -8,7 +8,7 @@ import {
   Text,
   Textarea,
 } from "@medusajs/ui"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -20,6 +20,7 @@ import {
   getCurrencySymbol,
 } from "../../../../../lib/data/currencies"
 import { Combobox } from "../../../../../components/inputs/combobox"
+import { endOfDayPlaceholder } from "../../utils/end-of-day"
 
 export const CreateCampaignFormFields = ({
   form,
@@ -31,6 +32,8 @@ export const CreateCampaignFormFields = ({
   const { t } = useTranslation()
   const { store } = useStore()
   const direction = useDocumentDirection()
+  // Pagly: see endOfDayPlaceholder (Pagly-Core/pagly-app#261).
+  const endOfDay = useMemo(endOfDayPlaceholder, [])
   const watchValueType = useWatch({
     control: form.control,
     name: `${fieldScope}budget.type`,
@@ -178,6 +181,8 @@ export const CreateCampaignFormFields = ({
                 <Form.Control>
                   <DatePicker
                     granularity="minute"
+                    // Pagly: a day with no time ends at 23:59 (Pagly-Core/pagly-app#261).
+                    placeholderValue={endOfDay}
                     shouldCloseOnSelect={false}
                     {...field}
                   />
