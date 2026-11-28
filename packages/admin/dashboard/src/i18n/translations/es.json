@@ -1214,7 +1214,7 @@
       "placeholder": "No habilitado",
       "disablePrompt_one": "Estás a punto de deshabilitar {{count}} nivel de ubicación. Esta acción no puede deshacerse.",
       "disablePrompt_other": "Estás a punto de deshabilitar {{count}} niveles de ubicación. Esta acción no puede deshacerse.",
-      "disabledToggleTooltip": "No se puede deshabilitar: limpia la cantidad entrante y/o reservada antes de deshabilitar.",
+      "disabledToggleTooltip": "No se puede deshabilitar: primero vaciá la cantidad entrante y la reservada.",
       "successToast": "Niveles de inventario actualizados correctamente."
     },
     "reservation": {
@@ -2086,11 +2086,11 @@
       "header": "Configuración de envío",
       "shippingProfiles": {
         "label": "Perfiles de envío",
-        "description": "Agrupa productos por requisitos de envío"
+        "description": "Agrupá productos por requisitos de envío"
       },
       "shippingOptionTypes": {
         "label": "Tipos de opciones de envío",
-        "description": "Agrupa opciones de envío por tipos"
+        "description": "Agrupá opciones de envío por tipos"
       }
     },
     "salesChannels": {
@@ -2250,7 +2250,7 @@
   },
   "shippingProfile": {
     "domain": "Perfiles de envío",
-    "subtitle": "Agrupa productos con requisitos similares de envío en perfiles.",
+    "subtitle": "Agrupá en perfiles los productos con requisitos de envío similares.",
     "create": {
       "header": "Crear perfil de envío",
       "hint": "Creá un perfil de envío para agrupar productos con requisitos de envío similares.",
