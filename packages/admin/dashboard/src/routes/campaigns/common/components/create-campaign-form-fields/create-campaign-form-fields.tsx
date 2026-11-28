@@ -152,11 +152,10 @@ export const CreateCampaignFormFields = ({
                 </Form.Label>
 
                 <Form.Control>
-                  <DatePicker
-                    granularity="minute"
-                    shouldCloseOnSelect={false}
-                    {...field}
-                  />
+                  {/* Pagly: closing on select commits a day picked with no time
+                      (at 00:00); held open, it waited for a time and the form
+                      got null (Pagly-Core/pagly-app#261). */}
+                  <DatePicker granularity="minute" {...field} />
                 </Form.Control>
 
                 <Form.ErrorMessage />
@@ -176,11 +175,10 @@ export const CreateCampaignFormFields = ({
                 </Form.Label>
 
                 <Form.Control>
-                  <DatePicker
-                    granularity="minute"
-                    shouldCloseOnSelect={false}
-                    {...field}
-                  />
+                  {/* Pagly: closing on select commits a day picked with no time
+                      (at 00:00); held open, it waited for a time and the form
+                      got null (Pagly-Core/pagly-app#261). */}
+                  <DatePicker granularity="minute" {...field} />
                 </Form.Control>
 
                 <Form.ErrorMessage />
