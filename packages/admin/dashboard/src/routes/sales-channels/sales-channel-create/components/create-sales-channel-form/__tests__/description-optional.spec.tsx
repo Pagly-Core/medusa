@@ -45,5 +45,6 @@ describe("creating a sales channel", () => {
 
     await waitFor(() => expect(mocks.create).toHaveBeenCalledTimes(1))
     expect(mocks.create.mock.calls[0][0]).toMatchObject({ name: "Instagram" })
+    expect(mocks.create.mock.calls[0][0].description).toBeUndefined()
   })
 })
