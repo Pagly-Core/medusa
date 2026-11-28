@@ -2,6 +2,7 @@ import { HttpTypes } from "@medusajs/types"
 import { UIMatch } from "react-router-dom"
 import { useOrder } from "../../../hooks/api"
 import { DEFAULT_FIELDS } from "./constants"
+import { orderNumber } from "../../../lib/order-number"
 
 type OrderDetailBreadcrumbProps = UIMatch<HttpTypes.AdminOrderResponse>
 
@@ -23,11 +24,11 @@ export const OrderDetailBreadcrumb = (props: OrderDetailBreadcrumbProps) => {
     return null
   }
 
-  return <span>#{order.display_id}</span>
+  return <span>{orderNumber(order)}</span>
 }
 
 export const seo = (match: UIMatch<HttpTypes.AdminOrderResponse>) => ({
   title: match.loaderData?.order
-    ? `#${match.loaderData.order.display_id}`
+    ? orderNumber(match.loaderData.order) ?? undefined
     : undefined,
 })

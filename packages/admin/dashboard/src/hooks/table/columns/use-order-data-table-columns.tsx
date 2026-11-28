@@ -54,9 +54,9 @@ export const useOrderDataTableColumns = (
       return [
         columnHelper.accessor("display_id", {
           header: () => <DisplayIdHeader />,
-          cell: ({ getValue }) => {
+          cell: ({ getValue, row }) => {
             const id = getValue()
-            return <DisplayIdCell displayId={id!} />
+            return <DisplayIdCell displayId={id!} customDisplayId={row.original.custom_display_id} />
           },
         }),
         columnHelper.accessor("created_at", {
@@ -126,9 +126,9 @@ export const useOrderDataTableColumns = (
           case "display_id":
             return columnHelper.accessor("display_id", {
               header: () => <DisplayIdHeader />,
-              cell: ({ getValue }) => {
+              cell: ({ getValue, row }) => {
                 const id = getValue()
-                return <DisplayIdCell displayId={id!} />
+                return <DisplayIdCell displayId={id!} customDisplayId={row.original.custom_display_id} />
               },
             })
 
