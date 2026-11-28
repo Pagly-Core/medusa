@@ -1,15 +1,20 @@
+import i18n from "i18next"
 import { z } from "zod"
 import { CreateCampaignSchema } from "../../../../campaigns/campaign-create/components/create-campaign-form"
+
+// Pagly: "Obligatorio" like the other promotion fields, read when the form is
+// checked; it said "Required field" in English (Pagly-Core/pagly-app#267).
+const required = () => i18n.t("promotions.form.required")
 
 const RuleSchema = z.array(
   z.object({
     id: z.string().optional(),
-    attribute: z.string().min(1, { message: "Required field" }),
-    operator: z.string().min(1, { message: "Required field" }),
+    attribute: z.string().min(1, { error: required }),
+    operator: z.string().min(1, { error: required }),
     values: z.union([
-      z.number().min(1, { message: "Required field" }),
-      z.string().min(1, { message: "Required field" }),
-      z.array(z.string()).min(1, { message: "Required field" }),
+      z.number().min(1, { error: required }),
+      z.string().min(1, { error: required }),
+      z.array(z.string()).min(1, { error: required }),
     ]),
     required: z.boolean().optional(),
     disguised: z.boolean().optional(),
@@ -55,7 +60,7 @@ export const CreatePromotionSchema = z
     },
     {
       path: ["application_method.max_quantity"],
-      message: `required field`,
+      error: required,
     }
   )
 
