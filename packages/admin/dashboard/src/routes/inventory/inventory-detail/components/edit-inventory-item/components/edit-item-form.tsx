@@ -18,7 +18,8 @@ type EditInventoryItemFormProps = {
 
 const EditInventoryItemSchema = z.object({
   title: z.string().optional(),
-  sku: z.string().min(1),
+  // Pagly: an item may have no SKU, as create allows (Pagly-Core/pagly-app#355).
+  sku: z.string().nullish(),
 })
 
 const getDefaultValues = (item: AdminInventoryItem) => {
@@ -40,7 +41,8 @@ export const EditInventoryItemForm = ({ item }: EditInventoryItemFormProps) => {
   const { mutateAsync, isPending: isLoading } = useUpdateInventoryItem(item.id)
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    mutateAsync(values as any, {
+    // Pagly: a blank SKU is none, never "": two would clash on the unique index.
+    mutateAsync({ ...values, sku: values.sku?.trim() || null } as any, {
       onSuccess: () => {
         toast.success(t("inventory.toast.updateItem"))
         handleSuccess()
