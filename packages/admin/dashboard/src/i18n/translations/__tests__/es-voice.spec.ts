@@ -68,6 +68,8 @@ const TU_IMPERATIVES = [
   "activa",
   "actualiza",
   "agrega",
+  // Pagly-Core/pagly-app#267: the locations screens said "Agrupa", "limpia".
+  "agrupa",
   "añade",
   "anula",
   "aplica",
@@ -112,6 +114,7 @@ const TU_IMPERATIVES = [
   "intenta",
   "introduce",
   "invita",
+  "limpia",
   "notifica",
   "organiza",
   "personaliza",
