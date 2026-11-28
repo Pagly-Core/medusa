@@ -1,14 +1,23 @@
 import { useTranslation } from "react-i18next"
+import { orderNumber } from "../../../../../lib/order-number"
 import { PlaceholderCell } from "../../common/placeholder-cell"
 
-export const DisplayIdCell = ({ displayId }: { displayId?: number | null }) => {
-  if (!displayId) {
+// Pagly: the store's own number (custom_display_id) when the order has one.
+export const DisplayIdCell = ({
+  displayId,
+  customDisplayId,
+}: {
+  displayId?: number | null
+  customDisplayId?: string | null
+}) => {
+  const number = orderNumber({ display_id: displayId || null, custom_display_id: customDisplayId })
+  if (!number) {
     return <PlaceholderCell />
   }
 
   return (
     <div className="text-ui-fg-subtle txt-compact-small flex h-full w-full items-center overflow-hidden">
-      <span className="truncate">#{displayId}</span>
+      <span className="truncate">{number}</span>
     </div>
   )
 }

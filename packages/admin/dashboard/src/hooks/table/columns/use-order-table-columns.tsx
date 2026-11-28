@@ -50,10 +50,10 @@ export const useOrderTableColumns = (props: UseOrderTableColumnsProps) => {
     () => [
       columnHelper.accessor("display_id", {
         header: () => <DisplayIdHeader />,
-        cell: ({ getValue }) => {
+        cell: ({ getValue, row }) => {
           const id = getValue()
 
-          return <DisplayIdCell displayId={id!} />
+          return <DisplayIdCell displayId={id!} customDisplayId={row.original.custom_display_id} />
         },
       }),
       columnHelper.accessor("created_at", {
