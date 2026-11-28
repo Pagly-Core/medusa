@@ -56,6 +56,17 @@ export const PromotionConditionsSection = ({
 }: PromotionConditionsSectionProps) => {
   const { t } = useTranslation()
 
+  // Pagly: the empty text names what the conditions restrict; it said items
+  // for every kind, under "Who can use this code?" too (Pagly-Core/pagly-app#356).
+  const emptyMessage =
+    ruleType === "rules"
+      ? t("promotions.conditions.list.noRecordsRulesMessage")
+      : ruleType === "buy-rules"
+        ? t("promotions.conditions.list.noRecordsBuyMessage")
+        : applicationMethodTargetType === "shipping_methods"
+          ? t("promotions.conditions.list.noRecordsShippingMessage")
+          : t("promotions.conditions.list.noRecordsMessage")
+
   return (
     <Container className="p-0">
       <div className="flex items-center justify-between px-6 py-4">
@@ -89,7 +100,7 @@ export const PromotionConditionsSection = ({
           <NoRecords
             className="h-[180px]"
             title={t("general.noRecordsTitle")}
-            message={t("promotions.conditions.list.noRecordsMessage")}
+            message={emptyMessage}
             action={{
               to: `${ruleType}/edit`,
               label: t("promotions.conditions.add"),

@@ -2783,7 +2783,10 @@
     "conditions": {
       "add": "Agregar condición",
       "list": {
-        "noRecordsMessage": "Agregá una condición para restringir los artículos a los que se aplica la promoción."
+        "noRecordsMessage": "Agregá una condición para restringir los artículos a los que se aplica la promoción.",
+        "noRecordsRulesMessage": "Agregá una condición para elegir quién puede usar la promoción. Sin ninguna, la puede usar cualquier cliente.",
+        "noRecordsShippingMessage": "Agregá una condición para restringir los métodos de envío a los que se aplica la promoción.",
+        "noRecordsBuyMessage": "Agregá una condición para indicar qué tiene que tener el carrito para activar la promoción."
       }
     }
   },

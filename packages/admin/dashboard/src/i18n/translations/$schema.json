@@ -10512,9 +10512,23 @@
               "properties": {
                 "noRecordsMessage": {
                   "type": "string"
+                },
+                "noRecordsRulesMessage": {
+                  "type": "string"
+                },
+                "noRecordsShippingMessage": {
+                  "type": "string"
+                },
+                "noRecordsBuyMessage": {
+                  "type": "string"
                 }
               },
-              "required": ["noRecordsMessage"],
+              "required": [
+                "noRecordsMessage",
+                "noRecordsRulesMessage",
+                "noRecordsShippingMessage",
+                "noRecordsBuyMessage"
+              ],
               "additionalProperties": false
             }
           },

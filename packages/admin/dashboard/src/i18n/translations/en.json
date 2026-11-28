@@ -2725,7 +2725,10 @@
     "conditions": {
       "add": "Add condition",
       "list": {
-        "noRecordsMessage": "Add a condition to restrict what items the promotion applies to."
+        "noRecordsMessage": "Add a condition to restrict what items the promotion applies to.",
+        "noRecordsRulesMessage": "Add a condition to choose who can use the promotion. Without one, every customer can.",
+        "noRecordsShippingMessage": "Add a condition to restrict what shipping methods the promotion applies to.",
+        "noRecordsBuyMessage": "Add a condition to say what the cart needs to unlock the promotion."
       }
     }
   },
