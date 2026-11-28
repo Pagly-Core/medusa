@@ -30,6 +30,7 @@ describe("shipping option types", () => {
 
   it.each([
     `${LIST}/shipping-option-type-list-table.tsx`,
+    `${LIST}/shipping-option-type-table-adapter.tsx`,
     "routes/shipping-option-types/shipping-option-type-detail/components/shipping-option-type-general-section/shipping-option-type-general-section.tsx",
   ])("offer no edit or delete in %s", (file) => {
     const source = read(file)

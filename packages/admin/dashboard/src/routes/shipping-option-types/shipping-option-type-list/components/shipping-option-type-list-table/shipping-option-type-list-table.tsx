@@ -1,7 +1,5 @@
-import { HttpTypes } from "@medusajs/types"
 import { Container, Heading } from "@medusajs/ui"
 import { keepPreviousData } from "@tanstack/react-query"
-import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { _DataTable } from "../../../../../components/table/data-table"
@@ -74,15 +72,8 @@ export const ShippingOptionTypeListTable = () => {
   )
 }
 
-const columnHelper = createColumnHelper<HttpTypes.AdminShippingOptionType>()
-
 const useColumns = () => {
   const base = useShippingOptionTypeTableColumns()
 
-  return useMemo(
-    () => [
-      ...base,
-    ],
-    [base]
-  )
+  return useMemo(() => [...base], [base])
 }

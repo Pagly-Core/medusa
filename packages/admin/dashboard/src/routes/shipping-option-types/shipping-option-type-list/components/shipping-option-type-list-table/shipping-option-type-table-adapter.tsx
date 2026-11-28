@@ -7,7 +7,6 @@ import {
   createTableAdapter,
   TableAdapter,
 } from "../../../../../lib/table/table-adapters"
-import { ShippingOptionTypeRowActions } from "./shipping-option-type-table-row-actions"
 
 export function createShippingOptionTypeTableAdapter({
   t,
@@ -43,9 +42,8 @@ export function createShippingOptionTypeTableAdapter({
       return { data: shipping_option_types, count, isLoading, isError, error }
     },
     getRowHref: (row) => `${row.id}`,
-    renderRowActions: (row) => (
-      <ShippingOptionTypeRowActions shippingOptionType={row} />
-    ),
+    // Pagly: no row actions; a store only reads the platform's types
+    // (Pagly-Core/pagly-app#252).
     transformColumns: (columns) => {
       const ALLOWED_FILTERS = [
         "id",
