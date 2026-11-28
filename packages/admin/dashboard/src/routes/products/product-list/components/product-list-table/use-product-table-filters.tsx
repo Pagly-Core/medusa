@@ -37,7 +37,8 @@ export const useProductTableFilters = () => {
     if (product_types?.length) {
       filters.push(
         filterHelper.accessor("type_id", {
-          label: t("fields.type"),
+          // Pagly: the product type, not the generic Tipo
+          label: t("products.fields.type.label"),
           type: "multiselect",
           options: product_types.map((t) => ({
             label: t.value,

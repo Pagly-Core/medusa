@@ -5908,6 +5908,12 @@
             "selectPaymentToRefund": {
               "type": "string"
             },
+            "selectPaymentRequired": {
+              "type": "string"
+            },
+            "refundAmountRequired": {
+              "type": "string"
+            },
             "manualProvider": {
               "type": "string"
             }
@@ -5940,6 +5946,8 @@
             "refundAmount",
             "paymentLink",
             "selectPaymentToRefund",
+            "selectPaymentRequired",
+            "refundAmountRequired",
             "manualProvider"
           ],
           "additionalProperties": false
@@ -9891,9 +9899,16 @@
             },
             "promotionTabError": {
               "type": "string"
+            },
+            "percentageUpTo100": {
+              "type": "string"
             }
           },
-          "required": ["requiredField", "promotionTabError"],
+          "required": [
+            "requiredField",
+            "promotionTabError",
+            "percentageUpTo100"
+          ],
           "additionalProperties": false
         },
         "toasts": {
@@ -10850,6 +10865,9 @@
               },
               "required": ["header"],
               "additionalProperties": false
+            },
+            "noLimit": {
+              "type": "string"
             }
           },
           "required": [
@@ -10858,7 +10876,8 @@
             "details",
             "fields",
             "type",
-            "edit"
+            "edit",
+            "noLimit"
           ],
           "additionalProperties": false
         },

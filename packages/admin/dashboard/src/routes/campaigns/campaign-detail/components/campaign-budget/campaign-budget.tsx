@@ -64,7 +64,8 @@ export const CampaignBudget = ({ campaign }: CampaignBudgetProps) => {
           <Trans
             i18nKey="campaigns.totalSpend"
             values={{
-              amount: campaign?.budget?.limit || "no limit",
+              // Pagly: in the admin's words (Pagly-Core/pagly-app#356).
+              amount: campaign?.budget?.limit || t("campaigns.budget.noLimit"),
               currency:
                 campaign?.budget?.type === "spend" && campaign?.budget.limit
                   ? campaign.budget?.currency_code

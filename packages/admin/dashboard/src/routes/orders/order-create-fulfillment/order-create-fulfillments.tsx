@@ -2,12 +2,13 @@ import { useParams, useSearchParams } from "react-router-dom"
 
 import { RouteFocusModal } from "../../../components/modals"
 import { useOrder } from "../../../hooks/api/orders"
+import { getFulfillableQuantity } from "../../../lib/order-item"
 import { OrderCreateFulfillmentForm } from "./components/order-create-fulfillment-form"
 
 export function OrderCreateFulfillment() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
-  const requiresShipping = searchParams.get("requires_shipping") === "true"
+  const asked = searchParams.get("requires_shipping")
 
   const { order, isLoading, isError, error } = useOrder(id!, {
     fields:
@@ -19,6 +20,15 @@ export function OrderCreateFulfillment() {
   }
 
   const ready = !isLoading && order
+  // Pagly: opened by its address alone, the form fulfils what is left to ship,
+  // else the rest; it read a missing parameter as "no shipping" and showed no
+  // items for an order of shipped goods (Pagly-Core/pagly-app#254).
+  const requiresShipping =
+    asked === null
+      ? !!order?.items?.some(
+          (item) => item.requires_shipping && getFulfillableQuantity(item) > 0
+        )
+      : asked === "true"
 
   return (
     <RouteFocusModal>

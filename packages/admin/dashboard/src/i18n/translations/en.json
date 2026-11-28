@@ -666,7 +666,7 @@
         "hint": "Connect the product to a shipping profile"
       },
       "type": {
-        "label": "Type"
+        "label": "Product type"
       },
       "collection": {
         "label": "Collection"
@@ -1512,6 +1512,8 @@
       "refundAmount": "Refund {{ amount }}",
       "paymentLink": "Copy payment link for {{ amount }}",
       "selectPaymentToRefund": "Select payment to refund",
+      "selectPaymentRequired": "Choose the payment to refund.",
+      "refundAmountRequired": "Enter an amount above 0.",
       "manualProvider": "Manual payment"
     },
     "edits": {
@@ -2546,7 +2548,8 @@
     },
     "errors": {
       "requiredField": "Required field",
-      "promotionTabError": "Fix errors in Promotion Tab before proceeding"
+      "promotionTabError": "Fix errors in Promotion Tab before proceeding",
+      "percentageUpTo100": "Enter a percentage above 0 and up to 100."
     },
     "toasts": {
       "promotionCreateSuccess": "Promotion ({{code}}) was successfully created."
@@ -2817,7 +2820,8 @@
       },
       "edit": {
         "header": "Edit Campaign Budget"
-      }
+      },
+      "noLimit": "No limit"
     },
     "promotions": {
       "remove": {

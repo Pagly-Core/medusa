@@ -447,8 +447,8 @@ const DateRenderer: CellRenderer = (value, _row, _column, _t) => {
   return <DateCell date={value} />
 }
 
-const DisplayIdRenderer: CellRenderer = (value, _row, _column, _t) => {
-  return <DisplayIdCell displayId={value} />
+const DisplayIdRenderer: CellRenderer = (value, row, _column, _t) => {
+  return <DisplayIdCell displayId={value} customDisplayId={row?.custom_display_id} />
 }
 
 const CurrencyRenderer: CellRenderer = (value, row, _column, _t) => {
