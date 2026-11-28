@@ -20,6 +20,7 @@ import {
   getCurrencySymbol,
 } from "../../../../../lib/data/currencies"
 import { Combobox } from "../../../../../components/inputs/combobox"
+import { currencyName } from "../../../../../lib/currency-name"
 
 export const CreateCampaignFormFields = ({
   form,
@@ -28,7 +29,7 @@ export const CreateCampaignFormFields = ({
   form: any
   fieldScope?: string
 }) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { store } = useStore()
   const direction = useDocumentDirection()
   const watchValueType = useWatch({
@@ -285,7 +286,8 @@ export const CreateCampaignFormFields = ({
                               value={currency.code.toLowerCase()}
                               key={currency.code}
                             >
-                              {currency.name}
+                              {/* Pagly: in the admin's language (Pagly-Core/pagly-app#267). */}
+                              {currencyName(currency.code, currency.name, i18n.language)}
                             </Select.Item>
                           ))}
                       </Select.Content>

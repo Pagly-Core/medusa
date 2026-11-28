@@ -7,13 +7,14 @@ import { Link } from "react-router-dom"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useSalesChannel, useStockLocation } from "../../../../../hooks/api"
 import { useRegion } from "../../../../../hooks/api/regions"
+import { currencyName } from "../../../../../lib/currency-name"
 
 type StoreGeneralSectionProps = {
   store: AdminStore
 }
 
 export const StoreGeneralSection = ({ store }: StoreGeneralSectionProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const { region } = useRegion(store.default_region_id!, undefined, {
     enabled: !!store.default_region_id,
@@ -76,7 +77,12 @@ export const StoreGeneralSection = ({ store }: StoreGeneralSectionProps) => {
               {defaultCurrency.currency_code?.toUpperCase()}
             </Badge>
             <Text size="small" leading="compact">
-              {defaultCurrency.currency?.name}
+              {/* Pagly: in the admin's language (Pagly-Core/pagly-app#267). */}
+              {currencyName(
+                defaultCurrency.currency_code,
+                defaultCurrency.currency?.name,
+                i18n.language
+              )}
             </Text>
           </div>
         ) : (
