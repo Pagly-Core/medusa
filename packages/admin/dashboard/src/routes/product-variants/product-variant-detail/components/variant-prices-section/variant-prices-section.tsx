@@ -7,6 +7,7 @@ import { Button, Container, Heading } from "@medusajs/ui"
 
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { NoRecords } from "../../../../../components/common/empty-table-content"
+import { useRegions } from "../../../../../hooks/api/regions"
 import { getLocaleAmount } from "../../../../../lib/money-amount-helpers"
 
 type VariantPricesSectionProps = {
@@ -19,9 +20,26 @@ type VariantPricesSectionProps = {
 
 export function VariantPricesSection({ variant }: VariantPricesSectionProps) {
   const { t } = useTranslation()
+  // Pagly: a region's price shows too, named by its region: the section
+  // dropped every price with rules (Pagly-Core/pagly-app#260).
+  const { regions = [] } = useRegions({ fields: "id,name", limit: 999 })
+  const regionOf = (price: { rules?: Record<string, unknown> }) => {
+    const keys = Object.keys(price.rules || {})
+    return keys.length === 1 && keys[0] === "region_id" ? String(price.rules!.region_id) : null
+  }
   const prices = variant.prices
-    ?.filter((p) => !Object.keys(p.rules || {}).length)
-    .sort((p1, p2) => p1.currency_code?.localeCompare(p2.currency_code))
+    ?.filter((p) => !Object.keys(p.rules || {}).length || regionOf(p))
+    .sort(
+      (p1, p2) =>
+        Number(!!regionOf(p1)) - Number(!!regionOf(p2)) ||
+        p1.currency_code?.localeCompare(p2.currency_code)
+    )
+  const labelOf = (price: NonNullable<typeof prices>[number]) => {
+    const regionId = regionOf(price)
+    return regionId
+      ? regions.find((region) => region.id === regionId)?.name ?? regionId
+      : price.currency_code.toUpperCase()
+  }
 
   const hasPrices = !!prices?.length
   const [pageSize, setPageSize] = useState(3)
@@ -56,9 +74,7 @@ export function VariantPricesSection({ variant }: VariantPricesSectionProps) {
             key={price.id}
             className="txt-small text-ui-fg-subtle flex justify-between px-6 py-4"
           >
-            <span className="font-medium">
-              {price.currency_code.toUpperCase()}
-            </span>
+            <span className="font-medium">{labelOf(price)}</span>
             <span>{getLocaleAmount(price.amount, price.currency_code)}</span>
           </div>
         )
