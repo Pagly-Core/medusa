@@ -3,7 +3,8 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react"
 import { useEffect } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { TooltipProvider } from "@medusajs/ui"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import i18n from "i18next"
+import { beforeAll, afterEach, describe, expect, it, vi } from "vitest"
 
 vi.hoisted(() => {
   const g = global as any
@@ -25,6 +26,11 @@ const titleIssues = () => {
   const result = ProductCreateSchema.safeParse({ title: "" })
   return result.success ? [] : result.error.issues.filter((issue) => issue.path.join(".") === "title")
 }
+
+// The app initializes i18next before any form runs; with no resources it answers the key.
+beforeAll(async () => {
+  await i18n.init({ lng: "es", resources: {} })
+})
 
 // Pagly-Core/pagly-app#356: a product saved without a title only turned the
 // field red, with no word of what was wrong.

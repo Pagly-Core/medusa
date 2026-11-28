@@ -594,6 +594,8 @@ export const CreatePromotionForm = () => {
                             <Form.Control>
                               <Input {...field} placeholder="SUMMER15" />
                             </Form.Control>
+                            {/* Pagly: the field said nothing but turned red (Pagly-Core/pagly-app#356). */}
+                            <Form.ErrorMessage />
 
                             <Text
                               size="small"
