@@ -97,7 +97,7 @@ vi.mock("../../../../../hooks/api/collections", () => ({
 
 vi.mock("../../../../../hooks/api/product-types", () => ({
   productTypesQueryKeys: { lists: () => ["product_types"] },
-  // The form creates a type or tag typed into its comboboxes
+  // Pagly: the form creates a type, tag or category typed into its comboboxes
   // (useCreateOrganizeOptions), so the mock answers those hooks too.
   useCreateProductType: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
