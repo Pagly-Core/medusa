@@ -8,11 +8,12 @@ export const ConfigurableShippingOptionTypeListTable = () => {
   const adapter = useShippingOptionTypeTableAdapter()
 
   return (
+    // Pagly: no Create; a store only reads the platform's types
+    // (Pagly-Core/pagly-app#252).
     <ConfigurableDataTable
       adapter={adapter}
       heading={t("shippingOptionTypes.domain")}
       subHeading={t("shippingOptionTypes.subtitle")}
-      actions={[{ label: t("actions.create"), to: "create" }]}
     />
   )
 }
