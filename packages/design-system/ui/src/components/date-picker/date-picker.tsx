@@ -39,6 +39,9 @@ type DatePickerValueProps = {
   isDateUnavailable?: (date: Date) => boolean
   minValue?: Date
   maxValue?: Date
+  // Pagly: a Date like the other values; its time is the one a day picked or
+  // typed without a time gets (Pagly-Core/pagly-app#261).
+  placeholderValue?: Date
   shouldCloseOnSelect?: boolean
   granularity?: Granularity
   size?: "base" | "small"
@@ -209,6 +212,7 @@ function convertProps(
   const {
     minValue,
     maxValue,
+    placeholderValue,
     isDateUnavailable: _isDateUnavailable,
     onChange: _onChange,
     value: __value__,
@@ -239,6 +243,10 @@ function convertProps(
     maxValue: maxValue
       ? createCalendarDateFromDate(maxValue, props.granularity)
       : maxValue,
+    // Pagly: converted like minValue / maxValue (Pagly-Core/pagly-app#261).
+    placeholderValue: placeholderValue
+      ? createCalendarDateFromDate(placeholderValue, props.granularity)
+      : placeholderValue,
   }
 }
 
