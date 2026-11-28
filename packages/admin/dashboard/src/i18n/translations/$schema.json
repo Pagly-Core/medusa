@@ -16300,6 +16300,9 @@
         "salesChannel": {
           "type": "string"
         },
+        "salesChannelDescription": {
+          "type": "string"
+        },
         "shippingOptionType": {
           "type": "object",
           "properties": {
@@ -16314,7 +16317,12 @@
           "additionalProperties": false
         }
       },
-      "required": ["shippingProfile", "salesChannel", "shippingOptionType"],
+      "required": [
+        "shippingProfile",
+        "salesChannel",
+        "salesChannelDescription",
+        "shippingOptionType"
+      ],
       "additionalProperties": false
     }
   },

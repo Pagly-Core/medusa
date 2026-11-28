@@ -22,6 +22,28 @@ export const seededName = (t: Translate, name?: string | null): string => {
   return key ? (t as (key: string) => string)(key) : name ?? ""
 }
 
+type Channel = { name?: string | null; description?: string | null }
+
+/**
+ * Pagly: whether a channel is the one Medusa seeds, with the description it
+ * seeds ("Created by …", the engine's name).
+ */
+const isSeededChannel = (channel?: Channel | null) =>
+  normalized(channel?.name) === "default sales channel" &&
+  normalized(channel?.description).startsWith("created by ")
+
+/**
+ * Pagly: a sales channel's description, "Your online store" in the admin's
+ * language for the one Medusa seeds (Pagly-Core/pagly-app#237).
+ */
+export const seededDescription = (
+  t: Translate,
+  channel?: Channel | null
+): string =>
+  isSeededChannel(channel)
+    ? (t as (key: string) => string)("defaultNames.salesChannelDescription")
+    : channel?.description ?? ""
+
 type OptionType = {
   code?: string | null
   label?: string | null
@@ -59,6 +81,14 @@ export const withSeededName = <T extends { name?: string | null }>(
 ): T => {
   const name = seededName(t, row.name)
   return name === (row.name ?? "") ? row : { ...row, name }
+}
+
+/** A sales channel with its seeded name and description in the admin's language. */
+export const withSeededChannel = <T extends Channel>(t: Translate, row: T): T => {
+  const named = withSeededName(t, row)
+  return isSeededChannel(row)
+    ? { ...named, description: seededDescription(t, row) }
+    : named
 }
 
 /** A shipping option type with its seeded label and description translated. */
