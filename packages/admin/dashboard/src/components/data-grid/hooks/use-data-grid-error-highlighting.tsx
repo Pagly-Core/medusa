@@ -20,7 +20,16 @@ export const useDataGridErrorHighlighting = <
   const { flatRows } = grid.getRowModel()
   const flatColumns = grid.getAllFlatColumns()
 
-  const errorPaths = findErrorPaths(errors)
+  // Pagly: only the errors of the grid's rows. The form's other fields (an
+  // inventory item's Title) were counted too, and highlighting them hid every
+  // row (Pagly-Core/pagly-app#356).
+  const errorPaths = findErrorPaths(errors).filter((errorPath) =>
+    matrix.rowAccessors.some(
+      (accessor) =>
+        accessor &&
+        (errorPath === accessor || errorPath.startsWith(`${accessor}.`))
+    )
+  )
   const errorCount = errorPaths.length
 
   const { rowsWithErrors, columnsWithErrors } = useMemo(() => {
