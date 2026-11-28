@@ -98,7 +98,8 @@
       "optionHint": "Elegí la opción de envío a usar.",
       "selectOption": "Seleccioná una opción de envío",
       "customAmount": "Monto personalizado",
-      "customAmountHint": "Definí un monto personalizado para la opción de envío."
+      "customAmountHint": "Definí un monto personalizado para la opción de envío.",
+      "nothingShips": "Nada de este pedido se envía: ninguno de sus productos tiene un perfil de envío."
     },
     "nav": "Borradores",
     "email": {

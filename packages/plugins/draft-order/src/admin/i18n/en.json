@@ -98,7 +98,8 @@
       "optionHint": "Choose the shipping option to use.",
       "selectOption": "Select shipping option",
       "customAmount": "Custom amount",
-      "customAmountHint": "Set a custom amount for the shipping option."
+      "customAmountHint": "Set a custom amount for the shipping option.",
+      "nothingShips": "Nothing in this order ships: none of its products has a shipping profile."
     },
     "nav": "Drafts",
     "email": {

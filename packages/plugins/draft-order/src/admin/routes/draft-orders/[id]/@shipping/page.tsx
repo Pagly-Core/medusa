@@ -288,6 +288,14 @@ const ShippingForm = ({ preview, order }: ShippingFormProps) => {
                   </Text>
                 </div>
                 <div className="px-[5px] pb-[5px]">
+                  {/* Pagly: a product with no shipping profile does not ship; with
+                      none that has one, say so rather than an empty table
+                      (Pagly-Core/pagly-app#256). */}
+                  {!uniqueShippingProfiles.length && (
+                    <Text size="small" className="text-ui-fg-subtle px-3 py-4">
+                      {t("draftOrders.shipping.nothingShips")}
+                    </Text>
+                  )}
                   {uniqueShippingProfiles.map((profile) => {
                     const items = getItemsWithShippingProfile(
                       profile.id,
