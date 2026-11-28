@@ -1204,7 +1204,7 @@
     },
     "adjustInventory": {
       "errors": {
-        "stockedQuantity": "La cantidad en stock no puede actualizarse a menos que la cantidad reservada de {{quantity}}."
+        "stockedQuantity": "La cantidad en stock no puede ser menor que la reservada ({{quantity}})."
       }
     },
     "stock": {
