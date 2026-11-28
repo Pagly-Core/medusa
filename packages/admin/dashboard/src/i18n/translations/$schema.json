@@ -12627,6 +12627,22 @@
         "providersHint": {
           "type": "string"
         },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "paymentProviders": {
+              "type": "string"
+            }
+          },
+          "required": ["name", "currency", "paymentProviders"],
+          "additionalProperties": false
+        },
         "shippingOptions": {
           "type": "string"
         },
@@ -12810,6 +12826,7 @@
         "automaticTaxesHint",
         "taxInclusiveHint",
         "providersHint",
+        "validation",
         "shippingOptions",
         "deleteShippingOptionWarning",
         "return",

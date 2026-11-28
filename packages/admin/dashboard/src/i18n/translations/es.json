@@ -3386,6 +3386,11 @@
     "automaticTaxesHint": "Cuando está habilitado, los impuestos solo se calcularán en el proceso de pago según la dirección de envío.",
     "taxInclusiveHint": "Cuando está habilitado, los precios en la región incluirán los impuestos.",
     "providersHint": "Agregá los proveedores de pago disponibles en esta región.",
+    "validation": {
+      "name": "Ingresá un nombre para la región",
+      "currency": "Elegí una moneda",
+      "paymentProviders": "Elegí al menos un proveedor de pago"
+    },
     "shippingOptions": "Opciones de envío",
     "deleteShippingOptionWarning": "Estás a punto de eliminar la opción de envío {{name}}. Esta acción no puede deshacerse.",
     "return": "Devolución",
