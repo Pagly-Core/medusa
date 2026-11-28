@@ -8,6 +8,7 @@ import { useDataGridErrorHighlighting } from "../use-data-grid-error-highlightin
 const matrix = {
   rowAccessors: ["locations.sloc_1", "locations.sloc_2"],
   columnAccessors: [null, "locations"],
+  getFieldsInRow: (row: number) => [`locations.sloc_${row + 1}`],
 } as any
 
 const grid = {
@@ -32,6 +33,32 @@ describe("the data grid's error count", () => {
         title: { type: "too_small", message: "Obligatorio" },
         locations: { sloc_2: { type: "custom", message: "El valor debe ser un número positivo." } },
       })
+    ).toBe(1)
+  })
+})
+
+// A shipping option's prices: one row whose cells share no prefix, so the row
+// has no accessor.
+const pricesMatrix = {
+  rowAccessors: [null],
+  columnAccessors: ["currency_prices.uyu", "region_prices.reg_1"],
+  getFieldsInRow: () => ["currency_prices.uyu", "region_prices.reg_1"],
+} as any
+
+const pricesGrid = {
+  getRowModel: () => ({ flatRows: [{}] }),
+  getAllFlatColumns: () => [{ id: "uyu" }, { id: "reg_1" }],
+} as any
+
+describe("the data grid's error count, one row without an accessor", () => {
+  it("counts the errors of its cells", () => {
+    const errors = {
+      name: { type: "too_small", message: "Obligatorio" },
+      currency_prices: { uyu: { type: "custom", message: "Ingresá un precio" } },
+    }
+    expect(
+      renderHook(() => useDataGridErrorHighlighting(pricesMatrix, pricesGrid, errors as any))
+        .result.current.errorCount
     ).toBe(1)
   })
 })
