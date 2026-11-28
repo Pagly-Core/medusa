@@ -1641,19 +1641,12 @@ export function getRouteMap({
                   children: [
                     {
                       path: "",
+                      // Pagly: no create or edit page; a store only reads the
+                      // platform's types (Pagly-Core/pagly-app#252).
                       lazy: () =>
                         import(
                           "../../routes/shipping-option-types/shipping-option-type-list"
                         ),
-                      children: [
-                        {
-                          path: "create",
-                          lazy: () =>
-                            import(
-                              "../../routes/shipping-option-types/shipping-option-type-create"
-                            ),
-                        },
-                      ],
                     },
                     {
                       path: ":id",
@@ -1675,15 +1668,6 @@ export function getRouteMap({
                           },
                         }
                       },
-                      children: [
-                        {
-                          path: "edit",
-                          lazy: () =>
-                            import(
-                              "../../routes/shipping-option-types/shipping-option-type-edit"
-                            ),
-                        },
-                      ],
                     },
                   ],
                 },
