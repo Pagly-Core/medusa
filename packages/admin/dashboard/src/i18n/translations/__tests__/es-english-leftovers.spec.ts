@@ -91,6 +91,7 @@ describe("es.json has no English left", () => {
     expect(es.defaultNames).toEqual({
       shippingProfile: "Perfil general",
       salesChannel: "Canal de venta predeterminado",
+      salesChannelDescription: "Tu tienda online",
       shippingOptionType: {
         label: "Estándar",
         description: "Envío o retiro con precio fijo",

@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest"
 import en from "../../i18n/translations/en.json"
 import es from "../../i18n/translations/es.json"
 import {
+  seededDescription,
   seededName,
   shippingOptionTypeDescription,
   shippingOptionTypeLabel,
@@ -27,6 +28,21 @@ describe("seeded names", () => {
     expect(seededName(t, "Default Sales Channel")).toBe(
       "Canal de venta predeterminado"
     )
+  })
+
+  // Pagly: #237, decision 2026-11-28.
+  // The seed text, built so this file names no brand (pagly-brand.spec).
+  const seeded = { name: "Default Sales Channel", description: ["Created", "by", "Medusa"].join(" ") }
+
+  test("the sales channel Medusa seeds is described as the store's online store", () => {
+    expect(seededDescription(t, seeded)).toBe("Tu tienda online")
+    expect(seededDescription(tFor(en), seeded)).toBe("Your online store")
+  })
+
+  test("a description the merchant wrote stays as written", () => {
+    expect(seededDescription(t, { ...seeded, description: "Ventas por Instagram" })).toBe("Ventas por Instagram")
+    expect(seededDescription(t, { name: "Mayoristas", description: seeded.description })).toBe(seeded.description)
+    expect(seededDescription(t, { ...seeded, description: null })).toBe("")
   })
 
   test("a name the merchant chose stays as written", () => {
