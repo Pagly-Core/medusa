@@ -12,6 +12,7 @@ import {
   toast,
 } from "@medusajs/ui"
 import { RowSelectionState, createColumnHelper } from "@tanstack/react-table"
+import i18n from "i18next"
 import { useMemo, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -46,15 +47,19 @@ type CreateRegionFormProps = {
   currencies: CurrencyInfo[]
 }
 
-const CreateRegionSchema = zod.object({
-  name: zod.string().min(1, "Enter a name for the region"),
-  currency_code: zod.string().min(2, "Select a currency"),
+// Pagly: exported for its spec; the messages are read from the catalogs when
+// the form is checked, they were English literals (Pagly-Core/pagly-app#267).
+export const CreateRegionSchema = zod.object({
+  name: zod.string().min(1, { error: () => i18n.t("regions.validation.name") }),
+  currency_code: zod
+    .string()
+    .min(2, { error: () => i18n.t("regions.validation.currency") }),
   automatic_taxes: zod.boolean(),
   is_tax_inclusive: zod.boolean(),
   countries: zod.array(zod.object({ code: zod.string(), name: zod.string() })),
   payment_providers: zod
     .array(zod.string())
-    .min(1, "Select at least one payment provider"),
+    .min(1, { error: () => i18n.t("regions.validation.paymentProviders") }),
 })
 
 const PREFIX = "cr"

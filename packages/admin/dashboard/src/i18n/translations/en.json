@@ -3275,6 +3275,11 @@
     "automaticTaxesHint": "When enabled, taxes will only be calculated at checkout based on the shipping address.",
     "taxInclusiveHint": "When enabled, prices in the region will be tax inclusive.",
     "providersHint": "Add which payment providers are available in this region.",
+    "validation": {
+      "name": "Enter a name for the region",
+      "currency": "Choose a currency",
+      "paymentProviders": "Choose at least one payment provider"
+    },
     "shippingOptions": "Shipping Options",
     "deleteShippingOptionWarning": "You are about to delete the shipping option {{name}}. This action cannot be undone.",
     "return": "Return",
