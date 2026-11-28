@@ -37,6 +37,10 @@ describe("validation messages", () => {
     )
     expect(messageOf(z.object({ name: z.string() }), {})).toBe("Obligatorio")
     expect(messageOf(z.array(z.string()).min(1), [])).toBe("Obligatorio")
+    // A promotion's value: a number or a text, left empty.
+    expect(messageOf(z.object({ value: z.number().or(z.string().min(1)) }), {})).toBe(
+      "Obligatorio"
+    )
   })
 
   it("says a malformed email is not an email", () => {
