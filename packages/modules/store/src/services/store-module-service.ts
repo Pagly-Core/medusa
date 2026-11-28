@@ -219,6 +219,14 @@ export default class StoreModuleService
           currency_code: normalizeCurrencyCode(c.currency_code),
         })),
         name: store.name?.trim(),
+        // Pagly: a key sent as "" is removed, as mergeMetadata does for every
+        // module the internal service updates; the store replaces its metadata
+        // whole, so it kept the key, empty (Pagly-Core/pagly-app#263).
+        metadata: store.metadata
+          ? Object.fromEntries(
+              Object.entries(store.metadata).filter(([, value]) => value !== "")
+            )
+          : store.metadata,
       })
     )
   }
