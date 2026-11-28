@@ -1083,6 +1083,25 @@ describe("CSV processor", () => {
     `)
   })
 
+  // Pagly-Core/pagly-app#257: a CSV the export wrote was refused on import
+  // with "Invalid column name(s) "Variant Thumbnail","Variant Image 1"".
+  describe("columns the export writes", () => {
+    it("takes a file with the variant's thumbnail and images", () => {
+      const csvRow = {
+        "Product Handle": "test-product",
+        "Variant Title": "Test Variant",
+        "Variant Thumbnail": "https://cdn.example.com/a.jpg",
+        "Variant Image 1": "https://cdn.example.com/a.jpg",
+        "Variant Image 2": "https://cdn.example.com/b.jpg",
+      }
+
+      const normalized = CSVNormalizer.preProcess(csvRow, 1)
+      const result = new CSVNormalizer([normalized]).proccess()
+
+      expect(result.toCreate["test-product"].variants[0].title).toBe("Test Variant")
+    })
+  })
+
   describe("Variant Metadata column", () => {
     it("should process variant metadata as JSON correctly", () => {
       const csvRow = {

@@ -303,6 +303,10 @@ const variantStaticColumns: {
   "variant updated at": processAsIgnored(),
   // This field should be ignored as it's redundant (variant already belongs to product)
   "variant product id": processAsIgnored(),
+  // Pagly: the export writes a variant's thumbnail and images; a variant's
+  // images come from its product's, so an import leaves them as they are
+  // rather than refusing the file (Pagly-Core/pagly-app#257).
+  "variant thumbnail": processAsIgnored(),
 }
 
 /**
@@ -314,6 +318,8 @@ const variantWildcardColumns: {
     [K in keyof AdminCreateProductVariant]?: any
   }>
 } = {
+  // Pagly: "Variant Image 1", "Variant Image 2"…, as the export writes them (Pagly-Core/pagly-app#257).
+  "variant image ": processAsIgnored(),
   "variant price": (csvRow, rowColumns, rowNumber, output) => {
     const pricesColumns = rowColumns.filter((rowKey) => {
       return rowKey.startsWith("variant price ") && isPresent(csvRow[rowKey])
