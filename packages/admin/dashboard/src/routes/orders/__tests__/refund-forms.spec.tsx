@@ -139,3 +139,18 @@ describe.each([
     expect(mocks.refund.mock.calls[0][1]).toEqual(expect.objectContaining({ amount: 100 }))
   })
 })
+
+// Pagly: an address naming a payment the order doesn't have (a stale or
+// edited link) crashed the drawer on `payment!.amount`. It offers the
+// order's payments instead (review of Pagly-Core/medusa#89).
+describe("the refund form opened for a payment the order doesn't have", () => {
+  it("offers the order's payments and sends nothing until one is chosen", async () => {
+    renderAt(<CreateRefundForm order={order} />, "?paymentId=pay_not_this_orders")
+    typeAmount("100")
+
+    save()
+
+    expect(await screen.findByText("orders.payment.selectPaymentRequired")).toBeTruthy()
+    expect(mocks.refund).not.toHaveBeenCalled()
+  })
+})
