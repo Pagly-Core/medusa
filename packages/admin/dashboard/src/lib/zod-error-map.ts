@@ -12,6 +12,8 @@ const isEmpty = (input: unknown) =>
  */
 export const paglyZodErrorMap: z.core.$ZodErrorMap = (issue) => {
   switch (issue.code) {
+    // A missing value through a union (a number or a text) is required too.
+    case "invalid_union":
     case "invalid_type":
       return isEmpty(issue.input)
         ? i18n.t("validation.required")
