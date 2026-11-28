@@ -22,7 +22,8 @@ import { useCreateSalesChannel } from "../../../../../hooks/api/sales-channels"
 
 const CreateSalesChannelSchema = zod.object({
   name: zod.string().min(1),
-  description: zod.string().min(1),
+  // Pagly: optional, as the API and the edit form take it (Pagly-Core/pagly-app#267).
+  description: zod.string().optional(),
   enabled: zod.boolean(),
 })
 
@@ -44,7 +45,7 @@ export const CreateSalesChannelForm = () => {
     await mutateAsync(
       {
         name: values.name,
-        description: values.description,
+        description: values.description?.trim() || undefined,
         is_disabled: !values.enabled,
       },
       {
@@ -99,7 +100,7 @@ export const CreateSalesChannelForm = () => {
                   render={({ field }) => {
                     return (
                       <Form.Item>
-                        <Form.Label>{t("fields.description")}</Form.Label>
+                        <Form.Label optional>{t("fields.description")}</Form.Label>
                         <Form.Control>
                           <Textarea {...field} />
                         </Form.Control>
