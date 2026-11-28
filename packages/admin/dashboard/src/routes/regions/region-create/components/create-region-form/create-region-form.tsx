@@ -41,6 +41,7 @@ import { useCountryTableQuery } from "../../../common/hooks/use-country-table-qu
 import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
 import { useComboboxData } from "../../../../../hooks/use-combobox-data"
 import { sdk } from "../../../../../lib/client"
+import { currencyName } from "../../../../../lib/currency-name"
 
 type CreateRegionFormProps = {
   currencies: CurrencyInfo[]
@@ -85,7 +86,7 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
     defaultValue: [],
   })
 
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const { mutateAsync: createRegion, isPending: isPendingRegion } =
     useCreateRegion()
@@ -253,7 +254,8 @@ export const CreateRegionForm = ({ currencies }: CreateRegionFormProps) => {
                                     value={currency.code}
                                     key={currency.code}
                                   >
-                                    {currency.name}
+                                    {/* Pagly: in the admin's language (Pagly-Core/pagly-app#267). */}
+{currencyName(currency.code, currency.name, i18n.language)}
                                   </Select.Item>
                                 ))}
                               </Select.Content>

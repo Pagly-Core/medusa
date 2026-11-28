@@ -756,10 +756,10 @@
         "hint": "Las variantes sin marcar no se van a crear. Este orden define cómo se ordenan las variantes en tu tienda."
       },
       "mid_code": {
-        "label": "Código medio"
+        "label": "Código MID"
       },
       "hs_code": {
-        "label": "Código arancelario"
+        "label": "Código HS"
       },
       "shipping_profile": {
         "label": "Perfil de envío",
