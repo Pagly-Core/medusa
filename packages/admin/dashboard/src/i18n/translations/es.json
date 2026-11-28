@@ -1577,6 +1577,8 @@
       "refundAmount": "Reembolso {{ amount }}",
       "paymentLink": "Copiar enlace de pago para {{ amount }}",
       "selectPaymentToRefund": "Seleccioná el pago a reembolsar",
+      "selectPaymentRequired": "Elegí el pago a reembolsar.",
+      "refundAmountRequired": "Ingresá un monto mayor que 0.",
       "totalStoreCreditRefunds": "Total devuelto como saldo",
       "manualProvider": "Pago manual"
     },
