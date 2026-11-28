@@ -1,6 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { AdminPromotion } from "@medusajs/types"
-import { Button, CurrencyInput, Input, RadioGroup, Text } from "@medusajs/ui"
+import {
+  Button,
+  CurrencyInput,
+  Input,
+  RadioGroup,
+  Text,
+  toast,
+} from "@medusajs/ui"
 import { useForm, useWatch } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { useEffect } from "react"
@@ -17,6 +24,7 @@ import {
 } from "../../../../../lib/data/currencies"
 import { SwitchBox } from "../../../../../components/common/switch-box"
 import { useDocumentDirection } from "../../../../../hooks/use-document-direction"
+import { percentageOutOfRange } from "../../../promotion-create/components/create-promotion-form/form-schema"
 
 type EditPromotionFormProps = {
   promotion: AdminPromotion
@@ -78,6 +86,15 @@ export const EditPromotionDetailsForm = ({
       return
     }
 
+    // Pagly: the server refuses a percentage of 0 or above 100, and the
+    // drawer showed nothing (Pagly-Core/pagly-app#356).
+    if (percentageOutOfRange(data.value_type, value)) {
+      form.setError("value", {
+        message: t("promotions.errors.percentageUpTo100"),
+      })
+      return
+    }
+
     await mutateAsync(
       {
         is_automatic: data.is_automatic === "true",
@@ -94,6 +111,10 @@ export const EditPromotionDetailsForm = ({
       {
         onSuccess: () => {
           handleSuccess()
+        },
+        // Pagly: a refused save says so instead of doing nothing.
+        onError: (error) => {
+          toast.error(error.message)
         },
       }
     )

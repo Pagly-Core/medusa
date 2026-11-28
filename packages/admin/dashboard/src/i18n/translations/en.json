@@ -2547,7 +2547,7 @@
     "errors": {
       "requiredField": "Required field",
       "promotionTabError": "Fix errors in Promotion Tab before proceeding",
-      "percentageUpTo100": "Enter a percentage up to 100."
+      "percentageUpTo100": "Enter a percentage above 0 and up to 100."
     },
     "toasts": {
       "promotionCreateSuccess": "Promotion ({{code}}) was successfully created."

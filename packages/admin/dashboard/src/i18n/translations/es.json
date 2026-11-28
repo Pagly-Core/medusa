@@ -2605,7 +2605,7 @@
     "errors": {
       "requiredField": "Campo obligatorio",
       "promotionTabError": "Corregí los errores en la pestaña Promoción antes de continuar",
-      "percentageUpTo100": "Ingresá un porcentaje de hasta 100."
+      "percentageUpTo100": "Ingresá un porcentaje mayor que 0 y de hasta 100."
     },
     "toasts": {
       "promotionCreateSuccess": "La promoción ({{code}}) fue creada correctamente."
