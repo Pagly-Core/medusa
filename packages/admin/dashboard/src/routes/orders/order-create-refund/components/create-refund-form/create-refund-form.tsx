@@ -55,11 +55,16 @@ export const CreateRefundForm = ({ order }: CreateRefundFormProps) => {
   const { handleSuccess } = useRouteModal()
 
   const [searchParams] = useSearchParams()
-  const hasPaymentIdInSearchParams = !!searchParams.get("paymentId")
-  const [paymentId, setPaymentId] = useState<string | undefined>(
-    searchParams.get("paymentId") || undefined
-  )
   const payments = getPaymentsFromOrder(order)
+  // Pagly: only a payment of this order is fixed by the address; any other
+  // id (a stale link) offers the order's payments instead of crashing.
+  const linkedPaymentId = payments.find(
+    (p) => p.id === searchParams.get("paymentId")
+  )?.id
+  const hasPaymentIdInSearchParams = !!linkedPaymentId
+  const [paymentId, setPaymentId] = useState<string | undefined>(
+    linkedPaymentId
+  )
   const payment = payments.find((p) => p.id === paymentId)
   const paymentAmount = payment?.amount || 0
   // Pagly: no request without a payment, which would post to
