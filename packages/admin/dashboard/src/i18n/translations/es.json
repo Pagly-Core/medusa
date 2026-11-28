@@ -135,7 +135,14 @@
     "mustBeInt": "El valor debe ser un número entero.",
     "mustBePositive": "El valor debe ser un número positivo.",
     "required": "Obligatorio",
-    "invalidEmail": "Email inválido"
+    "invalidEmail": "Email inválido",
+    "invalid": "Ese valor no es válido.",
+    "atLeast": "Ingresá {{min}} o más.",
+    "above": "Ingresá un valor mayor que {{min}}.",
+    "atMost": "Ingresá {{max}} o menos.",
+    "below": "Ingresá un valor menor que {{max}}.",
+    "minLength": "Ingresá al menos {{min}} caracteres.",
+    "maxLength": "Usá {{max}} caracteres como máximo."
   },
   "auth": {
     "login": {
@@ -2776,7 +2783,10 @@
     "conditions": {
       "add": "Agregar condición",
       "list": {
-        "noRecordsMessage": "Agregá una condición para restringir los artículos a los que se aplica la promoción."
+        "noRecordsMessage": "Agregá una condición para restringir los artículos a los que se aplica la promoción.",
+        "noRecordsRulesMessage": "Agregá una condición para elegir quién puede usar la promoción. Sin ninguna, la puede usar cualquier cliente.",
+        "noRecordsShippingMessage": "Agregá una condición para restringir los métodos de envío a los que se aplica la promoción.",
+        "noRecordsBuyMessage": "Agregá una condición para indicar qué tiene que tener el carrito para activar la promoción."
       }
     }
   },

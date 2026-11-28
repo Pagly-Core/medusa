@@ -113,7 +113,14 @@
     "mustBeInt": "The value must be a whole number.",
     "mustBePositive": "The value must be a positive number.",
     "required": "Required",
-    "invalidEmail": "Invalid email"
+    "invalidEmail": "Invalid email",
+    "invalid": "That value isn't valid.",
+    "atLeast": "Enter {{min}} or more.",
+    "above": "Enter a value above {{min}}.",
+    "atMost": "Enter {{max}} or less.",
+    "below": "Enter a value below {{max}}.",
+    "minLength": "Enter at least {{min}} characters.",
+    "maxLength": "Use {{max}} characters or fewer."
   },
   "actions": {
     "save": "Save",
@@ -2718,7 +2725,10 @@
     "conditions": {
       "add": "Add condition",
       "list": {
-        "noRecordsMessage": "Add a condition to restrict what items the promotion applies to."
+        "noRecordsMessage": "Add a condition to restrict what items the promotion applies to.",
+        "noRecordsRulesMessage": "Add a condition to choose who can use the promotion. Without one, every customer can.",
+        "noRecordsShippingMessage": "Add a condition to restrict what shipping methods the promotion applies to.",
+        "noRecordsBuyMessage": "Add a condition to say what the cart needs to unlock the promotion."
       }
     }
   },
