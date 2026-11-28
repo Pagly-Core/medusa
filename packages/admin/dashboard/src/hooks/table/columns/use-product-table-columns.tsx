@@ -22,6 +22,7 @@ import {
   VariantHeader,
 } from "../../../components/table/table-cells/product/variant-cell"
 import { HttpTypes } from "@medusajs/types"
+import { productCollections } from "../../../lib/product-collections"
 
 const columnHelper = createColumnHelper<HttpTypes.AdminProduct>()
 
@@ -36,7 +37,7 @@ export const useProductTableColumns = () => {
       columnHelper.accessor("collection", {
         header: () => <CollectionHeader />,
         cell: ({ row }) => (
-          <CollectionCell collection={row.original.collection} />
+          <CollectionCell collections={productCollections(row.original)} />
         ),
       }),
       columnHelper.accessor("sales_channels", {

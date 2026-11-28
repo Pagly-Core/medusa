@@ -7,6 +7,7 @@ import { getCountryByIso2 } from "../data/countries"
 import { formatQuantity } from "../format-quantity"
 import { ProductCell } from "../../components/table/table-cells/product/product-cell"
 import { CollectionCell } from "../../components/table/table-cells/product/collection-cell"
+import { productCollections } from "../product-collections"
 import { VariantCell } from "../../components/table/table-cells/product/variant-cell"
 import { ProductStatusCell } from "../../components/table/table-cells/product/product-status-cell"
 import { DateCell } from "../../components/table/table-cells/common/date-cell"
@@ -318,7 +319,7 @@ const ProductInfoRenderer: CellRenderer = (_, row, _column, _t) => {
 }
 
 const CollectionRenderer: CellRenderer = (_, row, _column, _t) => {
-  return <CollectionCell collection={row.collection} />
+  return <CollectionCell collections={productCollections(row)} />
 }
 
 const VariantsRenderer: CellRenderer = (_, row, _column, _t) => {
