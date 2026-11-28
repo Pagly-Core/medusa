@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import { createDataTableColumnHelper, StatusBadge } from "@medusajs/ui"
 import { HttpTypes } from "@medusajs/types"
 import { useDate } from "../../../../../../hooks/use-date"
+import { orderNumber } from "../../../../../../lib/order-number"
 
 const columnHelper = createDataTableColumnHelper<HttpTypes.AdminOrder>()
 
@@ -19,15 +20,10 @@ export function useOrderDataTableColumns(apiColumns: any[] | undefined) {
         return columnHelper.accessor("display_id", {
           id: apiColumn.field,
           header: () => apiColumn.name,
-          cell: ({ getValue }) => {
-            const value = getValue()
-            return (
-              <div className="flex items-center gap-x-2">
-                <span className="text-ui-fg-subtle">#</span>
-                <span>{value}</span>
-              </div>
-            )
-          },
+          // Pagly: the store's own number (custom_display_id) when the order has one.
+          cell: ({ getValue, row }) => (
+            <span>{orderNumber({ display_id: getValue(), custom_display_id: row.original.custom_display_id })}</span>
+          ),
           meta: {
             name: apiColumn.name,
             column: apiColumn,

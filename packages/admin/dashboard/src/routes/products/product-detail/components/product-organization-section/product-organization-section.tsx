@@ -50,8 +50,9 @@ export const ProductOrganizationSection = ({
           </Chips>
         </CardRow>
       )}
+      {/* Pagly: the product type, not the generic Tipo */}
       {product.type && (
-        <CardRow label={t("fields.type")}>
+        <CardRow label={t("products.fields.type.label")}>
           <Chip to={`/product-types/${product.type_id}`}>
             {product.type.value}
           </Chip>

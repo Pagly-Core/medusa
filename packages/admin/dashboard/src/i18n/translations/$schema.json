@@ -5908,6 +5908,12 @@
             "selectPaymentToRefund": {
               "type": "string"
             },
+            "selectPaymentRequired": {
+              "type": "string"
+            },
+            "refundAmountRequired": {
+              "type": "string"
+            },
             "manualProvider": {
               "type": "string"
             }
@@ -5940,6 +5946,8 @@
             "refundAmount",
             "paymentLink",
             "selectPaymentToRefund",
+            "selectPaymentRequired",
+            "refundAmountRequired",
             "manualProvider"
           ],
           "additionalProperties": false
