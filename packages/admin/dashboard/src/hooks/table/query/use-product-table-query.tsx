@@ -1,4 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
+import { productCollectionFields } from "../../../lib/product-collections"
 import { useQueryParams } from "../../use-query-params"
 
 type UseProductTableQueryProps = {
@@ -6,9 +7,11 @@ type UseProductTableQueryProps = {
   pageSize?: number
 }
 
-const DEFAULT_FIELDS =
+// Pagly: a product's collections come from productCollectionFields, which
+// the plugin can register (Pagly-Core/pagly-app#258).
+const defaultFields = () =>
   // TODO: Remove exclusion once we avoid including unnecessary relations by default in the query config
-  "id,title,handle,status,*collection,*sales_channels,variants.id,thumbnail,-type,-options,-tags,-images,-variants"
+  `id,title,handle,status,${productCollectionFields()},*sales_channels,variants.id,thumbnail,-type,-options,-tags,-images,-variants`
 
 export const useProductTableQuery = ({
   prefix,
@@ -62,7 +65,7 @@ export const useProductTableQuery = ({
     type_id: type_id?.split(","),
     status: status?.split(",") as HttpTypes.AdminProductStatus[],
     q,
-    fields: DEFAULT_FIELDS,
+    fields: defaultFields(),
   }
 
   return {
