@@ -1,4 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
+import { orderSearchQuery } from "../../../lib/order-number"
 import { useQueryParams } from "../../use-query-params"
 
 type UseOrderTableQueryProps = {
@@ -49,7 +50,8 @@ export const useOrderTableQuery = ({
     updated_at: updated_at ? JSON.parse(updated_at) : undefined,
     region_id: region_id?.split(","),
     order: order ? order : "-created_at",
-    q,
+    // Pagly: "#8" finds order 8 (Pagly-Core/pagly-app#267).
+    q: orderSearchQuery(q),
     // total: total ? JSON.parse(total) : undefined,
   }
 

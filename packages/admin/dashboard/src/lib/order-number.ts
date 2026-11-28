@@ -12,3 +12,12 @@ export const orderNumber = (order?: NumberedOrder | null): string | null => {
   }
   return order?.display_id !== undefined && order?.display_id !== null ? `#${order.display_id}` : null
 }
+
+/**
+ * Pagly: a search as the order list sends it. "#8" is how the admin writes an order's number, but the
+ * search matches the bare number, so a `#` before digits is dropped. Any other search is left as it is.
+ */
+export const orderSearchQuery = (q?: string): string | undefined => {
+  const number = q?.trim().match(/^#\s*(\d+)$/)
+  return number ? number[1] : q
+}
