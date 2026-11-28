@@ -287,7 +287,7 @@ export const CreateCampaignFormFields = ({
                               key={currency.code}
                             >
                               {/* Pagly: in the admin's language (Pagly-Core/pagly-app#267). */}
-{currencyName(currency.code, currency.name, i18n.language)}
+                              {currencyName(currency.code, currency.name, i18n.language)}
                             </Select.Item>
                           ))}
                       </Select.Content>

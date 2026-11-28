@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ActionMenu } from "../../../../../components/common/action-menu"
 import { useDeleteCampaign } from "../../../../../hooks/api/campaigns"
+import { currencyName } from "../../../../../lib/currency-name"
 import { currencies } from "../../../../../lib/data/currencies"
 import {
   campaignStatus,
@@ -26,7 +27,7 @@ type CampaignGeneralSectionProps = {
 export const CampaignGeneralSection = ({
   campaign,
 }: CampaignGeneralSectionProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const prompt = usePrompt()
   const navigate = useNavigate()
   const { mutateAsync } = useDeleteCampaign(campaign.id)
@@ -127,7 +128,13 @@ export const CampaignGeneralSection = ({
           <div>
             <Badge size="xsmall">{campaign?.budget.currency_code}</Badge>
             <Text className="inline pl-3" size="small" leading="compact">
-              {currencies[campaign?.budget.currency_code?.toUpperCase()]?.name}
+              {/* Pagly: in the admin's language (Pagly-Core/pagly-app#267). */}
+              {campaign.budget.currency_code &&
+                currencyName(
+                  campaign.budget.currency_code,
+                  currencies[campaign.budget.currency_code.toUpperCase()]?.name,
+                  i18n.language
+                )}
             </Text>
           </div>
         </div>
