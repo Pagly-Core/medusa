@@ -250,7 +250,7 @@
         "taxRegion": "Regiones fiscales",
         "returnReason": "Motivos de devolución",
         "salesChannel": "Canales de venta",
-        "productType": "Tipos de productos",
+        "productType": "Tipos de producto",
         "productTag": "Etiquetas de productos",
         "location": "Ubicaciones",
         "shippingProfile": "Perfiles de envío",
@@ -285,7 +285,7 @@
         "goToRegions": "Regiones",
         "goToTaxRegions": "Regiones fiscales",
         "goToSalesChannels": "Canales de venta",
-        "goToProductTypes": "Tipos de productos",
+        "goToProductTypes": "Tipos de producto",
         "goToLocations": "Ubicaciones",
         "goToPublishableApiKeys": "Claves API publicables",
         "goToSecretApiKeys": "Claves API secretas",
@@ -709,7 +709,7 @@
         "hint": "Si no está marcado, no se aplicarán descuentos a este producto"
       },
       "type": {
-        "label": "Tipo"
+        "label": "Tipo de producto"
       },
       "collection": {
         "label": "Colección"
@@ -2444,7 +2444,7 @@
           "product": "Productos",
           "productCollection": "Colecciones de productos",
           "productTag": "Etiquetas de productos",
-          "productType": "Tipos de productos",
+          "productType": "Tipos de producto",
           "customerGroup": "Grupos de clientes",
           "shippingOption": "Opciones de envío"
         },
@@ -2457,7 +2457,7 @@
           "product": "Buscar productos",
           "productCollection": "Buscar colecciones de productos",
           "productTag": "Buscar etiquetas de productos",
-          "productType": "Buscar tipos de productos",
+          "productType": "Buscar tipos de producto",
           "customerGroup": "Buscar grupos de clientes",
           "shippingOption": "Buscar opciones de envío"
         },
@@ -3958,7 +3958,7 @@
     "sales_channels": "Canales de venta",
     "customer_groups": "Grupos de clientes",
     "product_tags": "Etiquetas de productos",
-    "product_types": "Tipos de productos",
+    "product_types": "Tipos de producto",
     "product_collections": "Colecciones de productos",
     "status": "Estado",
     "code": "Código",

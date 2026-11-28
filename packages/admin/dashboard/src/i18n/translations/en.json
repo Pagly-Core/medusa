@@ -666,7 +666,7 @@
         "hint": "Connect the product to a shipping profile"
       },
       "type": {
-        "label": "Type"
+        "label": "Product type"
       },
       "collection": {
         "label": "Collection"

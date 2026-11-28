@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import type { SearchEntityDefinition } from "./search-entities"
 import { i18n } from "../../components/utilities/i18n"
+import { orderNumber } from "../order-number"
 import { seededName } from "../seeded-names"
 
 /**
@@ -20,7 +21,8 @@ export const DEFAULT_SEARCH_ENTITIES: Record<string, SearchEntityDefinition> = {
     },
     transform: (order: HttpTypes.AdminOrder) => ({
       id: order.id,
-      title: `#${order.display_id}`,
+      // Pagly: the store's own number (custom_display_id) when the order has one.
+      title: orderNumber(order) ?? order.id,
       subtitle: order.email ?? undefined,
       to: `/orders/${order.id}`,
       value: `order:${order.id}`,
