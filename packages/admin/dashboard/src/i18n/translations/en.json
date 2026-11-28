@@ -4234,6 +4234,7 @@
   "defaultNames": {
     "shippingProfile": "General profile",
     "salesChannel": "Default sales channel",
+    "salesChannelDescription": "Your online store",
     "shippingOptionType": {
       "label": "Standard",
       "description": "Standard delivery"

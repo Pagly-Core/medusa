@@ -17,7 +17,7 @@ import { queryKeysFactory } from "../../lib/query-key-factory"
 import { productsQueryKeys } from "./products"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { withSeededName } from "../../lib/seeded-names"
+import { withSeededChannel } from "../../lib/seeded-names"
 
 const SALES_CHANNELS_QUERY_KEY = "sales-channels" as const
 export const salesChannelsQueryKeys = queryKeysFactory(SALES_CHANNELS_QUERY_KEY)
@@ -41,7 +41,7 @@ export const useSalesChannel = (
   })
   const { t } = useTranslation()
   const sales_channel = useMemo(
-    () => data?.sales_channel && withSeededName(t, data.sales_channel),
+    () => data?.sales_channel && withSeededChannel(t, data.sales_channel),
     [data?.sales_channel, t]
   )
 
@@ -67,7 +67,7 @@ export const useSalesChannels = (
   })
   const { t } = useTranslation()
   const sales_channels = useMemo(
-    () => data?.sales_channels?.map((row) => withSeededName(t, row)),
+    () => data?.sales_channels?.map((row) => withSeededChannel(t, row)),
     [data?.sales_channels, t]
   )
 
