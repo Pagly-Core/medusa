@@ -1,3 +1,4 @@
+import i18n from "i18next"
 import { z } from "zod"
 import { CreateCampaignSchema } from "../../../../campaigns/campaign-create/components/create-campaign-form"
 
@@ -23,7 +24,8 @@ export const CreatePromotionSchema = z
     campaign_id: z.string().optional(),
     campaign_choice: z.enum(["none", "existing", "new"]).optional(),
     is_automatic: z.string().toLowerCase(),
-    code: z.string().min(1),
+    // Pagly: said under the field, in the admin's words (Pagly-Core/pagly-app#356).
+    code: z.string().min(1, { error: () => i18n.t("validation.required") }),
     type: z.enum(["buyget", "standard"]),
     status: z.enum(["draft", "active", "inactive"]),
     rules: RuleSchema,

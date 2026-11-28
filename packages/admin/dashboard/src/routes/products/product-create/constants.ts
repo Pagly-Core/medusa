@@ -62,7 +62,8 @@ export type ProductCreateOptionSchema = z.infer<
 
 export const ProductCreateSchema = z
   .object({
-    title: z.string().min(1),
+    // Pagly: said under the field, in the admin's words (Pagly-Core/pagly-app#356).
+    title: z.string().min(1, { error: () => i18n.t("validation.required") }),
     subtitle: z.string().optional(),
     handle: z.string().optional(),
     description: z.string().optional(),

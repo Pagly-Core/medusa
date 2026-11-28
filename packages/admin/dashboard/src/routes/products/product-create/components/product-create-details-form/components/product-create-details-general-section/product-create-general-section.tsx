@@ -34,6 +34,8 @@ export const ProductCreateGeneralSection = ({
                       placeholder={t("products.fields.title.placeholder")}
                     />
                   </Form.Control>
+                  {/* Pagly: the field said nothing but turned red (Pagly-Core/pagly-app#356). */}
+                  <Form.ErrorMessage />
                 </Form.Item>
               )
             }}
