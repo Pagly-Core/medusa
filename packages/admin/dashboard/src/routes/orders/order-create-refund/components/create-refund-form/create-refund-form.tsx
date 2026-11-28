@@ -5,10 +5,11 @@ import {
   CurrencyInput,
   Label,
   Select,
+  Text,
   Textarea,
   toast,
 } from "@medusajs/ui"
-import { useEffect, useMemo, useState } from "react"
+import { BaseSyntheticEvent, useEffect, useMemo, useState } from "react"
 import { formatValue } from "react-currency-input-field"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -32,26 +33,43 @@ type CreateRefundFormProps = {
   order: HttpTypes.AdminOrder
 }
 
-const CreateRefundSchema = zod.object({
-  amount: zod.object({
-    value: zod.string().or(zod.number()),
-    float: zod.number().or(zod.null()),
-  }),
-  note: zod.string().optional(),
-})
+// Pagly: the amount must be above zero, said on the field rather than in the
+// server's English toast (Pagly-Core/pagly-app#255).
+const refundSchemaOf = (amountRequired: string) =>
+  zod.object({
+    amount: zod
+      .object({
+        value: zod.string().or(zod.number()),
+        float: zod.number().or(zod.null()),
+      })
+      .refine(({ float }) => typeof float === "number" && float > 0, {
+        message: amountRequired,
+      }),
+    note: zod.string().optional(),
+  })
+
+const CreateRefundSchema = refundSchemaOf("")
 
 export const CreateRefundForm = ({ order }: CreateRefundFormProps) => {
   const { t } = useTranslation()
   const { handleSuccess } = useRouteModal()
 
   const [searchParams] = useSearchParams()
-  const hasPaymentIdInSearchParams = !!searchParams.get("paymentId")
-  const [paymentId, setPaymentId] = useState<string | undefined>(
-    searchParams.get("paymentId") || undefined
-  )
   const payments = getPaymentsFromOrder(order)
+  // Pagly: only a payment of this order is fixed by the address; any other
+  // id (a stale link) offers the order's payments instead of crashing.
+  const linkedPaymentId = payments.find(
+    (p) => p.id === searchParams.get("paymentId")
+  )?.id
+  const hasPaymentIdInSearchParams = !!linkedPaymentId
+  const [paymentId, setPaymentId] = useState<string | undefined>(
+    linkedPaymentId
+  )
   const payment = payments.find((p) => p.id === paymentId)
   const paymentAmount = payment?.amount || 0
+  // Pagly: no request without a payment, which would post to
+  // /admin/payments/undefined/refund (Pagly-Core/pagly-app#255).
+  const [paymentMissing, setPaymentMissing] = useState(false)
 
   const currency = useMemo(
     () => currencies[order.currency_code.toUpperCase()],
@@ -76,7 +94,9 @@ export const CreateRefundForm = ({ order }: CreateRefundFormProps) => {
         float: paymentAmount,
       },
     },
-    resolver: zodResolver(CreateRefundSchema),
+    resolver: zodResolver(
+      refundSchemaOf(t("orders.payment.refundAmountRequired"))
+    ),
   })
 
   useEffect(() => {
@@ -90,15 +110,25 @@ export const CreateRefundForm = ({ order }: CreateRefundFormProps) => {
     const normalizedAmount =
       pendingAmount < 0 ? pendingAmount * -1 : pendingAmount
 
-    form.setValue("amount", {
-      value: getRoundedAmount(normalizedAmount),
-      float: normalizedAmount,
-    })
+    form.setValue(
+      "amount",
+      {
+        value: getRoundedAmount(normalizedAmount),
+        float: normalizedAmount,
+      },
+      // Pagly: after a first Guardar, choosing the payment checks the amount
+      // it brings again, or its old error keeps Guardar disabled.
+      { shouldValidate: form.formState.isSubmitted }
+    )
   }, [payment?.id || ""])
 
   const { mutateAsync, isPending } = useRefundPayment(order.id, payment?.id!)
 
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const submitRefund = form.handleSubmit(async (data) => {
+    if (!payment) {
+      return
+    }
+
     await mutateAsync(
       {
         amount: data.amount.float!,
@@ -124,6 +154,11 @@ export const CreateRefundForm = ({ order }: CreateRefundFormProps) => {
     )
   })
 
+  const handleSubmit = (event?: BaseSyntheticEvent) => {
+    setPaymentMissing(!payment)
+    return submitRefund(event)
+  }
+
   return (
     <RouteDrawer.Form form={form}>
       <KeyboundForm
@@ -137,6 +172,7 @@ export const CreateRefundForm = ({ order }: CreateRefundFormProps) => {
                 dir={direction}
                 value={paymentId}
                 onValueChange={(value) => {
+                  setPaymentMissing(false)
                   setPaymentId(value)
                 }}
               >
@@ -182,6 +218,11 @@ export const CreateRefundForm = ({ order }: CreateRefundFormProps) => {
                   })}
                 </Select.Content>
               </Select>
+            )}
+            {paymentMissing && (
+              <Text size="small" leading="compact" className="text-ui-fg-error">
+                {t("orders.payment.selectPaymentRequired")}
+              </Text>
             )}
             {hasPaymentIdInSearchParams && (
               <div className="flex items-center">
