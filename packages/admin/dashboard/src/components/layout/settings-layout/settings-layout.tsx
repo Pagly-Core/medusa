@@ -40,7 +40,14 @@ const useCoreSettingRoutes = (): INavItem[] => {
   const isRbacEnabled = useFeatureFlag("rbac")
   const isViewConfigEnabled = useFeatureFlag("view_configurations")
   const { hasPermission } = usePermissions()
-  const { enabled: isSearchEnabled } = useSearchIndexes()
+  // Pagly: asked once a session. A store on the cloud is refused (403), and a
+  // retry plus a refetch on every Settings page logged it again and again
+  // (Pagly-Core/pagly-app#252).
+  const { enabled: isSearchEnabled } = useSearchIndexes({
+    retry: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+  })
   const { t } = useTranslation()
 
   const canReadRoles = isRbacEnabled && hasPermission("rbac_role:read")
