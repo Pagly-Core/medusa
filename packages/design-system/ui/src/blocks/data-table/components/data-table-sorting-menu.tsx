@@ -76,7 +76,8 @@ const DataTableSortingMenu = (props: DataTableSortingMenuProps) => {
     <DropdownMenu>
       <Wrapper {...wrapperProps}>
         <DropdownMenu.Trigger asChild>
-          <IconButton size="small">
+          {/* Pagly: named by its tooltip, which shows only on hover (Pagly-Core/pagly-app#354). */}
+          <IconButton size="small" aria-label={props.tooltip}>
             <DescendingSorting />
           </IconButton>
         </DropdownMenu.Trigger>
