@@ -11,6 +11,7 @@ import { MemoryRouter } from "react-router-dom"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 
 import {
+  mugItem,
   pageText,
   shippingOption,
 } from "../../../../../__tests__/fixtures/one-version-items"
@@ -19,6 +20,7 @@ import { openActionMenu } from "../../../../../__tests__/fixtures/menus"
 import Shipping from "../page"
 
 const state = vi.hoisted(() => ({
+  order: {} as Record<string, unknown>,
   shippingMethods: [] as unknown[],
   shippingOptions: [] as unknown[],
 }))
@@ -48,12 +50,12 @@ vi.mock("../../../../../hooks/api/orders", async () => {
 
   return {
     useOrder: () => ({
-      order: draftOrder(),
+      order: draftOrder(state.order),
       isPending: false,
       isError: false,
     }),
     useOrderPreview: () => ({
-      order: draftOrder({ shipping_methods: state.shippingMethods }),
+      order: draftOrder({ ...state.order, shipping_methods: state.shippingMethods }),
       isPending: false,
       isError: false,
     }),
@@ -96,6 +98,7 @@ beforeAll(() => {
 
 afterEach(() => {
   cleanup()
+  state.order = {}
   state.shippingMethods = []
   state.shippingOptions = []
 })
@@ -157,6 +160,19 @@ describe("Edit shipping", () => {
       within(tooltip).getByText("2x Taza de cerámica hecha a mano")
     ).toBeTruthy()
     expect(within(tooltip).getByText("1x Remera (M / Negro)")).toBeTruthy()
+  })
+
+  // Pagly-Core/pagly-app#256: with no product that has a shipping profile, the
+  // dialog showed only its table header, with no word of why.
+  it("says nothing in the order ships when no product has a shipping profile", () => {
+    state.order = {
+      items: [
+        { ...mugItem, variant: { ...mugItem.variant, product: { ...mugItem.variant.product, shipping_profile: null } } },
+      ],
+    }
+    renderShipping()
+
+    expect(screen.getByText("Nothing in this order ships: none of its products has a shipping profile.")).toBeTruthy()
   })
 
   it("shows the items to ship without the default title", () => {
