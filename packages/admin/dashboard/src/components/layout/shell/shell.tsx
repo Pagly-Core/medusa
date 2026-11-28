@@ -38,6 +38,7 @@ import {
   SidebarPlacementProvider,
 } from "../sidebar-collapse-button"
 import { SHELL_FRAME_BG } from "./frame"
+import { breadcrumbLabel, type CrumbHandle } from "./breadcrumb-label"
 
 /** Pagly: marks the desktop sidebar's container, for the focus handoff below. */
 const DESKTOP_SIDEBAR_ATTRIBUTE = "data-desktop-sidebar"
@@ -168,25 +169,13 @@ const Gutter = ({ children }: PropsWithChildren) => {
 }
 
 const Breadcrumbs = () => {
-  const matches = useMatches() as unknown as UIMatch<
-    unknown,
-    {
-      breadcrumb?: (match?: UIMatch) => string | ReactNode
-    }
-  >[]
+  const { t } = useTranslation()
+  const matches = useMatches() as unknown as UIMatch<unknown, CrumbHandle>[]
 
   const crumbs = matches
-    .filter((match) => match.handle?.breadcrumb)
     .map((match) => {
-      const handle = match.handle
-
-      let label: string | ReactNode | undefined = undefined
-
-      try {
-        label = handle.breadcrumb?.(match)
-      } catch (error) {
-        // noop
-      }
+      // Pagly: a route without a breadcrumb shows its sidebar label.
+      const label = breadcrumbLabel(match.handle, match, t)
 
       if (!label) {
         return null
